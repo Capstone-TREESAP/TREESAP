@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from pyproj import Proj
 import geojson
+import multiprocessing
 
 NEVER_CLASSIFIED = 0
 UNCLASSIFIED = 1
@@ -98,6 +99,24 @@ def get_avoided_runoff_annually(treed_area):
     return treed_area * 0.881
 
 '''
+Processes .las file for a single point
+
+in_file: the las file
+x: the x value
+y: the y value
+
+return: single geojson feature
+'''
+def process_las_file_for_single_point(in_file, x, y):
+    nearby_indices = get_indices_near_x_y_coord(x, y, GRID_RESOLUTION, in_file.x, in_file.y)
+    high_vegetation_density = get_classification_density(5,in_file.raw_classification[nearby_indices])
+    treed_area = AREA_PER_GRID * high_vegetation_density
+    lon,lat = UTM_10_PROJ(x,y,inverse=True)
+    feature = geojson.Feature(geometry=geojson.Point((lon,lat)), properties={"high_vegetation_density": high_vegetation_density, "annual_avoided_runoff_l_per_yr": get_avoided_runoff_annually(treed_area), "annual_carbon_sequestration_t_per_yr": get_carbon_sequestered_annually(treed_area), "utm_10_x": x, "utm_10_y": y})
+    return feature
+
+
+'''
 Processes .las file to return a list of geojson features that represent the las file
 
 in_file: the las file
@@ -108,17 +127,12 @@ def process_las_file(in_file):
     list_of_geojson_features = []
     for x in range(int(in_file.header.min[0]), int(in_file.header.max[0]) + 1, GRID_RESOLUTION):
         for y in range(int(in_file.header.min[1]), int(in_file.header.max[1]) + 1, GRID_RESOLUTION):
-            nearby_indices = get_indices_near_x_y_coord(x, y, GRID_RESOLUTION, in_file.x, in_file.y)
-            high_vegetation_density = get_classification_density(5,in_file.raw_classification[nearby_indices])
-            treed_area = AREA_PER_GRID * high_vegetation_density
-            lon,lat = UTM_10_PROJ(x,y,inverse=True)
-            feature = geojson.Feature(geometry=geojson.Point((lon,lat)), properties={"high_vegetation_density": high_vegetation_density, "annual_avoided_runoff_l_per_yr": get_avoided_runoff_annually(treed_area), "annual_carbon_sequestration_t_per_yr": get_carbon_sequestered_annually(treed_area), "utm_10_x": x, "utm_10_y": y})
-            list_of_geojson_features.append(feature)
+            list_of_geojson_features.append(process_las_file_for_single_point(in_file,x,y))
     return list_of_geojson_features
 
 ########################################
 
-directory = r'../cov_2018_data/'
+directory = r'../data/cov_2018_data/'
 all_geojson_features = []
 for filename in os.listdir(directory):
     if filename.endswith(".las"):
