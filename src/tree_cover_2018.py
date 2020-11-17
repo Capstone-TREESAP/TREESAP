@@ -30,10 +30,6 @@ classification_data: the points to look for the given classification in
 return: the proportion of points with that classification
 '''
 def get_classification_density(classification_type, classification_data):
-    #print(in_file.raw_classification)
-    #for i in range(0,10):
-    #    print(i)
-    #    print(np.where(i == in_file.raw_classification))
     data_len = len(classification_data)
     if data_len>0:
         return len(np.where(classification_type == classification_data)[0]) / len(classification_data)
@@ -43,20 +39,15 @@ def get_classification_density(classification_type, classification_data):
 '''
 Gets the the indices of the points, s.t. y∈[y-delta,y+delta] && y∈[y-delta,y+delta]
 
-x: x value to get points around
-y: y value to get points around
+val: value to get indices around
 delta: the +- difference that is considered close
-x_array: array of x values of points
-y_array: array of y values of points
+val_array: array of values
 
 return: list of indices that are close to the x y value
 '''
-def get_indices_near_x_y_coord(x, y, delta, x_array, y_array):
-    x_near = np.logical_and((x - delta < x_array),
-                           (x + delta > x_array))
-    y_near = np.logical_and((y - delta < y_array),
-                           (y + delta > y_array))
-    filtered_indices = np.where(np.logical_and(x_near, y_near))
+def get_indices_near(val, delta, val_array):
+    filtered_indices = np.where(np.logical_and((val - delta < val_array),
+                           (val + delta > val_array)))
     return filtered_indices[0]
 
 '''
@@ -99,17 +90,16 @@ def get_avoided_runoff_annually(treed_area):
     return treed_area * 0.881
 
 '''
-Processes .las file for a single point
+Processes classification array around a single point
 
-in_file: the las file
+classification_array: the classification array
 x: the x value
 y: the y value
 
 return: single geojson feature
 '''
-def process_las_file_for_single_point(in_file, x, y):
-    nearby_indices = get_indices_near_x_y_coord(x, y, GRID_RESOLUTION, in_file.x, in_file.y)
-    high_vegetation_density = get_classification_density(5,in_file.raw_classification[nearby_indices])
+def process_las_file_for_single_point(classification_array, x, y):
+    high_vegetation_density = get_classification_density(5,classification_array)
     treed_area = AREA_PER_GRID * high_vegetation_density
     lon,lat = UTM_10_PROJ(x,y,inverse=True)
     feature = geojson.Feature(geometry=geojson.Point((lon,lat)), properties={"high_vegetation_density": high_vegetation_density, "annual_avoided_runoff_l_per_yr": get_avoided_runoff_annually(treed_area), "annual_carbon_sequestration_t_per_yr": get_carbon_sequestered_annually(treed_area), "utm_10_x": x, "utm_10_y": y})
@@ -125,9 +115,16 @@ return: a list of geojson features
 '''
 def process_las_file(in_file):
     list_of_geojson_features = []
-    for x in range(int(in_file.header.min[0]), int(in_file.header.max[0]) + 1, GRID_RESOLUTION):
-        for y in range(int(in_file.header.min[1]), int(in_file.header.max[1]) + 1, GRID_RESOLUTION):
-            list_of_geojson_features.append(process_las_file_for_single_point(in_file,x,y))
+    x_array = in_file.x
+    y_array = in_file.y
+    classification_array = in_file.raw_classification
+    header = in_file.header
+
+    for x in range(int(header.min[0]), int(header.max[0]) + 1, GRID_RESOLUTION):
+        nearby_x_indices = get_indices_near(x, GRID_RESOLUTION/2, x_array)
+        for y in range(int(header.min[1]), int(header.max[1]) + 1, GRID_RESOLUTION):
+            nearby_y_indices = get_indices_near(y, GRID_RESOLUTION/2, y_array[nearby_x_indices])
+            list_of_geojson_features.append(process_las_file_for_single_point(classification_array[nearby_y_indices], x, y))
     return list_of_geojson_features
 
 ########################################
@@ -142,5 +139,5 @@ for filename in os.listdir(directory):
             print(spec.name)
         all_geojson_features = all_geojson_features + process_las_file(in_file)
 feature_collection = geojson.FeatureCollection(all_geojson_features)
-out_file = open("../out/all_data.geojson", mode = "w")
-out_file.write(str(feature_collection))
+with open("../out/all_data.geojson", mode = "w") as out_file:
+    out_file.write(str(feature_collection))
