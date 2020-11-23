@@ -16,6 +16,7 @@ BUILDING = 6
 LOW_POINT = 7
 MODEL_KEY_POINT = 8
 WATER = 9
+VALID_CLASSIFICATION_VALUES = [2, 3, 4, 5, 6, 9]
 
 UTM_10_PROJ = Proj("+proj=utm +zone=10N, +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 GRID_RESOLUTION = 100 # this is in metres
@@ -32,7 +33,7 @@ return: the proportion of points with that classification
 def get_classification_density(classification_type, classification_data):
     data_len = len(classification_data)
     if data_len>0:
-        return len(np.where(classification_type == classification_data)[0]) / len(classification_data)
+        return len(np.where(classification_type == classification_data)[0]) / data_len
     else:
         return 0.0
 
@@ -46,8 +47,8 @@ val_array: array of values
 return: list of indices that are close to the x y value
 '''
 def get_indices_near(val, delta, val_array):
-    filtered_indices = np.where(np.logical_and((val - delta < val_array),
-                           (val + delta > val_array)))
+    filtered_indices = np.where(np.logical_and(((val - delta) < val_array),
+                           ((val + delta) > val_array)))
     return filtered_indices[0]
 
 '''
@@ -73,7 +74,7 @@ Carbon Rate (t/ha/yr)	CO₂ Equiv. Rate (t/ha/yr)
 30.600                  112.200
 '''
 def get_carbon_sequestered_annually(treed_area):
-    return treed_area/10000* 30.600*112.200
+    return treed_area/10000* 30.600
 
 '''
 Gets the avoided run off annually by the treed area
@@ -102,7 +103,7 @@ def process_las_file_for_single_point(classification_array, x, y):
     high_vegetation_density = get_classification_density(5,classification_array)
     treed_area = AREA_PER_GRID * high_vegetation_density
     lon,lat = UTM_10_PROJ(x,y,inverse=True)
-    feature = geojson.Feature(geometry=geojson.Point((lon,lat)), properties={"high_vegetation_density": high_vegetation_density, "annual_avoided_runoff_l_per_yr": get_avoided_runoff_annually(treed_area), "annual_carbon_sequestration_t_per_yr": get_carbon_sequestered_annually(treed_area), "utm_10_x": x, "utm_10_y": y})
+    feature = geojson.Feature(geometry=geojson.Point((lon,lat)), properties={"high_vegetation_density": str(high_vegetation_density), "annual_avoided_runoff_l_per_yr": str(get_avoided_runoff_annually(treed_area)), "annual_carbon_sequestration_t_per_yr": str(get_carbon_sequestered_annually(treed_area)), "utm_10_x": str(x), "utm_10_y": str(y)})
     return feature
 
 
@@ -117,7 +118,7 @@ def process_las_file(in_file):
     list_of_geojson_features = []
     x_array = in_file.x
     y_array = in_file.y
-    classification_array = in_file.raw_classification
+    classification_array = np.where(np.isin(in_file.raw_classification, VALID_CLASSIFICATION_VALUES))[0]
     header = in_file.header
 
     for x in range(int(header.min[0]), int(header.max[0]) + 1, GRID_RESOLUTION):
@@ -140,4 +141,4 @@ for filename in os.listdir(directory):
         all_geojson_features = all_geojson_features + process_las_file(in_file)
 feature_collection = geojson.FeatureCollection(all_geojson_features)
 with open("../out/all_data.geojson", mode = "w") as out_file:
-    out_file.write(str(feature_collection))
+    geojson.dump(feature_collection,out_file)
