@@ -3,16 +3,8 @@ from shapely import geometry
 from area import area
 import sys
 
-# File to import tree polygons from
-ALL_POLYGONS_FILE = "../out/random_polygons.geojson"
-OUTPUT_FILE = "../out/intersecting_polygons.geojson"
+INTERSECTION_COLOR = '#CC2828'
 DEBUG = True
-
-MIN_BOUND_X = -123.25
-MAX_BOUND_X = -123.251
-MIN_BOUND_Y = 49.26
-MAX_BOUND_Y = 49.261
-DEFAULT_BOUNDING_POLYGON = geometry.box(MIN_BOUND_X, MIN_BOUND_Y, MAX_BOUND_X, MAX_BOUND_Y)
 
 '''
 Gets the carbon sequestered annually by the treed area
@@ -50,16 +42,25 @@ def calculate_properties(polygon_area):
     return carbon, runoff
 
 
-# Load in the polygon to check for intersections with
+def set_polygon_color(feature, color):
+    feature["properties"]["fill"] = color
+    feature["properties"]["stroke"] = color
+
+
+# Command line arguments should be:
+# 1. The file containing all polygons (or all relevant polygons)
+# 2. The bounding polygon to check for intersections with
+# 3. The file to output the intersecting polygons to
 args = sys.argv
-if len(args) < 2:
-    bounding_polygon = DEFAULT_BOUNDING_POLYGON
+if len(args) != 4:
+    sys.exit(1)
 else:
-    geojson_polygon = args[1]
-    bounding_polygon = geojson.loads(geojson_polygon)
+    all_polygons_file = args[1]
+    bounding_polygon = geometry.shape(geojson.loads(args[2]))
+    output_file = args[3]
 
 # Load all polygons into a feature set
-with open(ALL_POLYGONS_FILE, mode="r") as in_file:
+with open(all_polygons_file, mode="r") as in_file:
     all_polygons = geojson.load(in_file)
 
 total_area = 0
@@ -69,44 +70,57 @@ intersecting_polygons = []
 # Find the intersecting polygons
 for feature in all_polygons["features"]:
     polygon = geometry.shape(feature["geometry"])
+    # TODO should we try to fix invalid polygons? Or require that all polygons are valid?
+    if not polygon.is_valid:
+        continue
+
     intersection = bounding_polygon.intersection(polygon)
 
+    # If polygon overlaps with bounds, we want to include it
     if intersection.area > 0:
         num_polys += 1
+
+        if DEBUG:
+            #Add the entire polygon to the list, in grey
+            whole_polygon = geojson.Polygon([list(polygon.exterior.coords)])
+            whole_feature = geojson.Feature(geometry=whole_polygon)
+            intersecting_polygons.append(whole_feature)
 
         # Construct new geojson polygon for intersection area
         new_polygon = geojson.Polygon([list(intersection.exterior.coords)])
 
-        # Calculate the area and ecosystem services values
-        area_in_square_m = area(new_polygon)
+        # Calculate the area
+        area_in_square_m = round(area(new_polygon), 2)
         total_area += area_in_square_m
-        sequestered_carbon, avoided_runoff = calculate_properties(area_in_square_m)
-
-        # Create a new geojson feature
+        
+        #Create feature and add to list
         new_feature = geojson.Feature(geometry=new_polygon)
+
+        # Add ecosystem services values
+        sequestered_carbon, avoided_runoff = calculate_properties(area_in_square_m)
         new_feature["properties"]["area"] = area_in_square_m
         new_feature["properties"]["sequestered_carbon"] = sequestered_carbon
         new_feature["properties"]["avoided_runoff"] = avoided_runoff
 
+        #Set color
+        set_polygon_color(new_feature, INTERSECTION_COLOR)
+
         # Add to list of features to return
         intersecting_polygons.append(new_feature)
 
+
 # Calculate stats for total set
 total_carbon, total_runoff = calculate_properties(total_area)
-# This is hacky - a feature collection doesn't have properties, so add the aggregate data
-# as a feature with no geometry
-properties_feature = geojson.Feature(geometry=None)
-properties_feature["properties"]["total_area"] = total_area
-properties_feature["properties"]["total_sequestered_carbon"] = total_carbon
-properties_feature["properties"]["total_avoided_runoff"] = total_runoff
-intersecting_polygons.append(properties_feature)
+bounding_lines = geojson.LineString(list(bounding_polygon.exterior.coords))
+bounding_feature = geojson.Feature(geometry=bounding_lines)
+bounding_feature["properties"]["area"] = total_area
+bounding_feature["properties"]["sequestered_carbon"] = total_carbon
+bounding_feature["properties"]["avoided_runoff"] = total_runoff
+intersecting_polygons.append(bounding_feature)
 
 # Add all features to a feature set
 new_feature_collection = geojson.FeatureCollection(intersecting_polygons)
 
-# Dump all features to a file
-with open(OUTPUT_FILE, mode="w") as out_file:
+# Output to a file
+with open(output_file, mode="w") as out_file:
     geojson.dump(new_feature_collection, out_file)
-
-if DEBUG:
-    print(geojson.dumps(new_feature_collection, indent=4))
