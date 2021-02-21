@@ -18,6 +18,10 @@ async function polygonQuery(polygonFile, boundingPolygon) {
     const {spawn} = require('child_process');
     const python = spawn('python', [PYTHON_SCRIPT, polygonFile, JSON.stringify(boundingPolygon), OUTPUT_FILE]);
     
+    python.stdout.on('data', function (data) {
+        console.log(data.toString());
+    });
+
     //Wait for python process to end
     var errorCode;
     python.on('close', function(code) {
@@ -50,12 +54,12 @@ async function polygonQuery(polygonFile, boundingPolygon) {
 //Hopefully eventually dependency management will be a thing
 
 //1. Choose file to import tree polygons from
-ALL_POLYGONS_FILE = "../out/random_polygons.geojson"
+ALL_POLYGONS_FILE = "../orthophoto/polygons.geojson"
 //2. Choose parameters for the bounding polygon (can be any polygon, not just a square)
-MIN_BOUND_X = -123.25
-MAX_BOUND_X = -123.251
-MIN_BOUND_Y = 49.26
-MAX_BOUND_Y = 49.261
+MIN_BOUND_X = -123.221
+MAX_BOUND_X = -123.226
+MIN_BOUND_Y = 49.239
+MAX_BOUND_Y = 49.242
 //3. Create bounding polygon
 BOUNDING_POLYGON = {
     "type": "Polygon",
@@ -72,17 +76,20 @@ const printResults = async () => {
     //Get results from function
     const output = await polygonQuery(ALL_POLYGONS_FILE, BOUNDING_POLYGON);
 
-    //Print the results to stdio
-    console.log(output);
-
     //Open data in geojson.io
     //Warning: the uri gets way too long very quickly and then everything fails, 
     // so only use this for small amounts of data
     if (output != undefined) {
-        const uri = encodeURIComponent(JSON.stringify(output));
-        const geojsonURL = "http://geojson.io/#data=data:application/json," + uri;
-        const open = require('open');
-        open(geojsonURL)
+        outputString = JSON.stringify(output)
+        if (outputString.length <= 9000) {
+            const uri = encodeURIComponent(JSON.stringify(output));
+            const geojsonURL = "http://geojson.io/#data=data:application/json," + uri;
+            const open = require('open');
+            open(geojsonURL)
+        } else {
+            console.log("Output was too long to automatically open geojson.io: output is", outputString.length, "characters")
+            console.log("Please copy data from", OUTPUT_FILE, "directly")
+        }
     }
 }
 
