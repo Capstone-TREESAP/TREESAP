@@ -10,7 +10,7 @@ MAX_BOUND_X = 49.275
 MIN_BOUND_Y = -123.23
 MAX_BOUND_Y = -123.26
 # The minimum area for a bounding box of a polygon
-MIN_AREA = 0.000005
+MIN_AREA = 0.0000005
 # The probability that a bounding box will not contain a polygon
 SKIP_PROB = 0.1
 # Number of points in a polygon
@@ -18,6 +18,8 @@ MIN_POINTS = 3
 MAX_POINTS = 15
 # Path for file to write to
 OUTPUT_FILE = "../out/random_polygons.geojson"
+# Random seed for deterministic testing
+SEED = 0
 
 
 # Bounding box that a polygon must fit in
@@ -90,6 +92,7 @@ def create_random_polygon(num_points, bounds):
     return geojson.Feature(geometry=polygon)
 
 
+random.seed(SEED)
 # Create one polygon per small bounding box
 all_geojson_features = []
 all_bounds = BoundingBox(MIN_BOUND_X, MIN_BOUND_Y, MAX_BOUND_X, MAX_BOUND_Y).smaller_boxes(MIN_AREA)
