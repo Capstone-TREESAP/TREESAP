@@ -1,7 +1,7 @@
 const { once } = require('events');
 
 PYTHON_SCRIPT = 'polygon_query_internal.py'
-OUTPUT_FILE = 'temp_polygons.json'
+OUTPUT_FILE = 'out/intersecting_polygons.json'
 
 /**
  * Calculates the intersections between a bounding polygon and other polygons.
