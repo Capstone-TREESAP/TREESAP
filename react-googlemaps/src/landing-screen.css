@@ -20,3 +20,16 @@
   align-self: center;
   color: #E2E5DC;
 }
+
+#launch {
+  align-self: center;
+}
+
+.launch-screen-leave {
+  opacity: 1;
+}
+
+.launch-screen-leave.launch-screen-leave-active {
+  opacity: 0.01;
+  transition: opacity 1200ms ease-in;
+}

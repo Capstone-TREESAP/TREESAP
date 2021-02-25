@@ -17,16 +17,25 @@ export default class LandingScreenView extends React.Component {
   }
 
   render() {
-    return ( this.state.visible &&
-      <div className="landing-screen">
-        <h1 id="title">Welcome to the UBC Vancouver Campus Tree Inventory</h1>
-        <h2 id="instructions">Press the button below to explore the map</h2>
-        <button
-          className="menu-button"
-          type="button"
-          onClick={() => this.hideLoadingScreen()}
-        >Launch Map
-        </button>
+    return (
+      <div>
+        <CSSTransitionGroup
+          transitionName="launch-screen"
+          transitionLeaveTimeout={1200}>
+          {this.state.visible &&
+          <div className="landing-screen">
+            <h1 id="title">Welcome to the UBC Vancouver Campus Tree Inventory</h1>
+            <h2 id="instructions">Press the button below to explore the map</h2>
+            <button
+              className="menu-button"
+              id="launch"
+              type="button"
+              onClick={() => this.hideLoadingScreen()}
+            >
+            Launch Map
+            </button>
+          </div> }
+        </CSSTransitionGroup>
       </div>
     );
   }

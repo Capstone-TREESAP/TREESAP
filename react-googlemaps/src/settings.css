@@ -1,7 +1,6 @@
 .menu-button {
   position: fixed;
   bottom: 15px;
-  left: 47%;
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -19,16 +18,23 @@
   background-color: white;
 }
 
+.for-button {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
 .dropdown {
   margin-left: 10px;
   margin-top: 10px;
+  margin-bottom: 10px;
   font-size: 16px;
 }
 
 .display-save {
   position: relative;
   margin-left: 10px;
-  margin-top: 10px;
   color: white;
   font-size: 14px;
   cursor: pointer;
@@ -66,5 +72,9 @@
 }
 
 h1 {
-  padding: 10px;
+  padding-left: 10px;
+}
+
+p {
+  padding-left: 10px;
 }

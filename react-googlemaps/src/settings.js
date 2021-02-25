@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './settings.css';
-import LandingScreenView from './landing-screen.js'; 
+import LandingScreenView from './landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 
@@ -54,19 +54,41 @@ function SettingsDisplay(props) {
         <br/>
         <input type="text" id="setting1" name="setting1"/>
         <br/>
+        <input type="submit" value="Submit"/>
+        <br/>
         <label className="input" for="setting2">Change litres of avoided runoff per meter squared here. Current value: {props.setting2} L/m<sup>2</sup></label>
         <br/>
         <input type="text" id="setting2" name="setting2"/>
         <br/>
         <input type="submit" value="Submit"/>
       </div>
-      <button
-        className="menu-button"
-        type="button"
-        onClick={props.onClick}
-      >
-        Close
-      </button>
+      <div className="display">
+      <p>Access to the Shading and Cooling Ecosystem Services for UBC Vancouver Campus</p>
+        <button
+          className="display-save"
+          type="button"
+        >
+          Access Shading and Cooling Interface
+        </button>
+      </div>
+      <div>
+      <p>Draw a polygon and calculate ecosystem services</p>
+        <button
+          className="display-save"
+          type="button"
+        >
+          Select
+        </button>
+      </div>
+      <div className="for-button">
+        <button
+          className="menu-button"
+          type="button"
+          onClick={props.onClick}
+        >
+          Close
+        </button>
+      </div>
     </div>
   )
 }
@@ -112,8 +134,10 @@ class Settings extends React.Component {
           transitionLeaveTimeout={300}>
           {this.state.menu}
         </CSSTransitionGroup>
-        { this.state.visible &&
-          this.renderButton()}
+        <div className="for-button">
+          { this.state.visible &&
+            this.renderButton()}
+        </div>
       </div>
     );
   }
