@@ -108,7 +108,7 @@ else:
     #Otherwise, just use an empty polygon to store the entire area
     bounding_feature = geojson.Feature(geometry=None)
 
-bounding_feature["properties"]["area"] = total_area
+bounding_feature["properties"]["area"] = round(total_area, 2)
 intersecting_polygons.append(bounding_feature)
 
 # Add all features to a feature set

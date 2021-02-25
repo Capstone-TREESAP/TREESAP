@@ -1,7 +1,7 @@
 const { once } = require('events');
 
 PYTHON_SCRIPT = 'polygon_query_internal.py'
-OUTPUT_FILE = 'out/intersecting_polygons.json'
+OUTPUT_FILE = '../out/intersecting_polygons.geojson'
 
 /**
  * Calculates the intersections between a bounding polygon and other polygons.
@@ -60,16 +60,43 @@ MIN_BOUND_X = -123.221
 MAX_BOUND_X = -123.226
 MIN_BOUND_Y = 49.239
 MAX_BOUND_Y = 49.242
+
 //3. Create bounding polygon
 BOUNDING_POLYGON = {
-    "type": "Polygon",
-    "coordinates": [[
-        [MIN_BOUND_X, MIN_BOUND_Y],
-        [MIN_BOUND_X, MAX_BOUND_Y],
-        [MAX_BOUND_X, MAX_BOUND_Y],
-        [MAX_BOUND_X, MIN_BOUND_Y]
-    ]]
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [
+        -123.23105692863464,
+        49.247179307237744
+      ],
+      [
+        -123.23162019252777,
+        49.24750498065472
+      ],
+      [
+        -123.23236048221587,
+        49.24733338955223
+      ],
+      [
+        -123.23236048221587,
+        49.2469026582391
+      ],
+      [
+        -123.23149144649506,
+        49.246811608862544
+      ],
+      [
+        -123.23105692863464,
+        49.247179307237744
+      ]
+    ]
+  ]
 }
+
+
+
+
 
 //4. Call function (is async, so function calling it must also be async)
 const printResults = async () => {
