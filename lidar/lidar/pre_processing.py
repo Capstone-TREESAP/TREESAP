@@ -8,10 +8,10 @@ MIN_SIZE = 6
 LAS_EXT = ".las"
 
 def extract_utm_from_filename(filepath):
-    """[summary]
+    """ Extract the UTM global coordinate from file path
 
     Args:
-        filepath ([type]): [description]
+        filepath (str): [description]
 
     Returns:
         [type]: [description]
