@@ -19,7 +19,8 @@ def download_lidar_dataset():
         src_url = SRC_URL + tile + ZIP_EXT
         dst_file = DST_DATA + tile + ZIP_EXT
         print("Downloading %s ..." % (SRC_URL + tile + ZIP_EXT))
-        # download_url(src_url, dst_file)
+        download_url(src_url, dst_file)
+        
 def download_url(url, save_path, chunk_size=128):
     r = requests.get(url, stream=True)
     with open(save_path, 'wb') as fd:
