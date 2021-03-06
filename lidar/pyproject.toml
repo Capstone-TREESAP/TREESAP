@@ -18,12 +18,13 @@ scipy = "^1.6.1"
 chart-studio = "^1.1.0"
 sklearn = "^0.0"
 scikit-image = "^0.18.1"
-opencv-python = "^4.5.1"
 alpha-shapes = "^0.0.1"
 geojson = "^2.5.0"
 wget = "^3.2"
 jupytext = "^1.10.2"
 requests = "^2.25.1"
+doxypypy = "^0.8.8"
+progress = "^1.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -31,7 +32,6 @@ jupyterlab = "^3.0.9"
 ipywidgets = "^7.6.3"
 PyQt5 = "^5.15.3"
 yapf = "^0.30.0"
-Sphinx = "^3.5.1"
 
 
 [build-system]
