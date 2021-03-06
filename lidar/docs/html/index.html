@@ -88,6 +88,8 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="textblock"><p><a class="anchor" id="md_README"></a></p>
 <h1><a class="anchor" id="autotoc_md0"></a>
 Build</h1>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Install packages</h2>
 <ol type="1">
 <li>install Python poetry: <a href="https://python-poetry.org/docs/#installation">https://python-poetry.org/docs/#installation</a></li>
 <li>make sure your local python version is <code>3.8.6</code>. I recommand use <code>pyenv</code> to set up a local python version. <div class="fragment"><div class="line">cd CEDAR/lidar</div>
@@ -95,11 +97,23 @@ Build</h1>
 <div class="line">poetry install # install all packages</div>
 </div><!-- fragment --></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md1"></a>
+<h2><a class="anchor" id="autotoc_md2"></a>
+Download las files</h2>
+<p>To download the City of Vancouver dataset: </p><div class="fragment"><div class="line">cd CEDAR/lidar/lidar </div>
+<div class="line">poetry run python download.py  </div>
+</div><!-- fragment --> <blockquote class="doxtable">
+<p>Note that the dataset will take a long time, and a lot of storage to download. For example, the 2018 dataset is 12.8G, took 5 minutes to download. </p>
+</blockquote>
+<h1><a class="anchor" id="autotoc_md3"></a>
 Run</h1>
 <div class="fragment"><div class="line">cd CEDAR/lidar/lidar</div>
 <div class="line">poetry run python pipeline.py</div>
-</div><!-- fragment --><p>a <code>map.geojson</code> and <code>tile.geojson</code> will be generated at the end of processing. </p>
+</div><!-- fragment --><p>a <code>map.geojson</code> and <code>tile.geojson</code> will be generated at the end of processing.</p>
+<h1><a class="anchor" id="autotoc_md4"></a>
+Document</h1>
+<div class="fragment"><div class="line">cd CEDAR/lidar </div>
+<div class="line">doxygen doxygen.conf</div>
+</div><!-- fragment --><p>See documentation at <code>CEDAR/lidar/docs/html/index.html</code> </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->

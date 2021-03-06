@@ -26,8 +26,12 @@ var NAVTREE =
 [
   [ "CEDAR", "index.html", [
     [ "CEDAR-lidar", "index.html", [
-      [ "Build", "index.html#autotoc_md0", null ],
-      [ "Run", "index.html#autotoc_md1", null ]
+      [ "Build", "index.html#autotoc_md0", [
+        [ "Install packages", "index.html#autotoc_md1", null ],
+        [ "Download las files", "index.html#autotoc_md2", null ]
+      ] ],
+      [ "Run", "index.html#autotoc_md3", null ],
+      [ "Document", "index.html#autotoc_md4", null ]
     ] ],
     [ "Packages", "namespaces.html", [
       [ "Packages", "namespaces.html", "namespaces_dup" ],
