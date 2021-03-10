@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import SettingsView from './settings.js';
 import reportWebVitals from './reportWebVitals';
 
 
@@ -10,7 +9,6 @@ import reportWebVitals from './reportWebVitals';
 ReactDOM.render(
   <React.StrictMode>
     <App />
-    <SettingsView />
   </React.StrictMode>,
   document.getElementById('root')
 );

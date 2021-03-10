@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './landing-screen.css';
 import { CSSTransitionGroup } from 'react-transition-group';
-import TransitionGroup from 'react-transition-group/TransitionGroup';
 
 export default class LandingScreenView extends React.Component {
   constructor(props){

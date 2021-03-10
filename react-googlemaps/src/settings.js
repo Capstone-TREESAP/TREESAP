@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './settings.css';
 import LandingScreenView from './landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
-import TransitionGroup from 'react-transition-group/TransitionGroup';
 
 export default class SettingsView extends React.Component {
   render() {
@@ -13,7 +12,9 @@ export default class SettingsView extends React.Component {
           <LandingScreenView />
         </div>
         <div className="settings-view">
-          <Settings />
+          <Settings 
+            onDrawingClick={this.props.onDrawingClick}
+          />
         </div>
       </div>
     );
@@ -76,6 +77,10 @@ function SettingsDisplay(props) {
         <button
           className="display-save"
           type="button"
+          onClick={() => {
+            props.onDrawingClick();
+            props.onClick();
+          }}
         >
           Select
         </button>
@@ -103,7 +108,7 @@ class Settings extends React.Component {
   }
 
   openMenu(){
-    let menu = SettingsDisplay({onClick: () => this.closeMenu(), setting1: 10.0, setting2: 12.8});
+    let menu = SettingsDisplay({onClick: () => this.closeMenu(), setting1: 10.0, setting2: 12.8, onDrawingClick:this.props.onDrawingClick});
     this.setState({
       visible: false,
       menu: menu

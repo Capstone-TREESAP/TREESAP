@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow } from 'google-maps-react';
-import polygons from './random_polygons.json';
-import Popup from './Popup.js'
+import polygons from './lidar_polygons_with_area.json';
+import SettingsView from './settings';
+import { DrawingView } from './drawing';
 
 const CARBON_RATE = 30.600; // tonnes/hectare/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
@@ -41,18 +42,24 @@ const mapStyles = {
 
 export class MapContainer extends Component {
   state = {
-    showInfoWindow: false,
+    showDrawingView: false, //Whether the drawing manager is shown
+    showInfoWindow: false, //Whether a polygon info window is shown
     clickedLocation: null,
     marker: null,
     polygon: null
   };
+
+  //Functions for calculating ecosystem services
   getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
   getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_EFFECTS;
+
+  //Functions to handle clicks on the map to open polygons
   onMarkerClick = (props, m, e) =>
     this.setState({
       marker: m,
       showInfoWindow: true
   });
+
   onClose = props => {
     if (this.state.showInfoWindow) {
       this.setState({
@@ -61,6 +68,7 @@ export class MapContainer extends Component {
       });
     }
   };
+
   handleClick = 
   (polygon, map, coords) => {
     this.setState({
@@ -69,6 +77,15 @@ export class MapContainer extends Component {
       polygon: polygon
     })
   };
+
+  //Functions to handle clicks related to drawing
+  onDrawingClick = () => {
+    this.setState({
+      showDrawingView: true
+    })
+  }
+  
+  //Display a set of polygons
   displayPolygons = () => collectedPolygons
   .map(polygon => 
   <Polygon
@@ -83,6 +100,7 @@ export class MapContainer extends Component {
     fillColor="#014421"
     fillOpacity={0.65}
   />)
+
   render() {
     return (
       <Map
@@ -95,6 +113,7 @@ export class MapContainer extends Component {
             lng: -123.2031
           }
         }
+        yesIWantToUseGoogleMapApiInternals
         >
         <Marker 
           onClick={this.onMarkerClick}
@@ -105,19 +124,30 @@ export class MapContainer extends Component {
           visible={this.state.showInfoWindow}
           marker={this.state.marker}
           onClose={this.onClose}
-        >   
+        >
+          <>
             <div>
               <h3>Area: {this.state.polygon ? this.state.polygon.area : null} m<sup>2</sup></h3>
               <h3> Carbon sequestered: {this.state.polygon ? this.getCarbonSequesteredAnnually(this.state.polygon.area).toFixed(2) : null} tonnes/year</h3>
               <h3> Avoided rainwater run-off: {this.state.polygon ? this.getAvoidedRunoffAnnually(this.state.polygon.area).toFixed(2) : null} litres/year</h3>
             </div>
             <button type="button">Report</button>
+          </>
         </InfoWindow>
+        <DrawingView 
+          showDrawingView={this.state.showDrawingView}
+        />
+        <SettingsView 
+          onDrawingClick={this.onDrawingClick} 
+        />
         {this.displayPolygons()}
       </Map>
     );
   }
 }
+
+//Wrapper for map container
 export default GoogleApiWrapper({
-  apiKey: 'YOUR_API_KEY_HERE'
+  apiKey: 'YOUR_API_KEY_HERE',
+  libraries: ['drawing']
 })(MapContainer);
