@@ -24,7 +24,7 @@ poetry install # install all packages
 ```
 ### Export requirement.txt
 ```bash
-poetry export -f requirements.txt --output requirements.txt
+poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
 Once all the packages are fixed, export poetry package list to `requirements.txt` for docker to build with. 
 
