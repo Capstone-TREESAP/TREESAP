@@ -3,8 +3,18 @@ CEDAR-lidar
 
 # Build  
 
-## Install packages 
+## With docker
 
+### Install docker 
+
+### Build docker image
+```bash 
+```
+
+
+## Install packages as dev
+
+### Install poetry
 1. install Python poetry: https://python-poetry.org/docs/#installation
 2. make sure your local python version is `3.8.6`. I recommand use `pyenv` to set up a local python version.
 ```bash
@@ -12,8 +22,13 @@ cd CEDAR/lidar
 poetry install --no-dev # install just the package for running (recommended)
 poetry install # install all packages
 ```
+### Export requirement.txt
+```bash
+poetry export -f requirements.txt --output requirements.txt
+```
+Once all the packages are fixed, export poetry package list to `requirements.txt` for docker to build with. 
 
-## Download las files 
+### Download las files 
 
 To download the City of Vancouver dataset:
 ```bash

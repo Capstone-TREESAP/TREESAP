@@ -1,0 +1,6 @@
+data/
+dst/
+docs/
+tests/
+*.geojson 
+__pycache__/
