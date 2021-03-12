@@ -131,7 +131,6 @@ dmypy.json
 # datasets are large
 data/
 
-
 .vscode/
 *.code-workspace
 *.json
