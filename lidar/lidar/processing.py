@@ -22,7 +22,7 @@ class ProcessingPipeline(CONSTANT):
         self.processing_time = 0
         self.pre_processor = None
         self.whole_campus_polygon_features = []
-        parser = argparse.ArgumentParser(description='Process some integers.')
+        parser = argparse.ArgumentParser(description='Process indexed UBC LiDAR data')
         parser.add_argument('--load',help="Load points from .pkl file instead of from raw .las file", action="store_true")
         args = parser.parse_args()
         self.reload = not args.load
