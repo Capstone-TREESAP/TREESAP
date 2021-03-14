@@ -140,3 +140,4 @@ orthophoto/
 
 *.ipynb
 *png
+*.pkl

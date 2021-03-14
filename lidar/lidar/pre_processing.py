@@ -152,9 +152,4 @@ class PreProcessor(CONSTANT):
         y_transformed = y_scaled + (las_file.north - self.min_north)/10 * self.TILE_MAX_SIZE
         
         return x_transformed, y_transformed
-            
-
-
-    
-    
 
