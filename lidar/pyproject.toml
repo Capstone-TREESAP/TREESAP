@@ -25,6 +25,7 @@ jupytext = "^1.10.2"
 requests = "^2.25.1"
 doxypypy = "^0.8.8"
 progress = "^1.5"
+laszip = "^0.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

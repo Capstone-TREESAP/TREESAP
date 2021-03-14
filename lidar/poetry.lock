@@ -600,6 +600,14 @@ python-versions = "*"
 numpy = "*"
 
 [[package]]
+name = "laszip"
+version = "0.0.1"
+description = "Bindings for LASzip made with pybind11"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "markdown-it-py"
 version = "0.6.2"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -871,6 +879,14 @@ python-versions = ">=3.6"
 [package.extras]
 qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
 testing = ["docopt", "pytest (<6.0.0)"]
+
+[[package]]
+name = "pdal"
+version = "2.3.7"
+description = "Point cloud data processing"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pexpect"
@@ -1391,7 +1407,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.6"
-content-hash = "05badfa6e10ca1ca858978548f67c91470e6cbc3f9300b1939f9ea7d21488d97"
+content-hash = "0ba7c96f63351943673200a07483aec35468d55792c428b88f780a0cc83d937a"
 
 [metadata.files]
 alpha-shapes = [
@@ -1663,6 +1679,21 @@ laspy = [
     {file = "laspy-1.7.0-py2.py3-none-any.whl", hash = "sha256:5f088a0d6fbfca3333870acb7997f54fc8fead4fdf43b75add9a4a4f839e538d"},
     {file = "laspy-1.7.0.tar.gz", hash = "sha256:f2a354fe08a399949fce1a91019f70136ec396b1f88462e54f23b7a12ef2addf"},
 ]
+laszip = [
+    {file = "laszip-0.0.1-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:93e9ed034127e98fe05c6faa3067c14e9caa3958f5946141565a9db4d445d3b2"},
+    {file = "laszip-0.0.1-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:792aced4bb10a48d26a5e152876efd3b29d8d828d71a9a54d4820db4b221f146"},
+    {file = "laszip-0.0.1-cp36-cp36m-win_amd64.whl", hash = "sha256:73bea67ec4f3037e605d9753aa1df0706f14f3fd010b4a3a2ad90a0d830b793b"},
+    {file = "laszip-0.0.1-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:51155f77adcc49e29223c8aa55865181684eca8de4e30617db2700a1e5fee440"},
+    {file = "laszip-0.0.1-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:2c9aa7851c2c91e8f1efefa5c82757b8ce532634d47541fd80c11dccf27a16a1"},
+    {file = "laszip-0.0.1-cp37-cp37m-win_amd64.whl", hash = "sha256:50bdec7d05366b7f5e97325fd52e4bf455b1600c502d1850ec4b34ce8fab43df"},
+    {file = "laszip-0.0.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:30e1abb10d96aa158b479daf8f1ac8db1e6049c17fd9f54860ecc69cb798c015"},
+    {file = "laszip-0.0.1-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:dcbedaa03157ee9448ff79d059604448b2472f568376ac15970247be515d9579"},
+    {file = "laszip-0.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:04273f00579885fbb8fa2d6156f7c8a5b6058c8e4dcd3f78377d349be710ece4"},
+    {file = "laszip-0.0.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:200f23baf055b0f3aa668478bf7a49772be61b4d3083abe6833ad880e11fa6ed"},
+    {file = "laszip-0.0.1-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:41f6b2b2db2bdf111232d9f6983e9949b23473f9698f95bac4560d632ebf9661"},
+    {file = "laszip-0.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:de0489a9f36c940f3645c0fe150fdff53f34cd42435afca1eb4bb1c51dfad988"},
+    {file = "laszip-0.0.1.tar.gz", hash = "sha256:537ef8036a0b0edc95853a5efdb4f2a7a5961f3c06fce1c4b9f18728cacf0454"},
+]
 markdown-it-py = [
     {file = "markdown-it-py-0.6.2.tar.gz", hash = "sha256:c3b9f995be0792cbbc8ab2f53d74072eb7ff8a8b622be8d61d38ab879709eca3"},
     {file = "markdown_it_py-0.6.2-py3-none-any.whl", hash = "sha256:30b3e9f8198dc82a5df0dcb73fd31d56cd9a43bf8a747feb10b2ba74f962bcb1"},
@@ -1823,6 +1854,9 @@ pandocfilters = [
 parso = [
     {file = "parso-0.8.1-py2.py3-none-any.whl", hash = "sha256:15b00182f472319383252c18d5913b69269590616c947747bc50bf4ac768f410"},
     {file = "parso-0.8.1.tar.gz", hash = "sha256:8519430ad07087d4c997fda3a7918f7cfa27cb58972a8c89c2a0295a1c940e9e"},
+]
+pdal = [
+    {file = "PDAL-2.3.7.tar.gz", hash = "sha256:cc9cb6359fff7e01636ff5910473575a494a40b3b2c1565e9a9ebc6570e56a82"},
 ]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
