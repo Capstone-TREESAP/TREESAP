@@ -78,3 +78,27 @@ h1 {
 p {
   padding-left: 10px;
 }
+
+input[type="button"].selected{
+  position: relative;
+  margin-left: 10px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 15px;
+  border: none;
+  display: inline-block;
+  background-color: #313628;
+}
+
+input[type="button"].unselected{
+  position: relative;
+  margin-left: 10px;
+  color: gray;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 15px;
+  border: none;
+  display: inline-block;
+  background-color: white;
+}

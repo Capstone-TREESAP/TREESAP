@@ -1,6 +1,45 @@
 
 export class PolygonEditor {
 
+    static getPointsFromPolygon(polygon) {
+        return polygon.overlay.getPath().getArray();
+    }
+
+    static getPointsFromRectangle(props, rectangle) {
+        const {google} = props
+
+        let bounds = JSON.parse(JSON.stringify(rectangle.overlay.getBounds()))
+        let points = [
+            new google.maps.LatLng(bounds["south"], bounds["east"]),
+            new google.maps.LatLng(bounds["south"], bounds["west"]),
+            new google.maps.LatLng(bounds["north"], bounds["west"]),
+            new google.maps.LatLng(bounds["north"], bounds["east"])
+        ]
+        console.log("Points:", points)
+        return points
+    }
+
+    static getPolygonArea(props, points) {
+        const {google} = props
+        return +google.maps.geometry.spherical.computeArea(points).toFixed(2);
+    }
+
+    static getPolygonGeoJSON(points) {
+        let jsonPoints = [];
+        for (var i in points) {
+            jsonPoints.push(
+                [points[i].lat(), points[i].lng()]
+            )
+        }
+
+        let geojson = {
+            "type": "Polygon",
+            "coordinates": [jsonPoints]
+        }
+
+        return JSON.stringify(geojson)
+    }
+
     static createEditablePolygon(props, polygon, map) {   
         const {google} = props
 

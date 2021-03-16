@@ -13,7 +13,7 @@ export default class SettingsView extends React.Component {
         </div>
         <div className="settings-view">
           <Settings 
-            onDrawingClick={this.props.onDrawingClick}
+            onToggleMode={this.props.onToggleMode}
           />
         </div>
       </div>
@@ -73,17 +73,25 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div>
-      <p>Draw a polygon and calculate ecosystem services</p>
-        <button
-          className="display-save"
+        <p>Select Mode</p>
+        <input 
+          className={props.editMode ? "intersection unselected" : "intersection selected"}
           type="button"
           onClick={() => {
-            props.onDrawingClick();
+            props.onToggleMode(false);
             props.onClick();
           }}
-        >
-          Select
-        </button>
+          value="Intersection"
+        />
+        <input
+          className={props.editMode ? "edit selected" : "edit unselected"}
+          type="button"
+          onClick={() => {
+            props.onToggleMode(true);
+            props.onClick();
+          }}
+          value="Edit"
+        />
       </div>
       <div className="for-button">
         <button
@@ -103,12 +111,20 @@ class Settings extends React.Component {
     super(props);
     this.state = {
       visible: true,
-      menu: null
+      menu: null,
+      editMode: false
     };
   }
 
   openMenu(){
-    let menu = SettingsDisplay({onClick: () => this.closeMenu(), setting1: 10.0, setting2: 12.8, onDrawingClick:this.props.onDrawingClick});
+    let menu = SettingsDisplay({
+      onClick: () => this.closeMenu(), 
+      setting1: 10.0, 
+      setting2: 12.8, 
+      onToggleMode: (editMode) => this.onToggleMode(editMode), 
+      editMode:this.state.editMode
+    });
+
     this.setState({
       visible: false,
       menu: menu
@@ -120,6 +136,13 @@ class Settings extends React.Component {
       visible: true,
       menu: null
     });
+  }
+
+  onToggleMode(editMode){
+    this.setState({
+      editMode: editMode
+    })
+    this.props.onToggleMode(editMode)
   }
 
   renderButton(){

@@ -54,9 +54,11 @@ export class PolygonLayer {
         }
 
         let newPoints = PolygonEditor.getPolygonEdits(this.editablePolygon)
+        let newArea = PolygonEditor.getPolygonArea(this.props, newPoints)
         PolygonEditor.removeEditablePolygon(this.editablePolygon)
 
         this.polygon.points = newPoints
+        this.polygon.area = newArea
         this.polygons.push(this.polygon)
         this.editablePolygon = null
     }
@@ -65,5 +67,36 @@ export class PolygonLayer {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1)
         this.polygon = null
+    }
+
+    addPolygon = (polygon) => {
+        const {google} = this.props
+        var points;
+
+        if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
+            points = PolygonEditor.getPointsFromPolygon(polygon)
+        } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
+            points = PolygonEditor.getPointsFromRectangle(this.props, polygon)
+        }
+
+        let area = PolygonEditor.getPolygonArea(this.props, points)
+        //TODO: should we use UUIDs?
+        // or use some system where first x bits represents whether it's frontend created or not,
+        // then just increment up for the rest of the bits
+        //This depends on the broader question of how we create IDs for polygons in the backend,
+        // so I'm leaving it for now.
+        let id = this.polygons.length
+
+        this.polygons.push(
+            {
+                "id": id,
+                "points": points,
+                "area": area,
+                "editable": false
+            }
+        )
+
+        polygon.overlay.setMap(null);
+        
     }
 }

@@ -5,6 +5,7 @@ import polygons from './lidar_polygons_with_area.json';
 import SettingsView from './settings';
 import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
+import { PolygonEditor } from './polygon-editor';
 
 const CARBON_RATE = 30.600; // tonnes/hectare/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
@@ -16,14 +17,18 @@ const mapStyles = {
 };
 
 export class MapContainer extends Component {
-    state = {
-        showDrawingView: false, //Whether the drawing manager is shown
-        showInfoWindow: false, //Whether a polygon info window is shown
-        clickedLocation: null,
-        marker: null,
-        polygon: null,
-        polygonLayer: null,
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            showInfoWindow: false, //Whether a polygon info window is shown
+            clickedLocation: null,
+            marker: null,
+            polygon: null,
+            polygonLayer: null,
+            editMode: false,
+        };
+        this.drawingView = null;
+    }
 
     //Functions for calculating ecosystem services
     getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
@@ -56,16 +61,34 @@ export class MapContainer extends Component {
         this.state.polygonLayer.selectPolygon(this.state.polygon)
     };
 
-    //Functions to handle clicks related to drawing
-    onDrawingClick = () => {
+    onGenericClick = () => {
+        this.state.polygonLayer.makeCurrentPolygonUneditable();
+
         this.setState({
-            showDrawingView: true
+            clickedLocation: null,
+            polygon: null,
+            showInfoWindow: false,
+        })
+    }
+
+    onToggleMode = (editMode) => {
+        this.setState({
+            editMode: editMode
         })
     }
 
     loadPolygonLayer = () => {
         this.setState({
             polygonLayer: new PolygonLayer(polygons, this.props, this._map.map)
+        })
+    }
+
+    loadDrawingManager = () => {
+        this.drawingView = new DrawingView(this.props, this._map.map)
+        
+        const scope = this
+        this.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
+            scope.addPolygon(scope, polygon);
         })
     }
 
@@ -101,12 +124,41 @@ export class MapContainer extends Component {
         })
     }
 
+    addPolygon(scope, polygon) {
+        if (scope.state.editMode) {
+            scope.state.polygonLayer.addPolygon(polygon)
+            scope.setState({
+                polygon: null
+            })
+        } else {
+            const {google} = this.props
+            var bounds;
+            if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
+                bounds = PolygonEditor.getPointsFromPolygon(polygon);
+            } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
+                bounds = PolygonEditor.getPointsFromRectangle(this.props, polygon);
+            }
+
+            //TODO: This is where the code for polygon intersections will be called
+            console.log("Polygon for intersection:", PolygonEditor.getPolygonGeoJSON(bounds))
+        }
+    }
+
     onInfoWindowOpen(polygon) {
-        const buttons = (<div>
-            <button type="button">Report</button>
-            <button type="button" onClick={() => {this.state.polygonLayer.makePolygonEditable(polygon); this.onClose();}}>Edit</button>
-            <button type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Remove</button>
-        </div>)
+        var buttons;
+
+        if (this.state.editMode) {
+            buttons = (<div>
+                <button type="button">Report</button>
+                <button type="button" onClick={() => {this.state.polygonLayer.makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Remove</button>
+            </div>)
+        } else {
+            buttons = (<div>
+                <button type="button">Report</button>
+            </div>)
+        }
+
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
     }
 
@@ -119,7 +171,8 @@ export class MapContainer extends Component {
             style={mapStyles}
             initialCenter={{lat: 49.2367, lng: -123.2031}}
             yesIWantToUseGoogleMapApiInternals
-            onReady={this.loadPolygonLayer}
+            onReady={() => {this.loadPolygonLayer(); this.loadDrawingManager();}}
+            onClick={this.onGenericClick}
         >
             <Marker 
                 onClick={this.onMarkerClick}
@@ -139,11 +192,8 @@ export class MapContainer extends Component {
                     <h3> Avoided rainwater run-off: {this.state.polygon ? this.getAvoidedRunoffAnnually(this.state.polygon.area).toFixed(2) : null} litres/year</h3>
                 </div>
             </InfoWindow>
-            <DrawingView 
-                showDrawingView={this.state.showDrawingView}
-            />
             <SettingsView 
-                onDrawingClick={this.onDrawingClick} 
+                onToggleMode={this.onToggleMode} 
             />
             {this.displayPolygonLayer()}
         </Map>
