@@ -138,7 +138,7 @@ data/
 # discontinued project
 orthophoto/
 
-# *.ipynb
+*_test.ipynb
 *png
 *.pkl
 *.pdf
