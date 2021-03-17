@@ -18,28 +18,30 @@ class ProcessingPipeline(CONSTANT):
     Args:
         CONSTANT (class): Global constant class
     """
-    def __init__(self):
+    def __init__(self, notebook=False):
         self.processing_time = 0
         self.pre_processor = None
         self.whole_campus_polygon_features = []
-        parser = argparse.ArgumentParser(
-            prog="CEDAR labelled LiDAR processing pipeline",
-            description='Process indexed UBC LiDAR data')
-        parser.add_argument('--load',help="Load points from .pkl file instead of from raw .las file. By default we will not load from .pkl file.", action="store_true")
-        args = parser.parse_args()
-        parser.print_help()
-        self.reload = not args.load
+        self.reload = True
+        if not notebook:
+            parser = argparse.ArgumentParser(
+                prog="CEDAR labelled LiDAR processing pipeline",
+                description='Process indexed UBC LiDAR data')
+            parser.add_argument('--load',help="Load points from .pkl file instead of from raw .las file. By default we will not load from .pkl file.", action="store_true")
+            args = parser.parse_args()
+            parser.print_help()
+            self.reload = not args.load
+        
     def pre_process_las_files(self, data_dir):
         """ preprocess the las file by extracting all the points, and save them into LasFile objects. 
 
         Args:
             data_dir (str): the source directory path
         """
-        
+        self.pre_processor = PreProcessor(data_dir)
         # check if we don't need to reload and pkl file already exist
         if not self.reload:
             return
-        self.pre_processor = PreProcessor(data_dir)
         for las_file in self.pre_processor.lasfile_list:
             try: 
                 las_file.point_x, las_file.point_y =  self.pre_processor.extract_relative_las_data(las_file)
@@ -55,8 +57,8 @@ class ProcessingPipeline(CONSTANT):
         Args:
             output_file (str): the path to output file to save to.
         """
-        all_point_x = []
-        all_point_y = []
+        all_point_x = np.array([])
+        all_point_y = np.array([])
 
         if not self.reload and os.path.exists(self.PKL_FILE_PATH):
             points = self.load_points_from_pkl()
@@ -65,9 +67,11 @@ class ProcessingPipeline(CONSTANT):
         else:
             for las_file in self.pre_processor.lasfile_list:
                 if las_file.valid:
-                    all_point_x.extend(las_file.point_x)
-                    all_point_y.extend(las_file.point_y)
+                    all_point_x = np.append(all_point_x, las_file.point_x)
+                    all_point_y = np.append(all_point_y, las_file.point_y)
             self.save_points_as_pkl(np.vstack((all_point_x, all_point_y)).T)
+        
+        print(all_point_x.shape)
         self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y)
         self.__export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
         
@@ -84,7 +88,7 @@ class ProcessingPipeline(CONSTANT):
         points = np.vstack((point_x, point_y)).T
         
         # Cluster the points based on paramters
-        clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE).fit(points)
+        clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE, n_jobs=12).fit(points)
 
         if self.DEBUG:
             print(" found %d clusters" % np.amax(clustering.labels_))

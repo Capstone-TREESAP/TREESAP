@@ -125,11 +125,14 @@ class PreProcessor(CONSTANT):
         if test.shape[0] == 0:
             raise LookupError
         
+        sample = test
         if test.shape[0] > self.MIN_POINTS_FOR_DOWNSIZE:
             # down sample the point cloud if there are too many points to speed up the processing
-            sample = np.random.choice(test, int(test.shape[0]/self.DOWN_SIZE))
-        else:
-            sample = test
+            reduce_to_ideal_size = lambda x : int(x) if x <= self.MIN_POINTS_FOR_DOWNSIZE else reduce_to_ideal_size(x/10)
+            desired_size = reduce_to_ideal_size(test.shape[0])
+            print("Down size to %d from %d" % (desired_size, test.shape[0]))
+            sample = np.random.choice(test, desired_size)
+            
         x = np.zeros(sample.shape[0])
         y = np.zeros(sample.shape[0])
         z = np.zeros(sample.shape[0])

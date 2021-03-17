@@ -5,7 +5,7 @@ class CONSTANT:
     100,000 cm = 1000 m = 1km
     """
     TILE_MAX_SIZE = 100000 
-    MIN_POINTS_FOR_DOWNSIZE = 20000
+    MIN_POINTS_FOR_DOWNSIZE = 100000
     DEBUG = True
     """ the minium distances between points 
     """
