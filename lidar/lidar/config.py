@@ -9,7 +9,7 @@ class CONSTANT:
     DEBUG = True
     """ the minium distances between points 
     """
-    EPS = 300
+    EPS = 1000
     MIN_SAMPLE = 10
     MIN_SIZE = 20
     LAS_EXT = ".las"

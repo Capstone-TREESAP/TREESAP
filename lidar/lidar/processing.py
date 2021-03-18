@@ -74,7 +74,9 @@ class ProcessingPipeline(CONSTANT):
         print(all_point_x.shape)
         self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y)
         self.__export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
-        
+    
+    def select_optimal_eps():
+        pass
     def extract_polygon_features(self, point_x, point_y):
         """Extract polygons from given p oints
 
