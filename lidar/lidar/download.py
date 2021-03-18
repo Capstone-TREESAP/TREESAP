@@ -1,3 +1,5 @@
+""" Download City of Vancouver LiDAR data and unzip them into a folder. 
+"""
 import requests
 import os
 import zipfile
@@ -16,6 +18,8 @@ TILE = ["4800E_54550N", "4800E_54560N", "4800E_54570N",
 print('Beginning file download with urllib2...')
 
 def download_lidar_dataset():
+    """ Download City of Vancouver LiDAR data
+    """
     for tile in TILE:
         src_url = SRC_URL + tile + ZIP_EXT
         dst_file = DST_DATA + tile + ZIP_EXT
@@ -23,18 +27,30 @@ def download_lidar_dataset():
         download_url(src_url, dst_file)
         
 def download_url(url, save_path, chunk_size=128):
+    """ Download files from given URL
+
+    Args:
+        url (string): source URL
+        save_path (string): file path to save to
+        chunk_size (int, optional): the base chunk of data size. Defaults to 128.
+    """
     r = requests.get(url, stream=True)
     with open(save_path, 'wb') as fd:
         for chunk in r.iter_content(chunk_size=chunk_size):
             fd.write(chunk)
 
 def unzip_files(src_dir):
+    """Unzip files and then remove the zip files. 
+
+    Args:
+        src_dir (string): source directory
+    """
     for root, dirs, files in os.walk(src_dir):
         for file in files:
             if file.endswith(ZIP_EXT):
                 print("Extracting " + os.path.join(root, file))
                 with zipfile.ZipFile(os.path.join(root, file), 'r') as zip_ref:
                     zip_ref.extractall(src_dir)
-                    
+                os.remove(os.path.join(root, file))
 download_lidar_dataset()
 unzip_files(DST_DATA)
