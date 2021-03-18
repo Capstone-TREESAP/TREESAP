@@ -6,6 +6,7 @@ import SettingsView from './settings';
 import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
 import { PolygonEditor } from './polygon-editor';
+import { PolygonIntersection } from './polygon-intersection';
 
 const CARBON_RATE = 30.600; // tonnes/hectare/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
@@ -139,9 +140,10 @@ export class MapContainer extends Component {
                 bounds = PolygonEditor.getPointsFromRectangle(this.props, polygon);
             }
 
-            //TODO: This is where the code for polygon intersections will be called
-            console.log("Polygon for intersection:", PolygonEditor.getPolygonGeoJSON(bounds))
-        }
+            let intersectionCalc = new PolygonIntersection(PolygonEditor.getPolygonGeoJSON(bounds))
+            let intersection = intersectionCalc.findIntersectingPolygons(this.state.polygonLayer.polygons)
+            console.log("Intersections:", intersection)
+          }
     }
 
     onInfoWindowOpen(polygon) {
