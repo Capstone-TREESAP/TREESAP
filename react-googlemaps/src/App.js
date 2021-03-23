@@ -1,25 +1,45 @@
 import React, { Component, useReducer, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow } from 'google-maps-react';
-import polygons from './lidar_polygons_with_area.json';
+//import polygons from './lidar_polygons_with_area.json';
 import SettingsView from './settings';
 import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
 import { PolygonEditor } from './polygon-editor';
 
-const CARBON_RATE = 30.600; // tonnes/hectare/year
+var polygons = null;
+var all_polygon_sets = {};
+var neighborhood_polygons = {};
+const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
+const default_centre_coords = {lat: 49.2367, lng: -123.2031};
+
+var CARBON_RATE = 30.600; // tonnes/hectare/year
+var TREE_RUNOFF_RATE = 0.881; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
-const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
 
 const mapStyles = {
     width: '100%',
     height: '100%'
 };
 
+function parseDatabase(database) {
+  //database = JSON.parse(database);
+  console.log(database)
+  var constants = database["Calculation Constants"];
+  CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
+  TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
+  neighborhood_polygons = database["Neighborhood Polygons"];
+  all_polygon_sets = database["Tree Cover Polygon Datasets"];
+  // remove after TIC-96
+  polygons = all_polygon_sets["LiDAR 2018"];
+}
+
 export class MapContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isLoaded: false,
+            data: null,
             showInfoWindow: false, //Whether a polygon info window is shown
             clickedLocation: null,
             marker: null,
@@ -29,10 +49,30 @@ export class MapContainer extends Component {
         };
         this.drawingView = null;
     }
-
+    componentDidMount() {
+      fetch(data_url)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              isLoaded: true
+            });
+            parseDatabase(result);
+            this.loadPolygonLayer();
+          },
+          (error) => {
+            console.log(error);
+            this.setState({
+              isLoaded: true,
+              error
+            });
+          }
+        )
+        console.log("here");
+    }
     //Functions for calculating ecosystem services
     getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
-    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_EFFECTS;
+    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_RATE;
 
     onMarkerClick = (props, m, e) =>
         this.setState({
@@ -169,9 +209,9 @@ export class MapContainer extends Component {
             ref={(map) => this._map = map}
             zoom={14}
             style={mapStyles}
-            initialCenter={{lat: 49.2367, lng: -123.2031}}
+            initialCenter={default_centre_coords}
             yesIWantToUseGoogleMapApiInternals
-            onReady={() => {this.loadPolygonLayer(); this.loadDrawingManager();}}
+            onReady={() => {/*this.loadPolygonLayer();*/ this.loadDrawingManager();}}
             onClick={this.onGenericClick}
         >
             <Marker 
