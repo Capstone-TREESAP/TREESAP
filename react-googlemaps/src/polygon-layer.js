@@ -40,7 +40,7 @@ export class PolygonLayer {
     makePolygonEditable = (polygon) => {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1);
-        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map);
+        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#014421", 0);
     }
 
     makeCurrentPolygonUneditable = () => {
@@ -52,7 +52,7 @@ export class PolygonLayer {
         let newArea = PolygonEditor.getPolygonArea(this.props, newPoints)
         PolygonEditor.removeEditablePolygon(this.editablePolygon)
 
-        this.polygon.points = newPoints
+        this.polygon.points = PolygonEditor.googleToJSONCoords(newPoints)
         this.polygon.area = newArea
         this.polygons.push(this.polygon)
         this.editablePolygon = null

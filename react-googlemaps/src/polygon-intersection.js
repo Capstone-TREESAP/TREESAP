@@ -4,7 +4,7 @@ import { PolygonEditor } from './polygon-editor'
 var currID = 500000
 
 export class PolygonIntersection {
-    constructor(props, polygon) {
+    constructor(props, polygon, map) {
         this.props = props
         const {google} = props
 
@@ -18,6 +18,8 @@ export class PolygonIntersection {
 
         let boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds)
         this.boundingPolygon = turf.polygon(boundingPoints)
+        this.editableBounds = null
+        this.map = map
     }
 
     getBoundingLine() {
@@ -28,7 +30,6 @@ export class PolygonIntersection {
         }
     }
     
-    //TODO this crashes when polygons are edited, figure out what's going wrong
     findIntersectingPolygons(polygonList) {
         let intersectingPolygons = []
 
@@ -37,15 +38,25 @@ export class PolygonIntersection {
             let intersection = turf.intersect(polygon, this.boundingPolygon)
 
             if (intersection != null) {
-                intersectingPolygons.push(this.geoJSONToJSONPolygon(intersection))
+                if (intersection.geometry.type == "Polygon") {
+                    intersectingPolygons.push(
+                        this.turfToJSONPolygon(intersection.geometry.coordinates[0])
+                    )
+                } else {
+                    for (var polyNum in intersection.geometry.coordinates) {
+                        intersectingPolygons.push(
+                            this.turfToJSONPolygon(intersection.geometry.coordinates[polyNum][0])
+                        )
+                    }
+                }
             }
         }
 
         return intersectingPolygons
     }
 
-    geoJSONToJSONPolygon(turfPolygon) {
-        let coordinates = turfPolygon.geometry.coordinates[0]
+    turfToJSONPolygon(turfPolygon) {
+        let coordinates = turfPolygon
         let googleCoords = PolygonEditor.geoJSONToGoogleCoords(this.props, coordinates)
 
         let area = PolygonEditor.getPolygonArea(this.props, googleCoords)
@@ -57,4 +68,25 @@ export class PolygonIntersection {
             "area": area
         }
     }
+
+    makeEditable = () => {
+        let polygon = {
+            "points": PolygonEditor.geoJSONtoJSONCoords(this.boundingPolygon.geometry.coordinates[0])
+        }
+        this.editableBounds = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#CC2828", 1);
+    }
+
+    makeUneditable = () => {
+        if (this.editableBounds == null) {
+            return
+        }
+
+        let newPoints = PolygonEditor.getPolygonEdits(this.editableBounds)
+        PolygonEditor.removeEditablePolygon(this.editableBounds)
+        let geojsonPoints = PolygonEditor.googleToGeoJSONCoords(newPoints)
+
+        this.boundingPolygon = turf.polygon(geojsonPoints)
+        this.editableBounds = null
+    }
+
  }

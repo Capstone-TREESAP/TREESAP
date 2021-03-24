@@ -23,14 +23,13 @@ export class PolygonEditor {
         return +google.maps.geometry.spherical.computeArea(points).toFixed(2);
     }
 
-    //TODO make sure this is fixed to 2 decimal points
     static getTotalArea(polygonList) {
         let area = 0
         for (var i = 0; i < polygonList.length; i++) {
             area += polygonList[i]["area"]
         }
         
-        return area
+        return area.toFixed(2)
     }
 
     static pointToLatLng(props, point) {
@@ -38,25 +37,25 @@ export class PolygonEditor {
         return new google.maps.LatLng(point)
     }
 
-    static createEditablePolygon(props, polygon, map) {   
+    static createEditablePolygon(props, polygon, map, color, zIndex) {   
         const {google} = props
 
         const polygonEdit = new google.maps.Polygon({
             draggable: true,
             editable: true,
-            fillColor: "#014421",
+            fillColor: color,
             fillOpacity: 0.65,
             paths: polygon.points,
-            strokeColor: "#014421",
+            strokeColor: color,
             strokeOpacity: 0.8,
             strokeWeight: 2,
-            map: map
+            map: map,
+            zIndex: zIndex,
         })
     
         return polygonEdit;
     }
       
-    //TODO: make sure that edits create a valid polygon
     static getPolygonEdits(editablePolygon) {
         let path = editablePolygon.getPath();
     

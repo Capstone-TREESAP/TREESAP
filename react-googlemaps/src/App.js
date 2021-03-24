@@ -12,6 +12,9 @@ const CARBON_RATE = 30.600; // tonnes/hectare/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
 
+//TODO: The different colors should also be constants here
+// Also different stroke weights, etc
+
 var currLineID = 90000000
 
 const mapStyles = {
@@ -31,6 +34,7 @@ export class MapContainer extends Component {
             polygonLayer: null,
             intersectionLayer: null,
             editMode: false,
+            editingIntersection: null,
         };
         this.drawingView = null;
         this.intersections = [];
@@ -46,7 +50,6 @@ export class MapContainer extends Component {
         showInfoWindow: true
     });
 
-    //TODO should more things be set to null here
     onClose = props => {
         if (this.state.showInfoWindow) {
         this.setState({
@@ -59,6 +62,7 @@ export class MapContainer extends Component {
     handleClick = (polygon, map, coords) => {
         this.state.polygonLayer.makeCurrentPolygonUneditable();
         let isIntersectionPolygon = (this.state.clickedIntersection != null)
+        this.makeIntersectionUneditable(this.state.editingIntersection)
 
         if (isIntersectionPolygon && !this.state.polygonLayer.containsPolygon(polygon)) {
             //Treat it as a generic click to avoid displaying information about the wrong polygon
@@ -78,6 +82,7 @@ export class MapContainer extends Component {
 
     handleIntersectionClick = (intersection, map, coords) => {
         this.state.polygonLayer.makeCurrentPolygonUneditable();
+        this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
             clickedLocation: coords,
@@ -89,6 +94,7 @@ export class MapContainer extends Component {
 
     onGenericClick = () => {
         this.state.polygonLayer.makeCurrentPolygonUneditable();
+        this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
             clickedLocation: null,
@@ -100,6 +106,7 @@ export class MapContainer extends Component {
     }
 
     onToggleMode = (editMode) => {
+        this.drawingView.resetDrawingMode()
         this.setState({
             editMode: editMode
         })
@@ -116,7 +123,7 @@ export class MapContainer extends Component {
         
         const scope = this
         this.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
-            scope.addPolygon(scope, polygon);
+            scope.addPolygon(polygon);
         })
     }
 
@@ -185,25 +192,61 @@ export class MapContainer extends Component {
         })
     }
 
-    addPolygon(scope, polygon) {
-        if (scope.state.editMode) {
-            scope.state.polygonLayer.addPolygon(polygon)
-            scope.setState({
+    addPolygon(polygon) {
+        if (this.state.editMode) {
+            this.state.polygonLayer.addPolygon(polygon)
+            this.setState({
                 clickedLocation: null,
                 clickedPolygon: null,
                 clickedIntersection: null,
                 intersectionLayer: null,
             })
         } else {
-            let intersection = new PolygonIntersection(scope.props, polygon)
-            scope.intersections.push(intersection)
-            scope.setState({
-                clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO
+            let intersection = new PolygonIntersection(this.props, polygon, this._map.map)
+            this.intersections.push(intersection)
+            this.setState({
+                clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO this should probably not be so hardcoded
                 clickedPolygon: null,
                 clickedIntersection: intersection,
                 intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayer.polygons)
             })
+            this.drawingView.resetDrawingMode()
         }
+    }
+
+    deleteIntersection(intersection) {
+        intersection.makeUneditable()
+        let index = this.intersections.findIndex(element => element === intersection)
+        this.intersections.splice(index, 1);
+
+        this.setState({
+            clickedLocation: null,
+            clickedIntersection: null,
+            intersectionLayer: null,
+        })
+    }
+
+    makeIntersectionEditable(intersection) {
+        let index = this.intersections.findIndex(element => element === intersection)
+        this.intersections.splice(index, 1);
+        intersection.makeEditable()
+
+        this.setState({
+            clickedIntersection: null,
+            editingIntersection: intersection,
+            intersectionLayer: null,
+        })
+    }
+
+    makeIntersectionUneditable(intersection) {
+        if (intersection != null) {
+            intersection.makeUneditable()
+            this.intersections.push(intersection)
+        }
+
+        this.setState({
+            editingIntersection: null,
+        })
     }
 
     onInfoWindowOpen(polygon) {
@@ -228,8 +271,8 @@ export class MapContainer extends Component {
         var buttons;
 
         buttons = (<div>
-            <button type="button">Edit</button>
-            <button type="button">Delete</button>
+            <button type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+            <button type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
         </div>)
 
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
