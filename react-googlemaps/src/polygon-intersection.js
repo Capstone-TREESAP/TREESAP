@@ -1,54 +1,60 @@
 import * as turf from '@turf/turf'
+import { PolygonEditor } from './polygon-editor'
 
-const intersectionColor = '#CC2828'
+var currID = 500000
 
 export class PolygonIntersection {
-    constructor(boundingPolygon) {
-        this.boundingPolygon = this.jsonPolygonToTurfPolygon(boundingPolygon)
+    constructor(props, polygon) {
+        this.props = props
+        const {google} = props
+
+        var bounds;
+        if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
+            bounds = PolygonEditor.getPointsFromPolygon(polygon);
+        } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
+            bounds = PolygonEditor.getPointsFromRectangle(props, polygon);
+        }
+        polygon.overlay.setMap(null)
+
+        let boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds)
+        this.boundingPolygon = turf.polygon(boundingPoints)
     }
 
-    jsonPolygonToTurfPolygon(polygon) {
-        let jsonPolygon = JSON.parse(polygon)
-        let coordinates = jsonPolygon["coordinates"][0]
-        coordinates.push(coordinates[0])
-
-        return turf.polygon([coordinates])
+    getBoundingLine() {
+        let boundingLine = turf.polygonToLine(this.boundingPolygon)
+        let coordinates = boundingLine.geometry.coordinates;
+        return {
+            "coordinates": PolygonEditor.geoJSONtoJSONCoords(coordinates),
+        }
     }
-
-    polygonToTurfPolygon(polygon) {
-        let coordinates = []
-        for (var point in polygon.points) {
-            coordinates.push([
-                polygon.points[point]["lat"], 
-                polygon.points[point]["lng"]
-            ])
-        }
-
-        let jsonPolygon = {
-            "type:": "Polygon",
-            "coordinates": [coordinates]
-        }
-        
-        return this.jsonPolygonToTurfPolygon(JSON.stringify(jsonPolygon))
-    }    
-
+    
+    //TODO this crashes when polygons are edited, figure out what's going wrong
     findIntersectingPolygons(polygonList) {
         let intersectingPolygons = []
 
         for (var i = 0; i < polygonList.length; i++) {
-            let polygon = this.polygonToTurfPolygon(polygonList[i])
+            let polygon = turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(polygonList[i].points))
             let intersection = turf.intersect(polygon, this.boundingPolygon)
 
             if (intersection != null) {
-                intersectingPolygons.push(polygonList[i])
+                intersectingPolygons.push(this.geoJSONToJSONPolygon(intersection))
             }
         }
 
         return intersectingPolygons
     }
 
-    displayIntersections(polygonList) {
-        let intersections = this.findIntersectingPolygons(polygonList)
+    geoJSONToJSONPolygon(turfPolygon) {
+        let coordinates = turfPolygon.geometry.coordinates[0]
+        let googleCoords = PolygonEditor.geoJSONToGoogleCoords(this.props, coordinates)
 
+        let area = PolygonEditor.getPolygonArea(this.props, googleCoords)
+        currID += 1
+        return {
+            "type": "Polygon",
+            "points": PolygonEditor.geoJSONtoJSONCoords(coordinates),
+            "id": currID, //TODO
+            "area": area
+        }
     }
-}
+ }

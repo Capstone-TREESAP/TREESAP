@@ -2,11 +2,12 @@ import { PolygonEditor } from './polygon-editor'
 
 export class PolygonLayer {
     constructor(polygonList, props, map) {
-        this.polygons = this.parsePolygons(polygonList);
         this.props = props
         this.map = map
         this.polygon = null
         this.editablePolygon = null
+
+        this.polygons = this.parsePolygons(polygonList);
     }
 
     selectPolygon(polygon) {
@@ -18,23 +19,17 @@ export class PolygonLayer {
     
         for(var i = 0; i < polygons.features.length; i++) {
       
-            var polygon = polygons.features[i].geometry.coordinates[0];
-            var area = polygons.features[i].properties.area;
-            var points = [];
-            for(var point in polygon) {
-                points.push(
-                {
-                    lat: parseFloat(polygon[point][1]),
-                    lng: parseFloat(polygon[point][0])
-                }
-                )
-            }
+            var coordinates = polygons.features[i].geometry.coordinates[0];
+            var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
+            var area = PolygonEditor.getPolygonArea(this.props, points.map(
+                point => PolygonEditor.pointToLatLng(this.props, point)
+            ))
             collectedPolygons.push(
                 {
-                "id": i,
-                "points": points,
-                "area": area,
-                "editable": false
+                    "id": i, //TODO
+                    "points": points,
+                    "area": area,
+                    "editable": false
                 }
             )
         }
@@ -90,7 +85,7 @@ export class PolygonLayer {
         this.polygons.push(
             {
                 "id": id,
-                "points": points,
+                "points": PolygonEditor.googleToJSONCoords(points),
                 "area": area,
                 "editable": false
             }
@@ -98,5 +93,15 @@ export class PolygonLayer {
 
         polygon.overlay.setMap(null);
         
+    }
+
+    containsPolygon(polygon) {
+        for (var i = 0; i < this.polygons.length; i++) {
+            if (polygon === this.polygons[i]) {
+                return true
+            }
+        }
+
+        return false
     }
 }
