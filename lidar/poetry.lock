@@ -1005,7 +1005,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "pyqt5"
 version = "5.15.4"
 description = "Python bindings for the Qt cross platform application toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -1017,7 +1017,7 @@ PyQt5-sip = ">=12.8,<13"
 name = "pyqt5-qt5"
 version = "5.15.2"
 description = "The subset of a Qt installation needed by PyQt5."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -1025,9 +1025,30 @@ python-versions = "*"
 name = "pyqt5-sip"
 version = "12.8.1"
 description = "The sip module support for PyQt5"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "pyqtwebengine"
+version = "5.15.4"
+description = "Python bindings for the Qt WebEngine framework"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+PyQt5 = ">=5.15.4"
+PyQt5-sip = ">=12.8,<13"
+PyQtWebEngine-Qt5 = ">=5.15"
+
+[[package]]
+name = "pyqtwebengine-qt5"
+version = "5.15.2"
+description = "The subset of a Qt installation needed by PyQtWebEngine."
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pyrsistent"
@@ -1320,6 +1341,19 @@ optional = false
 python-versions = ">= 3.5"
 
 [[package]]
+name = "tqdm"
+version = "4.59.0"
+description = "Fast, Extensible Progress Meter"
+category = "main"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+
+[package.extras]
+dev = ["py-make (>=0.1.0)", "twine", "wheel"]
+notebook = ["ipywidgets (>=6)"]
+telegram = ["requests"]
+
+[[package]]
 name = "traitlets"
 version = "5.0.5"
 description = "Traitlets Python configuration system"
@@ -1400,7 +1434,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.6"
-content-hash = "01434e27f0ca731304c5e3ae42eb149d4cc49458ee0f8e4630a154c530aebbdf"
+content-hash = "31ec22d9038ae38de81ed244f8d5e215bb27a1a264b21740262eec33d7434163"
 
 [metadata.files]
 alpha-shapes = [
@@ -1966,6 +2000,19 @@ pyqt5-sip = [
     {file = "PyQt5_sip-12.8.1-cp39-cp39-win_amd64.whl", hash = "sha256:f168f0a7f32b81bfeffdf003c36f25d81c97dee5eb67072a5183e761fe250f13"},
     {file = "PyQt5_sip-12.8.1.tar.gz", hash = "sha256:30e944db9abee9cc757aea16906d4198129558533eb7fadbe48c5da2bd18e0bd"},
 ]
+pyqtwebengine = [
+    {file = "PyQtWebEngine-5.15.4-cp36.cp37.cp38.cp39-abi3-macosx_10_13_intel.whl", hash = "sha256:aecbaf8827ad96d04085285988d8199d8d59018eec181412467252a6ff03aab0"},
+    {file = "PyQtWebEngine-5.15.4-cp36.cp37.cp38.cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:db13f0db983ee2118a3976f646af94417d1279c6b6c0372147c4a3d56c68e58b"},
+    {file = "PyQtWebEngine-5.15.4-cp36.cp37.cp38.cp39-none-win32.whl", hash = "sha256:685b6ab13f5948d678df2c2c50f71cbfea17d2d5e27fb7804c3481b39e83cd40"},
+    {file = "PyQtWebEngine-5.15.4-cp36.cp37.cp38.cp39-none-win_amd64.whl", hash = "sha256:6fe2e0baa0090ff7c2524d95409e62471e7cbe5ee53eec215e37f097704d18fa"},
+    {file = "PyQtWebEngine-5.15.4.tar.gz", hash = "sha256:cedc28f54165f4b8067652145aec7f732a17eadf6736835852868cf76119cc19"},
+]
+pyqtwebengine-qt5 = [
+    {file = "PyQtWebEngine_Qt5-5.15.2-py3-none-macosx_10_13_intel.whl", hash = "sha256:bc7b1fd1f4f8138d59b0b0245d601fb2c5c0aa1e1e7e853b713e52a3165d147e"},
+    {file = "PyQtWebEngine_Qt5-5.15.2-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ec2acb1780c0124ef060c310e00ca701f388d8b6c35bba9127f7a6f0dc536f77"},
+    {file = "PyQtWebEngine_Qt5-5.15.2-py3-none-win32.whl", hash = "sha256:9e80b408d8de09d4e708d5d84c3ceaf3603292ff8f5e566ae44bb0320fa59c33"},
+    {file = "PyQtWebEngine_Qt5-5.15.2-py3-none-win_amd64.whl", hash = "sha256:24231f19e1595018779977de6722b5c69f3d03f34a5f7574ff21cd1e764ef76d"},
+]
 pyrsistent = [
     {file = "pyrsistent-0.17.3.tar.gz", hash = "sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e"},
 ]
@@ -2273,6 +2320,10 @@ tornado = [
     {file = "tornado-6.1-cp39-cp39-win32.whl", hash = "sha256:d3d20ea5782ba63ed13bc2b8c291a053c8d807a8fa927d941bd718468f7b950c"},
     {file = "tornado-6.1-cp39-cp39-win_amd64.whl", hash = "sha256:548430be2740e327b3fe0201abe471f314741efcb0067ec4f2d7dcfb4825f3e4"},
     {file = "tornado-6.1.tar.gz", hash = "sha256:33c6e81d7bd55b468d2e793517c909b139960b6c790a60b7991b9b6b76fb9791"},
+]
+tqdm = [
+    {file = "tqdm-4.59.0-py2.py3-none-any.whl", hash = "sha256:9fdf349068d047d4cfbe24862c425883af1db29bcddf4b0eeb2524f6fbdb23c7"},
+    {file = "tqdm-4.59.0.tar.gz", hash = "sha256:d666ae29164da3e517fcf125e41d4fe96e5bb375cd87ff9763f6b38b5592fe33"},
 ]
 traitlets = [
     {file = "traitlets-5.0.5-py3-none-any.whl", hash = "sha256:69ff3f9d5351f31a7ad80443c2674b7099df13cc41fc5fa6e2f6d3b0330b0426"},

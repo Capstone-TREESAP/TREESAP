@@ -5,7 +5,7 @@ import geojson
 from alpha_shapes.alpha_shapes import Alpha_Shaper
 import alphashape
 import utm
-from progress.bar import Bar
+from tqdm import tqdm
 from config import CONSTANT
 from pre_processing import PreProcessor
 import pandas as pd
@@ -73,10 +73,8 @@ class ProcessingPipeline(CONSTANT):
         
         print(all_point_x.shape)
         self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y)
-        self.__export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
+        self.export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
     
-    def select_optimal_eps():
-        pass
     def extract_polygon_features(self, point_x, point_y):
         """Extract polygons from given p oints
 
@@ -89,21 +87,23 @@ class ProcessingPipeline(CONSTANT):
         """
         points = np.vstack((point_x, point_y)).T
         
+        start_time = time.perf_counter()
+        
         # Cluster the points based on paramters
         clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE, n_jobs=12).fit(points)
 
-        if self.DEBUG:
-            print(" found %d clusters" % np.amax(clustering.labels_))
+        end_time = time.perf_counter()
+        self.processing_time += end_time - start_time
         
-        start_time = time.perf_counter()
+        if self.DEBUG:
+            print("Clustering took %f seconds, found %d clusters" % (np.amax(clustering.labels_), self.processing_time))
+        
         
         polygons = []
         
         # set up a progress bar
-        bar = Bar('Loading', fill='@', suffix='%(percent)d%% time: %(elapsed)ds', max=np.amax(clustering.labels_))
         
-        for i in np.arange(np.amax(clustering.labels_)):
-            bar.next()
+        for i in tqdm(np.arange(np.amax(clustering.labels_))):
             x_cluster = points[:, 0][np.where(clustering.labels_ == i)]
             y_cluster = points[:, 1][np.where(clustering.labels_ == i)]
             sample = np.vstack((x_cluster, y_cluster)).T
@@ -125,6 +125,7 @@ class ProcessingPipeline(CONSTANT):
                     desired_size = reduce_to_1000(sample_size)
                     down_sample_index = np.random.choice(np.arange(sample_size), desired_size)
                     # use optimized alpha shape value
+                    # TODO: don't use optimze, instead use pre-defined alpha
                     alpha_shape = alphashape.alphashape(sample[down_sample_index])
 
             if alpha_shape.geom_type == self.ALPHA_SHAPE_MULTIPOLYGON_TYPE:
@@ -134,13 +135,77 @@ class ProcessingPipeline(CONSTANT):
             elif alpha_shape.geom_type == self.ALPHA_SHAPE_POLYGON_TYPE:
                 polygons.append(self.__get_polygon_from_feature(alpha_shape))
                 
-            
-        bar.finish()
+        return polygons
+    
+    def extract_forest_polygons_features(self, point_x, point_y):
+        """extract only the large forest from the whole map, use manually tuned parameters
+
+        Args:
+            point_x ([type]): [description]
+            point_y ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        points = np.vstack((point_x, point_y)).T
+        
+        start_time = time.perf_counter()
+        
+        # Cluster the points based on paramters
+        clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE, n_jobs=-1).fit(points)
+
         end_time = time.perf_counter()
         self.processing_time += end_time - start_time
         
-        return polygons
-    
+        if self.DEBUG:
+            print("Clustering took %f seconds, found %d clusters" % (self.processing_time, np.amax(clustering.labels_)))
+        
+        
+        polygons = []
+        
+        shapely_polygons = []
+        
+        # set up a progress bar
+        
+        max = 0
+        for i in tqdm(np.arange(np.amax(clustering.labels_))):
+            x_cluster = points[:, 0][np.where(clustering.labels_ == i)]
+            y_cluster = points[:, 1][np.where(clustering.labels_ == i)]
+            sample = np.vstack((x_cluster, y_cluster)).T
+
+            if np.unique(sample, axis=0).shape[0] <= self.MIN_SIZE:
+                continue
+            
+            alpha_opt = self.DEFAULT_ALPHA_SHAPE
+            alpha_shape = alphashape.alphashape(sample, alpha_opt)
+
+            if alpha_shape.area > max:
+                max = alpha_shape.area
+            #                    104204026795
+            if alpha_shape.area > 5000000000:
+                sample_size = sample.shape[0]
+                # 6000
+                reduce_to_1000 = lambda x : int(x) if x <= 500 else reduce_to_1000(x/10)
+                desired_size = reduce_to_1000(sample_size)
+                down_sample_index = np.random.choice(np.arange(sample_size), desired_size)
+                # use optimized alpha shape value
+                # TODO: don't use optimze, instead use pre-defined alpha
+                alpha_shape = alphashape.alphashape(sample[down_sample_index])
+                
+                # save these polygons to a pkl file
+                
+                if alpha_shape.geom_type == self.ALPHA_SHAPE_MULTIPOLYGON_TYPE:
+                    # sometimes there will be more than one polygons from alpha shape. 
+                    for each_polyon in alpha_shape:
+                        polygons.append(self.__get_polygon_from_feature(each_polyon))
+                        shapely_polygons.append(each_polyon)
+                elif alpha_shape.geom_type == self.ALPHA_SHAPE_POLYGON_TYPE:
+                    polygons.append(self.__get_polygon_from_feature(alpha_shape))
+                    shapely_polygons.append(alpha_shape)
+        print("max is ", max)
+        return polygons, shapely_polygons
+
+                
     def update_parameters(self, down_size=CONSTANT.DOWN_SIZE, eps=CONSTANT.EPS, min_sample=CONSTANT.MIN_SAMPLE, min_size = CONSTANT.MIN_SIZE):
         self.pre_processor.DOWN_SIZE = down_size
         self.EPS = eps
@@ -154,7 +219,7 @@ class ProcessingPipeline(CONSTANT):
     def load_points_from_pkl(self):
         return pd.read_pickle(self.PKL_FILE_PATH, compression='zip').to_numpy()
 
-    def __export_polygon_features_to_file(self, output_file, polygon_features):
+    def export_polygon_features_to_file(self, output_file, polygon_features):
         """ Save list of geojson features into a file
 
         Args:

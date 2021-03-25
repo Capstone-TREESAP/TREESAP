@@ -1,4 +1,9 @@
-from enum import IntEnum
+import configparser
+configure = configparser.ConfigParser()
+CONFIG_PATH = 'configs/default_config.ini'
+configure.read(CONFIG_PATH)
+
+# run out of time to improve the config
 class CONSTANT:
     DOWN_SIZE = 100
     """
@@ -20,17 +25,3 @@ class CONSTANT:
     PKL_FILE_PATH = 'points.pkl'
     OUTPUT_MAP_FILE_PATH = '../tests/map.geojson'
     OUTPUT_TILE_FILE_PATH = '../tests/tile.geojson'
-
-class LiDARIndexType(IntEnum):
-    UNCLASSIFIED = 1
-    BARE_EARTH_AND_LOW_GRASS = 2
-    LOW_VEGETATION = 3
-    """It's supposed to be WATER = 5. HIGH_VEGETATION = 4, but in 
-    CoV 2018 dataset it's reversed: https://opendata.vancouver.ca/explore/dataset/lidar-2018/information/
-    """
-    WATER = 4
-    HIGH_VEGETATION = 5
-    # WATER = 5
-    BUILDINGS = 6
-    OTHERS = 7
-    NOISE = 8

@@ -1,11 +1,26 @@
-from config import CONSTANT, LiDARIndexType
+from config import configure
+from enum import IntEnum
 import os
 import ntpath
 import fnmatch, re
 import numpy as np
 from laspy.file import File
+from config import configure
 
-
+class LiDARIndexType(IntEnum):
+    UNCLASSIFIED = 1
+    BARE_EARTH_AND_LOW_GRASS = 2
+    LOW_VEGETATION = 3
+    """It's supposed to be WATER = 5. HIGH_VEGETATION = 4, but in 
+    CoV 2018 dataset it's reversed: https://opendata.vancouver.ca/explore/dataset/lidar-2018/information/
+    """
+    WATER = 4
+    HIGH_VEGETATION = 5
+    # WATER = 5
+    BUILDINGS = 6
+    OTHERS = 7
+    NOISE = 8
+    
 class LasFile:
     """ Object containing the info about the las file.
     """
@@ -38,8 +53,6 @@ class LasFile:
     @point_y.setter
     def point_y(self, point_y):
         self._point_y = point_y
-
-
     
     @staticmethod
     def extract_utm_from_file_name(file_path):
@@ -56,13 +69,10 @@ class LasFile:
         east, north = regex.findall(filename)
         return int(east), int(north)
 
-class PreProcessor(CONSTANT):
+class PreProcessor():
     """ preprocessing class that will extract point in x, y coordinate from the las file, 
     and transform them relative to the tile at the corner, so that the whole map are using 
     the same utm coordinate. 
-
-    Args:
-        CONSTANT (class): Global constant class
     """
     def __init__(self, data_dir):
         self.data_dir = data_dir
@@ -80,7 +90,7 @@ class PreProcessor(CONSTANT):
         self.lasfile_list = []
         for root, dirs, files in os.walk(self.data_dir):
             for file in files:
-                if file.endswith(self.LAS_EXT):
+                if file.endswith(configure.get('Constants', 'LAS_EXT')):
                     file_path = os.path.join(root, file)
                     self.lasfile_list.append(LasFile(file_path))
         if self.DEBUG:
@@ -97,7 +107,7 @@ class PreProcessor(CONSTANT):
                 self.min_filepath = las_file.file_path
                 self.min_east = las_file.east
                 self.min_north = las_file.north
-        if self.DEBUG:
+        if configure.getboolean('Configure', 'DEBUG'):
             print("The corner tile is file %s at %d %d" % (self.min_filepath, self.min_east, self.min_north))
                 
     def extract_relative_las_data(self, las_file, index_type = LiDARIndexType.HIGH_VEGETATION):
@@ -113,7 +123,7 @@ class PreProcessor(CONSTANT):
         Returns:
             np.array, np.array: the transformed points in x frame, the transformed points in y frame. 
         """
-        if self.DEBUG:
+        if configure.getboolean('Configure', 'DEBUG'):
             print("Loading file %s." % (las_file.file_path))
             
         inFile = File(las_file.file_path, mode='r')
@@ -126,12 +136,15 @@ class PreProcessor(CONSTANT):
             raise LookupError
         
         sample = test
-        if test.shape[0] > self.MIN_POINTS_FOR_DOWNSIZE:
+        if test.shape[0] > configure.getint('Parameters', 'MIN_POINTS_FOR_DOWNSIZE'):
             # down sample the point cloud if there are too many points to speed up the processing
-            reduce_to_ideal_size = lambda x : int(x) if x <= self.MIN_POINTS_FOR_DOWNSIZE else reduce_to_ideal_size(x/10)
-            desired_size = reduce_to_ideal_size(test.shape[0])
-            print("Down size to %d from %d" % (desired_size, test.shape[0]))
-            sample = np.random.choice(test, desired_size)
+            sample = np.random.choice(test, int(test.shape[0]/configure.getint('Parameters', 'DOWN_SIZE')))
+        # if test.shape[0] > configure.getint('Parameters', 'MIN_POINTS_FOR_DOWNSIZE'):
+        #     # down sample the point cloud if there are too many points to speed up the processing
+        #     reduce_to_ideal_size = lambda x : int(x) if x <= configure.getint('Parameters', 'MIN_POINTS_FOR_DOWNSIZE') else reduce_to_ideal_size(x/10)
+        #     desired_size = reduce_to_ideal_size(test.shape[0])
+        #     print("Down size to %d from %d" % (desired_size, test.shape[0]))
+        #     sample = np.random.choice(test, desired_size)
             
         x = np.zeros(sample.shape[0])
         y = np.zeros(sample.shape[0])
@@ -144,15 +157,15 @@ class PreProcessor(CONSTANT):
         
         # scale the map to 0-10k
         # the reason for scaling is to save points as integer, and avoid large number, so that the clustering is faster.
-        x_min = (las_file.east - 4000 ) * 10000
-        y_min = (las_file.north - 50000 ) * 10000
+        x_min = (las_file.east - configure.getint('Constants', 'EAST_OFFSET') ) * configure.getint('Constants', 'TILE_SCALE')
+        y_min = (las_file.north - configure.getint('Constants', 'NORTH_OFFSET') ) * configure.getint('Constants', 'TILE_SCALE')
         
         x_scaled = x - x_min
         y_scaled = y - y_min
 
         # transform the points relative to the min_east and north
-        x_transformed = x_scaled + (las_file.east - self.min_east) /10 * self.TILE_MAX_SIZE
-        y_transformed = y_scaled + (las_file.north - self.min_north)/10 * self.TILE_MAX_SIZE
+        x_transformed = x_scaled + (las_file.east - self.min_east) * configure.getint('Constants', 'TILE_SCALE')
+        y_transformed = y_scaled + (las_file.north - self.min_north) * configure.getint('Constants', 'TILE_SCALE')
         
         return x_transformed, y_transformed
 

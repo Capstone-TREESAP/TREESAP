@@ -247,15 +247,15 @@ class GraphGUI():
 
         fig.show()
         
-from processing import ProcessingPipeline
-pipeline = ProcessingPipeline()
-points = pipeline.load_points_from_pkl()
-all_point_x = points[:, 0].T 
-all_point_y = points[:, 1].T
+# from processing import ProcessingPipeline
+# pipeline = ProcessingPipeline()
+# points = pipeline.load_points_from_pkl()
+# all_point_x = points[:, 0].T 
+# all_point_y = points[:, 1].T
 
-print(all_point_x.shape)
+# print(all_point_x.shape)
 
-plotter = GraphGUI()
-plotter.x = all_point_x
-plotter.y = all_point_y
-plotter.DBSCAN_2d_tuner(render="browser")
+# plotter = GraphGUI()
+# plotter.x = all_point_x
+# plotter.y = all_point_y
+# plotter.DBSCAN_2d_tuner(render="browser")
