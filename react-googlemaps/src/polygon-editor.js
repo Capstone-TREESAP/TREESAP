@@ -32,6 +32,11 @@ export class PolygonEditor {
         return area.toFixed(2)
     }
 
+    //TODO pad with zeros
+    static createKey(prefix, num) {
+        return prefix + "-" + num
+    }
+
     static pointToLatLng(props, point) {
         const {google} = props
         return new google.maps.LatLng(point)

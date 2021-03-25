@@ -7,6 +7,7 @@ import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
 import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
+// import { IntersectionReport } from './report';
 
 const CARBON_RATE = 30.600; // tonnes/hectare/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
@@ -14,8 +15,6 @@ const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
 
 //TODO: The different colors should also be constants here
 // Also different stroke weights, etc
-
-var currLineID = 90000000
 
 const mapStyles = {
     width: '100%',
@@ -151,7 +150,7 @@ export class MapContainer extends Component {
         return polygons.map(polygon => 
         <Polygon
             paths={polygon.points}
-            key={polygon.id}
+            key={polygon.key}
             onClick={(t, map, coords) => 
                 this.handleClick(polygon, map, coords.latLng)
             }
@@ -168,11 +167,11 @@ export class MapContainer extends Component {
 
     //Display a line
     displayIntersection = (intersection, color) => {
-        currLineID += 1
+        let polyline = intersection.getBoundingLine()
         return (
         <Polyline
-            path={intersection.getBoundingLine().coordinates}
-            key={currLineID} //TODO
+            path={polyline.coordinates}
+            key={polyline.key}
             strokeColor={color}
             strokeOpacity={0.8}
             strokeWeight={5}
@@ -269,10 +268,12 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
+        // let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer)
 
         buttons = (<div>
             <button type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
             <button type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
+            {/* {report.createReport()} */}
         </div>)
 
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))

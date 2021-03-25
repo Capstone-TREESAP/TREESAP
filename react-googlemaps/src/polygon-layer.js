@@ -1,5 +1,8 @@
 import { PolygonEditor } from './polygon-editor'
 
+const CUSTOM_KEY = "C"
+var customKeyNum = 0
+
 export class PolygonLayer {
     constructor(polygonList, props, map) {
         this.props = props
@@ -26,7 +29,8 @@ export class PolygonLayer {
             ))
             collectedPolygons.push(
                 {
-                    "id": i, //TODO
+                    // "key": polygons.features[i].properties.id, //TODO change this if it gets renamed to key
+                    "key": i,
                     "points": points,
                     "area": area,
                     "editable": false
@@ -75,16 +79,10 @@ export class PolygonLayer {
         }
 
         let area = PolygonEditor.getPolygonArea(this.props, points)
-        //TODO: should we use UUIDs?
-        // or use some system where first x bits represents whether it's frontend created or not,
-        // then just increment up for the rest of the bits
-        //This depends on the broader question of how we create IDs for polygons in the backend,
-        // so I'm leaving it for now.
-        let id = this.polygons.length
 
         this.polygons.push(
             {
-                "id": id,
+                "key": PolygonEditor.createKey(CUSTOM_KEY, customKeyNum++),
                 "points": PolygonEditor.googleToJSONCoords(points),
                 "area": area,
                 "editable": false

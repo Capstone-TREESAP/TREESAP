@@ -1,7 +1,10 @@
 import * as turf from '@turf/turf'
 import { PolygonEditor } from './polygon-editor'
 
-var currID = 500000
+const INTERSECTION_KEY = "I"
+const TEMP_KEY = "T"
+var intersectionKeyNum = 0
+var tempKeyNum = 0
 
 export class PolygonIntersection {
     constructor(props, polygon, map) {
@@ -26,12 +29,14 @@ export class PolygonIntersection {
         let boundingLine = turf.polygonToLine(this.boundingPolygon)
         let coordinates = boundingLine.geometry.coordinates;
         return {
+            "key": PolygonEditor.createKey(INTERSECTION_KEY, intersectionKeyNum++),
             "coordinates": PolygonEditor.geoJSONtoJSONCoords(coordinates),
         }
     }
     
     findIntersectingPolygons(polygonList) {
         let intersectingPolygons = []
+        tempKeyNum = 0
 
         for (var i = 0; i < polygonList.length; i++) {
             let polygon = turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(polygonList[i].points))
@@ -60,11 +65,10 @@ export class PolygonIntersection {
         let googleCoords = PolygonEditor.geoJSONToGoogleCoords(this.props, coordinates)
 
         let area = PolygonEditor.getPolygonArea(this.props, googleCoords)
-        currID += 1
         return {
             "type": "Polygon",
             "points": PolygonEditor.geoJSONtoJSONCoords(coordinates),
-            "id": currID, //TODO
+            "key": PolygonEditor.createKey(TEMP_KEY, tempKeyNum++),
             "area": area
         }
     }
