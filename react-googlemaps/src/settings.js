@@ -4,6 +4,23 @@ import './settings.css';
 import LandingScreenView from './landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 
+let constants = new Map()
+constants.set('stormwater', 0.881)
+constants.set('carbon', 30.600)
+
+let polyMap = new Map();
+polyMap.set('2014 Orthophoto', 'polygons here');
+polyMap.set('2015 Orthophoto', 'polygons here');
+polyMap.set('2016 Orthophoto', 'polygons here');
+polyMap.set('2017 Orthophoto', 'polygons here');
+polyMap.set('2018 Orthophoto', 'polygons here');
+polyMap.set('2019 Orthophoto', 'polygons here');
+polyMap.set('2020 Orthophoto', 'polygons here');
+polyMap.set('2015 LiDAR', 'polygons here');
+polyMap.set('2018 LiDAR', 'polygons here');
+
+let itemList = [];
+
 export default class SettingsView extends React.Component {
   render() {
     return (
@@ -12,7 +29,7 @@ export default class SettingsView extends React.Component {
           <LandingScreenView />
         </div>
         <div className="settings-view">
-          <Settings 
+          <Settings
             onToggleMode={this.props.onToggleMode}
           />
         </div>
@@ -33,35 +50,107 @@ function MenuButton(props) {
   );
 }
 
+function SaveCarbonValue() {
+  var setting = document.getElementById('setting1');
+  constants.set('carbon', parseFloat(setting.value));
+  setting.value = "";
+}
+
+function SaveStormwaterValue() {
+  var setting = document.getElementById('setting2')
+  constants.set('stormwater', parseFloat(setting.value));
+  setting.value = "";
+}
+
+function renderPolygonList() {
+  for(let key of polyMap.keys()) {
+    itemList.push(buildListItem(key));
+  }
+}
+
+function buildListItem(key) {
+  return (
+    <div>
+      <label for={polyMap.get(key)}>{key}</label>
+      <input className="check" type="checkbox" id={polyMap.get(key)} name={key.toString()} value={key.toString()}/>
+    </div>
+  );
+}
+
+renderPolygonList();
+
+function updatePolyList(){
+  var boxes = document.querySelectorAll(".check")
+  var polyToDisplay = [];
+  for (let box of boxes) {
+    if(box.checked){
+      polyToDisplay.push(box.value);
+    }
+  }
+  console.log(polyToDisplay);
+}
+
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
     <h1>UBC Vancouver Tree Inventory Settings</h1>
       <div className="display">
-        <label className="dropdown" for="tree-polys">Choose which year to display:</label>
-        <select className="dropdown" name="tree-polys" id="tree-polys">
-          <option value="2015LiDAR">2015 LiDAR</option>
-          <option value="2018LiDAR">2018 LiDAR</option>
-          <option value="2015Photo">2015 Orthophoto</option>
-          <option value="2016Photo">2016 Orthophoto</option>
-          <option value="2017Photo">2017 Orthophoto</option>
-          <option value="2018Photo">2018 Orthophoto</option>
-          <option value="2019Photo">2019 Orthophoto</option>
-        </select>
-        <button className="display-save" type="button">Save and Update Map</button>
+        {itemList}
+        <button
+          className="display-save"
+          type="button"
+          onClick={() => updatePolyList()}
+        >
+          Save and Update Map
+        </button>
       </div>
       <div className="dropdown">
-        <label className="input" for="setting1">Change tonnes of C per meter squared here. Current value: {props.setting1} t/m<sup>2</sup> of C</label>
+        <label
+          className="input"
+          for="setting1">
+          Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C
+        </label>
         <br/>
-        <input type="text" id="setting1" name="setting1"/>
+        <input
+          type="text"
+          id="setting1"
+          name="setting1"
+        />
         <br/>
-        <input type="submit" value="Submit"/>
+        <button
+          className="display-save"
+          type="button"
+          onClick={() => {
+            SaveCarbonValue();
+            props.onRefresh();
+          }}
+        >
+          Save
+        </button>
         <br/>
-        <label className="input" for="setting2">Change litres of avoided runoff per meter squared here. Current value: {props.setting2} L/m<sup>2</sup></label>
+        <label
+          className="input"
+          for="setting2"
+        >
+          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('stormwater')} L/m<sup>2</sup>
+        </label>
         <br/>
-        <input type="text" id="setting2" name="setting2"/>
+        <input
+          type="text"
+          id="setting2"
+          name="setting2"
+        />
         <br/>
-        <input type="submit" value="Submit"/>
+        <button
+          className="display-save"
+          type="button"
+          onClick={() => {
+            SaveStormwaterValue();
+            props.onRefresh();
+          }}
+        >
+          Save
+        </button>
       </div>
       <div className="display">
       <p>Access to the Shading and Cooling Ecosystem Services for UBC Vancouver Campus</p>
@@ -74,7 +163,7 @@ function SettingsDisplay(props) {
       </div>
       <div>
         <p>Select Mode</p>
-        <input 
+        <input
           className={props.editMode ? "intersection unselected" : "intersection selected"}
           type="button"
           onClick={() => {
@@ -112,17 +201,16 @@ class Settings extends React.Component {
     this.state = {
       visible: true,
       menu: null,
-      editMode: false
+      editMode: false,
     };
   }
 
   openMenu(){
     let menu = SettingsDisplay({
-      onClick: () => this.closeMenu(), 
-      setting1: 10.0, 
-      setting2: 12.8, 
-      onToggleMode: (editMode) => this.onToggleMode(editMode), 
-      editMode:this.state.editMode
+      onClick: () => this.closeMenu(),
+      onToggleMode: (editMode) => this.onToggleMode(editMode),
+      editMode:this.state.editMode,
+      onRefresh: () => this.onRefresh(),
     });
 
     this.setState({
@@ -145,6 +233,10 @@ class Settings extends React.Component {
     this.props.onToggleMode(editMode)
   }
 
+  onRefresh(){
+    this.openMenu();
+  }
+
   renderButton(){
     return(
       <MenuButton
@@ -163,7 +255,7 @@ class Settings extends React.Component {
           {this.state.menu}
         </CSSTransitionGroup>
         <div className="for-button">
-          { this.state.visible &&
+          {this.state.visible &&
             this.renderButton()}
         </div>
       </div>

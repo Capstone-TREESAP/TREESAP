@@ -27,41 +27,12 @@ const gradient = [
   "rgba(255, 0, 0, 1)"
 ];
 
-/*function parseCentroid(polygons){
-  var positions = [];
-
-  for(var i = 0; i < polygons.features.length; i++) {
-
-    var polygon = polygons.features[i].geometry.coordinates[0];
-    var area = polygons.features[i].properties.area;
-    var lat = 0;
-    var lon = 0;
-    var f = 0;
-    var g, j;
-    for(g = 0, j = polygon.length - 1; g < polygon.length; j=g, g++) {
-      var x1 = parseFloat(polygon[g][1]);
-      var y1 = parseFloat(polygon[g][0]);
-      var x2 = parseFloat(polygon[j][1]);
-      var y2 = parseFloat(polygon[j][0]);
-      f = x1 * y2 - x2 * y1;
-      lat += (x1 + x2) * f;
-      lon += (y1 + y2) * f;
-    }
-    f = area * 6.0;
-    lat = lat / f;
-    lon = lon / f;
-    positions.push(
-      {
-        lat: lat,
-        lng: lon
-      }
-    )
-    console.log("lat: ", lat, "lon: ", lon);
+const points = [
+  {
+    lat: 0.0,
+    lng: 0.0
   }
-  return positions;
-};*/
-
-//var positions = parseCentroid(polygons);
+];
 
 const mapStyles = {
     width: '100%',
@@ -137,7 +108,7 @@ export class MapContainer extends Component {
 
     loadDrawingManager = () => {
         this.drawingView = new DrawingView(this.props, this._map.map)
-        
+
         const scope = this
         this.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
             scope.addPolygon(scope, polygon);
@@ -151,11 +122,11 @@ export class MapContainer extends Component {
     }
 
     displayPolygons = (polygons) => {
-        return polygons.map(polygon => 
+        return polygons.map(polygon =>
         <Polygon
             paths={polygon.points}
             key={polygon.id}
-            onClick={(t, map, coords) => 
+            onClick={(t, map, coords) =>
                 this.handleClick(polygon, map, coords.latLng)
             }
             strokeColor="#014421"
@@ -225,54 +196,31 @@ export class MapContainer extends Component {
     let positions = this.state.polygonLayer.positions;
     let polygons = this.state.polygonLayer.polygons;
 
-    for(var polygon in positions) {
-      var numClusters = Math.ceil(polygons[polygon].area/100000);
-      if (numClusters < 1) {
-        numClusters = 1;
-      }
-       else {
-         if (numClusters > 100) {
-           numClusters = 100;
-         }
-       }
-      clusterMaker.k(numClusters);
-      clusterMaker.iterations(100);
-      //console.log(positions[polygon]);
-      clusterMaker.data(positions[polygon]);
-      //console.log(clusterMaker.clusters());
-      var allClusters = clusterMaker.clusters();
-      //console.log(allClusters);
-      for (var cluster in allClusters) {
-        //console.log(allClusters[cluster].centroid);
-        heatmap.push(
-          {
-            lat: allClusters[cluster].centroid[1],
-            lng: allClusters[cluster].centroid[0],
-            weight: numClusters,
-          }
-        )
-      }
-    }
-    /*for(var polygon in collectedPolygons) {
-      var bounds = new this.props.google.maps.LatLngBounds();
-      for (var i = 0; i < collectedPolygons[polygon].points.length; i++) {
-        bounds.extend(collectedPolygons[polygon].points[i]);
-      }
-      var center = bounds.getCenter();
-      heatmap.push(
-        {
-          lat: center.lat(),
-          lng: center.lng(),
-          weight: collectedPolygons[polygon].area / totalArea * 10,
-        }
-      );
-    }*/
+    //for(var polygon in positions) {
+    //  var numClusters = Math.ceil(polygons[polygon].area/50000);
+    //  if (numClusters < 1) {
+    //    numClusters = 1;
+    //  }
+    //  clusterMaker.k(numClusters);
+    //  clusterMaker.iterations(300);
+      //clusterMaker.data(positions[polygon]);
+      //var allClusters = clusterMaker.clusters();
+      //for (var cluster in allClusters) {
+      //  heatmap.push(
+          //{
+          //  lat: allClusters[cluster].centroid[1],
+          //  lng: allClusters[cluster].centroid[0],
+          //  weight: numClusters,
+          //}
+        //)
+      //}
+    //}
     return (
       <HeatMap
-        positions={heatmap}
+        positions={points}
         gradient={gradient}
         opacity={1}
-        radius={20}
+        radius={15}
       />
     );
   }
@@ -289,7 +237,7 @@ export class MapContainer extends Component {
             onReady={() => {this.loadPolygonLayer(); this.loadDrawingManager();}}
             onClick={this.onGenericClick}
         >
-            <Marker 
+            <Marker
                 onClick={this.onMarkerClick}
                 visible={this.state.clickedLocation != null}
                 position={this.state.clickedLocation}
@@ -307,8 +255,8 @@ export class MapContainer extends Component {
                     <h3> Avoided rainwater run-off: {this.state.polygon ? this.getAvoidedRunoffAnnually(this.state.polygon.area).toFixed(2) : null} litres/year</h3>
                 </div>
             </InfoWindow>
-            <SettingsView 
-                onToggleMode={this.onToggleMode} 
+            <SettingsView
+                onToggleMode={this.onToggleMode}
             />
             {this.displayPolygonLayer()}
             {this.renderHeatmap()}
@@ -319,6 +267,6 @@ export class MapContainer extends Component {
 
 //Wrapper for map container
 export default GoogleApiWrapper({
-  apiKey: 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A',
+  apiKey: '',
   libraries: ['drawing', 'visualization']
 })(MapContainer);

@@ -20,6 +20,7 @@ export default class LandingScreenView extends React.Component {
       <div>
         <CSSTransitionGroup
           transitionName="launch-screen"
+          transitionEnterTimeout={10}
           transitionLeaveTimeout={1200}>
           {this.state.visible &&
           <div className="landing-screen">
