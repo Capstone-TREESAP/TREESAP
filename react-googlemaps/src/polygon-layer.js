@@ -11,6 +11,7 @@ export class PolygonLayer {
         this.editablePolygon = null
 
         this.polygons = this.parsePolygons(polygonList);
+        this.positions = this.parseRawPoints(this.polygons);
     }
 
     selectPolygon(polygon) {
@@ -41,10 +42,34 @@ export class PolygonLayer {
         return collectedPolygons;
     };
 
+    parseRawPoints(polygons) {
+        let positions = [];
+      
+        for(var i = 0; i < polygons.length; i++) {
+            var polygon = polygons[i].points;
+            var rawPoints = [];
+
+            for(var point in polygon) {
+                rawPoints.push(
+                    [
+                        polygon[point]["lng"],
+                        polygon[point]["lat"]
+                    ]
+                );
+
+            }
+
+          positions.push(rawPoints);
+        }
+
+        return positions;
+    };
+
     makePolygonEditable = (polygon) => {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1);
         this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#014421", 0);
+        this.positions = this.parseRawPoints(this.polygons)
     }
 
     makeCurrentPolygonUneditable = () => {
@@ -59,12 +84,14 @@ export class PolygonLayer {
         this.polygon.points = PolygonEditor.googleToJSONCoords(newPoints)
         this.polygon.area = newArea
         this.polygons.push(this.polygon)
+        this.positions = this.parseRawPoints(this.polygons)
         this.editablePolygon = null
     }
     
     deletePolygon = (polygon) => {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1)
+        this.positions = this.parseRawPoints(this.polygons)
         this.polygon = null
     }
 
@@ -88,6 +115,7 @@ export class PolygonLayer {
                 "editable": false
             }
         )
+        this.positions = this.parseRawPoints(this.polygons)
 
         polygon.overlay.setMap(null);
         

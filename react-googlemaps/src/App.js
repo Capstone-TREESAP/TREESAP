@@ -1,7 +1,6 @@
 import React, { Component, useReducer, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, Polyline } from 'google-maps-react';
-import polygons from './lidar_polygons.json';
+import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, Polyline, HeatMap } from 'google-maps-react';
 import SettingsView from './settings';
 import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
@@ -9,9 +8,39 @@ import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
 // import { IntersectionReport } from './report';
 
-const CARBON_RATE = 30.600; // tonnes/hectare/year
+var polygons = null;
+var all_polygon_sets = {};
+var neighborhood_polygons = {};
+const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
+const default_centre_coords = {lat: 49.2367, lng: -123.2031};
+
+var CARBON_RATE = 30.600; // tonnes/hectare/year
+var TREE_RUNOFF_RATE = 0.881; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
+const gradient = [
+  "rgba(0, 255, 255, 0)",
+  "rgba(0, 255, 255, 1)",
+  "rgba(0, 191, 255, 1)",
+  "rgba(0, 127, 255, 1)",
+  "rgba(0, 63, 255, 1)",
+  "rgba(0, 0, 255, 1)",
+  "rgba(0, 0, 223, 1)",
+  "rgba(0, 0, 191, 1)",
+  "rgba(0, 0, 159, 1)",
+  "rgba(0, 0, 127, 1)",
+  "rgba(63, 0, 91, 1)",
+  "rgba(127, 0, 63, 1)",
+  "rgba(191, 0, 31, 1)",
+  "rgba(255, 0, 0, 1)"
+];
+
+const points = [
+  {
+    lat: 0.0,
+    lng: 0.0
+  }
+];
 
 //TODO: The different colors should also be constants here
 // Also different stroke weights, etc
@@ -21,10 +50,24 @@ const mapStyles = {
     height: '100%'
 };
 
+function parseDatabase(database) {
+  //database = JSON.parse(database);
+  console.log(database)
+  var constants = database["Calculation Constants"];
+  CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
+  TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
+  neighborhood_polygons = database["Neighborhood Polygons"];
+  all_polygon_sets = database["Tree Cover Polygon Datasets"];
+  // remove after TIC-96
+  polygons = all_polygon_sets["LiDAR 2018"];
+}
+
 export class MapContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isLoaded: false,
+            data: null,
             showInfoWindow: false, //Whether a polygon info window is shown
             clickedLocation: null,
             clickedPolygon: null,
@@ -39,9 +82,31 @@ export class MapContainer extends Component {
         this.intersections = [];
     }
 
+    componentDidMount() {
+      fetch(data_url)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              isLoaded: true
+            });
+            parseDatabase(result);
+            this.loadPolygonLayer();
+          },
+          (error) => {
+            console.log(error);
+            this.setState({
+              isLoaded: true,
+              error
+            });
+          }
+        )
+        console.log("here");
+    }
+    
     //Functions for calculating ecosystem services
     getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
-    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_EFFECTS;
+    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_RATE;
 
     onMarkerClick = (props, m, e) =>
         this.setState({
@@ -119,7 +184,7 @@ export class MapContainer extends Component {
 
     loadDrawingManager = () => {
         this.drawingView = new DrawingView(this.props, this._map.map)
-        
+
         const scope = this
         this.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
             scope.addPolygon(polygon);
@@ -295,6 +360,46 @@ export class MapContainer extends Component {
             </div>)  
         }
     }
+    //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
+  renderHeatmap = () => {
+    if (this.state.polygonLayer == null) {
+        return null
+    }
+
+    var heatmap = [];
+    var clusterMaker = require('clusters')
+
+    let positions = this.state.polygonLayer.positions;
+    let polygons = this.state.polygonLayer.polygons;
+
+    //for(var polygon in positions) {
+    //  var numClusters = Math.ceil(polygons[polygon].area/50000);
+    //  if (numClusters < 1) {
+    //    numClusters = 1;
+    //  }
+    //  clusterMaker.k(numClusters);
+    //  clusterMaker.iterations(300);
+      //clusterMaker.data(positions[polygon]);
+      //var allClusters = clusterMaker.clusters();
+      //for (var cluster in allClusters) {
+      //  heatmap.push(
+          //{
+          //  lat: allClusters[cluster].centroid[1],
+          //  lng: allClusters[cluster].centroid[0],
+          //  weight: numClusters,
+          //}
+        //)
+      //}
+    //}
+    return (
+      <HeatMap
+        positions={points}
+        gradient={gradient}
+        opacity={1}
+        radius={15}
+      />
+    );
+  }
 
     render() {
         return (
@@ -303,12 +408,12 @@ export class MapContainer extends Component {
             ref={(map) => this._map = map}
             zoom={14}
             style={mapStyles}
-            initialCenter={{lat: 49.263771, lng: -123.246225}}
+            initialCenter={default_centre_coords}
             yesIWantToUseGoogleMapApiInternals
-            onReady={() => {this.loadPolygonLayer(); this.loadDrawingManager();}}
+            onReady={() => {/*this.loadPolygonLayer();*/ this.loadDrawingManager();}}
             onClick={this.onGenericClick}
         >
-            <Marker 
+            <Marker
                 onClick={this.onMarkerClick}
                 visible={this.state.clickedLocation != null}
                 position={this.state.clickedLocation}
@@ -324,11 +429,12 @@ export class MapContainer extends Component {
                 <div id="iwc" />
                 {this.renderInfoWindow()}
             </InfoWindow>
-            <SettingsView 
-                onToggleMode={this.onToggleMode} 
+            <SettingsView
+                onToggleMode={this.onToggleMode}
             />
             {this.displayPolygonLayer()}
             {this.displayIntersections()}
+            {this.renderHeatmap()}
         </Map>
         );
     }
@@ -337,5 +443,5 @@ export class MapContainer extends Component {
 //Wrapper for map container
 export default GoogleApiWrapper({
     apiKey: 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A',
-    libraries: ['drawing', 'geometry']
+    libraries: ['drawing', 'geometry', 'visualization']
 })(MapContainer);
