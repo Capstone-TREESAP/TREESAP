@@ -6,6 +6,7 @@ import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
 import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
+import './App.css';
 // import { IntersectionReport } from './report';
 
 var polygons = null;
@@ -363,13 +364,13 @@ export class MapContainer extends Component {
 
         if (this.state.editMode) {
             buttons = (<div>
-                <button type="button">Report</button>
-                <button type="button" onClick={() => {this.state.polygonLayer.makePolygonEditable(polygon); this.onClose();}}>Edit</button>
-                <button type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
+                <button className="info-window-button" type="button">Report Error</button>
+                <button className="info-window-button" type="button" onClick={() => {this.state.polygonLayer.makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
         } else {
             buttons = (<div>
-                <button type="button">Report</button>
+                <button className="info-window-button" type="button">Report Error</button>
             </div>)
         }
 
@@ -380,11 +381,19 @@ export class MapContainer extends Component {
         var buttons;
         // let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer)
 
-        buttons = (<div>
-            <button type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
-            <button type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
-            {/* {report.createReport()} */}
-        </div>)
+        //TODO this is hacky but works for now
+        if (intersection.name == undefined) {
+            buttons = (<div>
+                <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
+                {/* {report.createReport()} */}
+            </div>)
+        } else {
+            buttons = (<div>
+                <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+                {/* {report.createReport()} */}
+            </div>)
+        }
 
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
     }
