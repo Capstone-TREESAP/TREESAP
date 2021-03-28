@@ -1,6 +1,6 @@
 import React, { Component, useReducer, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow } from 'google-maps-react';
+import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, HeatMap } from 'google-maps-react';
 //import polygons from './lidar_polygons_with_area.json';
 import SettingsView from './settings';
 import { DrawingView } from './drawing';
@@ -10,13 +10,15 @@ import { PolygonEditor } from './polygon-editor';
 var polygons = null;
 var all_polygon_sets = {};
 var neighborhood_polygons = {};
+var displayList = [];
+var polyKeys = [];
+//var polyKeys = ["2018 LiDAR", "2018 Orthophoto"];
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 const default_centre_coords = {lat: 49.2367, lng: -123.2031};
 
 var CARBON_RATE = 30.600; // tonnes/hectare/year
 var TREE_RUNOFF_RATE = 0.881; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
-const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
 const gradient = [
   "rgba(0, 255, 255, 0)",
   "rgba(0, 255, 255, 1)",
@@ -56,6 +58,7 @@ function parseDatabase(database) {
   all_polygon_sets = database["Tree Cover Polygon Datasets"];
   // remove after TIC-96
   polygons = all_polygon_sets["LiDAR 2018"];
+  polyKeys = Object.keys(all_polygon_sets);
 }
 
 export class MapContainer extends Component {
@@ -70,6 +73,8 @@ export class MapContainer extends Component {
             polygon: null,
             polygonLayer: null,
             editMode: false,
+            carbonRate: CARBON_RATE,
+            runoffRate: TREE_RUNOFF_RATE,
         };
         this.drawingView = null;
     }
@@ -92,11 +97,10 @@ export class MapContainer extends Component {
             });
           }
         )
-        console.log("here");
     }
     //Functions for calculating ecosystem services
-    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
-    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_RATE;
+    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.carbonRate;
+    getAvoidedRunoffAnnually = (area) => area * this.state.runoffRate;
 
     onMarkerClick = (props, m, e) =>
         this.setState({
@@ -139,6 +143,22 @@ export class MapContainer extends Component {
         this.setState({
             editMode: editMode
         })
+    }
+
+    setPolygonLayer = (displayList) => {
+      polygons = all_polygon_sets[displayList[0]];
+    }
+
+    onUpdateCarbon = (carbonValue) => {
+      this.setState({
+        carbonRate: carbonValue
+      })
+    }
+
+    onUpdateRunoff = (runoffValue) => {
+      this.setState({
+        runoffRate: runoffValue
+      })
     }
 
     loadPolygonLayer = () => {
@@ -298,6 +318,13 @@ export class MapContainer extends Component {
             </InfoWindow>
             <SettingsView
                 onToggleMode={this.onToggleMode}
+                polyList={polyKeys}
+                displayList={displayList}
+                setPolygonLayer={this.setPolygonLayer}
+                onUpdateCarbon={this.onUpdateCarbon}
+                onUpdateRunoff={this.onUpdateRunoff}
+                carbonRate={this.state.carbonRate}
+                runoffRate={this.state.runoffRate}
             />
             {this.displayPolygonLayer()}
             {this.renderHeatmap()}
@@ -308,6 +335,6 @@ export class MapContainer extends Component {
 
 //Wrapper for map container
 export default GoogleApiWrapper({
-  apiKey: '',
+  apiKey: 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A',
   libraries: ['drawing', 'visualization']
 })(MapContainer);
