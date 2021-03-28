@@ -1,8 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import './settings.css';
 import LandingScreenView from './landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
+import { SettingsList } from './settings-list';
 
 let constants = new Map()
 let itemList = [];
@@ -17,6 +17,9 @@ export default class SettingsView extends React.Component {
         <div className="settings-view">
           <Settings
             onToggleMode={this.props.onToggleMode}
+            neighborhoodPolygonsList={this.props.neighborhoodPolygonsList}
+            onAddAreaOfInterest={this.props.onAddAreaOfInterest}
+            onRemoveAreaOfInterest={this.props.onRemoveAreaOfInterest}
             polyList={this.props.polyList}
             setPolygonLayer={this.props.setPolygonLayer}
             displayList={this.props.displayList}
@@ -106,6 +109,40 @@ function SettingsDisplay(props) {
           Save and Update Map
         </button>
       </div>
+      <div>
+        {props.areasOfInterest.getCheckboxes()}
+        <button
+          className="display-save"
+          type="button"
+          onClick={() => {
+            props.areasOfInterest.updateCheckedWithAction();
+            props.onClick();
+          }}
+        >
+          Save and Update Areas of Interest
+        </button>
+      </div>
+      <div className="display-no-columns">
+        <p>Select Mode</p>
+        <input
+          className={props.editMode ? "intersection unselected" : "intersection selected"}
+          type="button"
+          onClick={() => {
+            props.onToggleMode(false);
+            props.onClick();
+          }}
+          value="Intersection"
+        />
+        <input
+          className={props.editMode ? "edit selected" : "edit unselected"}
+          type="button"
+          onClick={() => {
+            props.onToggleMode(true);
+            props.onClick();
+          }}
+          value="Edit"
+        />
+      </div>
       <div className="dropdown">
         <label
           className="input"
@@ -154,7 +191,7 @@ function SettingsDisplay(props) {
           Save
         </button>
       </div>
-      <div className="display">
+      <div className="display-bottom">
       <p>Access to the Shading and Cooling Ecosystem Services for UBC Vancouver Campus</p>
         <button
           className="display-save"
@@ -162,27 +199,6 @@ function SettingsDisplay(props) {
         >
           Access Shading and Cooling Interface
         </button>
-      </div>
-      <div>
-        <p>Select Mode</p>
-        <input
-          className={props.editMode ? "intersection unselected" : "intersection selected"}
-          type="button"
-          onClick={() => {
-            props.onToggleMode(false);
-            props.onClick();
-          }}
-          value="Intersection"
-        />
-        <input
-          className={props.editMode ? "edit selected" : "edit unselected"}
-          type="button"
-          onClick={() => {
-            props.onToggleMode(true);
-            props.onClick();
-          }}
-          value="Edit"
-        />
       </div>
       <div className="for-button">
         <button
@@ -207,6 +223,11 @@ class Settings extends React.Component {
     };
     constants.set('carbon', this.props.carbonRate);
     constants.set('runoff', this.props.runoffRate);
+
+    this.areasOfInterest = new SettingsList(this.props.neighborhoodPolygonsList,
+      SettingsList.parseAreasOfInterest,
+      this.props.onAddAreaOfInterest,
+      this.props.onRemoveAreaOfInterest)
   }
 
   openMenu(){
@@ -215,6 +236,7 @@ class Settings extends React.Component {
       onToggleMode: (editMode) => this.onToggleMode(editMode),
       editMode:this.state.editMode,
       onRefresh: () => this.onRefresh(),
+      areasOfInterest: this.areasOfInterest,
       polyList: this.props.polyList,
       displayList: this.props.displayList,
       setPolygonLayer: (displayList) => this.setPolygonLayer(displayList),
@@ -259,6 +281,8 @@ class Settings extends React.Component {
   }
 
   render() {
+    this.areasOfInterest.loadSettingsList(this.props.neighborhoodPolygonsList)
+
     return (
       <div>
         <CSSTransitionGroup

@@ -28,6 +28,18 @@
   color: #61dafb;
 }
 
+.info-window-button {
+  position: relative;
+  margin-left: 10px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 15px;
+  border: none;
+  display: inline-block;
+  background-color: #313628
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

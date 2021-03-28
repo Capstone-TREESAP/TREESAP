@@ -6,6 +6,7 @@ import { DrawingView } from './drawing';
 import { PolygonLayer } from './polygon-layer'
 import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
+import './App.css';
 // import { IntersectionReport } from './report';
 
 var all_polygon_sets = {};
@@ -177,6 +178,31 @@ export class MapContainer extends Component {
         this.drawingView.resetDrawingMode()
         this.setState({
             editMode: editMode
+        })
+    }
+
+    onAddAreaOfInterest = (name, coordinates) => {
+        let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, name)
+        this.intersections.push(intersection)
+        this.setState({
+            clickedLocation: null,
+            clickedPolygon: null,
+            clickedIntersection: null,
+            intersectionLayer: null,
+        })
+    }
+
+    onRemoveAreaOfInterest = (name) => {
+        if (this.state.clickedIntersection != null) {
+            this.state.clickedIntersection.makeUneditable()
+        }
+        let index = this.intersections.findIndex(element => element.name === name)
+        this.intersections.splice(index, 1);
+
+        this.setState({
+            clickedLocation: null,
+            clickedIntersection: null,
+            intersectionLayer: null,
         })
     }
 
@@ -353,13 +379,13 @@ export class MapContainer extends Component {
 //TODO: check for mulitple layers and only allow if one layer checked
         if (this.state.editMode) {
             buttons = (<div>
-                <button type="button">Report</button>
-                <button type="button" onClick={() => {this.state.polygonLayers[0].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
-                <button type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
+                <button className="info-window-button" type="button">Report Error</button>
+                <button className="info-window-button" type="button" onClick={() => {this.state.polygonLayers[0].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
         } else {
             buttons = (<div>
-                <button type="button">Report</button>
+                <button className="info-window-button" type="button">Report Error</button>
             </div>)
         }
 
@@ -370,11 +396,19 @@ export class MapContainer extends Component {
         var buttons;
         // let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer)
 
-        buttons = (<div>
-            <button type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
-            <button type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
-            {/* {report.createReport()} */}
-        </div>)
+        //TODO this is hacky but works for now
+        if (intersection.name == undefined) {
+            buttons = (<div>
+                <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
+                {/* {report.createReport()} */}
+            </div>)
+        } else {
+            buttons = (<div>
+                <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+                {/* {report.createReport()} */}
+            </div>)
+        }
 
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
     }
@@ -382,8 +416,10 @@ export class MapContainer extends Component {
     renderInfoWindow() {
         if (this.state.clickedIntersection != null && this.state.intersectionLayer != null) {
             let totalArea = PolygonEditor.getTotalArea(this.state.intersectionLayer)
+            let name = this.state.clickedIntersection.name
             return(<div>
-                <h3>Total Area: {totalArea ? totalArea : null} m<sup>2</sup></h3>
+                {name && <h3>Name: {name}</h3>}
+                <h3>Total Area of Tree Cover: {totalArea ? totalArea : null} m<sup>2</sup></h3>
                 <h3>Total Carbon sequestered: {totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</h3>
                 <h3>Total Avoided rainwater run-off: {totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</h3>
             </div>)
@@ -466,6 +502,9 @@ export class MapContainer extends Component {
             </InfoWindow>
             <SettingsView
                 onToggleMode={this.onToggleMode}
+                neighborhoodPolygonsList={neighborhood_polygons}
+                onAddAreaOfInterest={this.onAddAreaOfInterest}
+                onRemoveAreaOfInterest={this.onRemoveAreaOfInterest}
                 polyList={polyKeys}
                 displayList={this.state.displayList}
                 setPolygonLayer={this.setPolygonLayer}
