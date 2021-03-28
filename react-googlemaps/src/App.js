@@ -176,6 +176,31 @@ export class MapContainer extends Component {
         })
     }
 
+    onAddAreaOfInterest = (name, coordinates) => {
+        let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, name)
+        this.intersections.push(intersection)
+        this.setState({
+            clickedLocation: null,
+            clickedPolygon: null,
+            clickedIntersection: null,
+            intersectionLayer: null,
+        })
+    }
+
+    onRemoveAreaOfInterest = (name) => {
+        if (this.state.clickedIntersection != null) {
+            this.state.clickedIntersection.makeUneditable()
+        }
+        let index = this.intersections.findIndex(element => element.name === name)
+        this.intersections.splice(index, 1);
+
+        this.setState({
+            clickedLocation: null,
+            clickedIntersection: null,
+            intersectionLayer: null,
+        })
+    }
+
     loadPolygonLayer = () => {
         this.setState({
             polygonLayer: new PolygonLayer(polygons, this.props, this._map.map)
@@ -347,8 +372,10 @@ export class MapContainer extends Component {
     renderInfoWindow() {
         if (this.state.clickedIntersection != null && this.state.intersectionLayer != null) {
             let totalArea = PolygonEditor.getTotalArea(this.state.intersectionLayer)
+            let name = this.state.clickedIntersection.name
             return(<div>
-                <h3>Total Area: {totalArea ? totalArea : null} m<sup>2</sup></h3>
+                {name && <h3>Name: {name}</h3>}
+                <h3>Total Area of Tree Cover: {totalArea ? totalArea : null} m<sup>2</sup></h3>
                 <h3>Total Carbon sequestered: {totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</h3>
                 <h3>Total Avoided rainwater run-off: {totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</h3>
             </div>) 
@@ -431,6 +458,9 @@ export class MapContainer extends Component {
             </InfoWindow>
             <SettingsView
                 onToggleMode={this.onToggleMode}
+                neighborhoodPolygonsList={neighborhood_polygons}
+                onAddAreaOfInterest={this.onAddAreaOfInterest}
+                onRemoveAreaOfInterest={this.onRemoveAreaOfInterest}
             />
             {this.displayPolygonLayer()}
             {this.displayIntersections()}

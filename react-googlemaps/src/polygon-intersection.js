@@ -7,19 +7,27 @@ var intersectionKeyNum = 0
 var tempKeyNum = 0
 
 export class PolygonIntersection {
-    constructor(props, polygon, map) {
+    constructor(props, polygon, map, name) {
         this.props = props
         const {google} = props
+        this.name = name
 
-        var bounds;
-        if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
-            bounds = PolygonEditor.getPointsFromPolygon(polygon);
-        } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
-            bounds = PolygonEditor.getPointsFromRectangle(props, polygon);
+        //TODO this is hacky but works for now
+        let boundingPoints;
+        if (name == undefined) {
+            var bounds;
+            if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
+                bounds = PolygonEditor.getPointsFromPolygon(polygon);
+            } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
+                bounds = PolygonEditor.getPointsFromRectangle(props, polygon);
+            }
+            polygon.overlay.setMap(null)
+    
+            boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds)
+        } else {
+            boundingPoints = PolygonEditor.JSONtoGeoJSONCoords(polygon)
         }
-        polygon.overlay.setMap(null)
-
-        let boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds)
+        
         this.boundingPolygon = turf.polygon(boundingPoints)
         this.editableBounds = null
         this.map = map
