@@ -34,6 +34,13 @@ export default class SettingsView extends React.Component {
             neighborhoodPolygonsList={this.props.neighborhoodPolygonsList}
             onAddAreaOfInterest={this.props.onAddAreaOfInterest}
             onRemoveAreaOfInterest={this.props.onRemoveAreaOfInterest}
+            polyList={this.props.polyList}
+            setPolygonLayer={this.props.setPolygonLayer}
+            displayList={this.props.displayList}
+            onUpdateCarbon={this.props.onUpdateCarbon}
+            onUpdateRunoff={this.props.onUpdateRunoff}
+            carbonRate={this.props.carbonRate}
+            runoffRate={this.props.runoffRate}
           />
         </div>
       </div>
@@ -53,45 +60,47 @@ function MenuButton(props) {
   );
 }
 
-function SaveCarbonValue() {
+function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
-  constants.set('carbon', parseFloat(setting.value));
+  props.onUpdateCarbon(setting.value);
+  props.carbonRate = setting.value;
   setting.value = "";
 }
 
-function SaveStormwaterValue() {
+function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2')
-  constants.set('stormwater', parseFloat(setting.value));
+  props.onUpdateRunoff(setting.value);
+  props.runoffRate = setting.value;
   setting.value = "";
 }
 
-function renderPolygonList() {
-  itemList = [];
-  for(let key of polyMap.keys()) {
-    itemList.push(buildListItem(key, polyMap));
+function renderPolygonList(polyList) {
+  for(var key in polyList) {
+    itemList.push(buildListItem(polyList[key]));
   }
+  return itemList;
 }
 
 function buildListItem(key, map) {
   return (
-    <div>
-      <label for={map.get(key)}>{key}</label>
-      <input className="check" type="checkbox" id={map.get(key)} name={key.toString()} value={key.toString()}/>
+    <div className="poly_list">
+      <label for={key}>{key}</label>
+      <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/>
     </div>
   );
 }
 
-renderPolygonList();
-
-function updatePolyList(){
+function updatePolyList(props){
+  var newPolyList = []
   var boxes = document.querySelectorAll(".check")
-  var polyToDisplay = [];
   for (let box of boxes) {
     if(box.checked){
-      polyToDisplay.push(box.value);
+      newPolyList.push(box.value);
     }
   }
-  console.log(polyToDisplay);
+  props.displayList = newPolyList;
+  console.log(props.displayList);
+  //props.setPolygonLayer(props.displayList);
 }
 
 function SettingsDisplay(props) {
@@ -99,11 +108,14 @@ function SettingsDisplay(props) {
     <div key={'settings'} className="settings">
     <h1>UBC Vancouver Tree Inventory Settings</h1>
       <div className="display">
-        {itemList}
+        {renderPolygonList(props.polyList)}
         <button
           className="display-save"
           type="button"
-          onClick={() => updatePolyList()}
+          onClick={() => {
+            updatePolyList(props);
+            props.setPolygonLayer(props.displayList);
+          }}
         >
           Save and Update Map
         </button>
@@ -143,7 +155,7 @@ function SettingsDisplay(props) {
         <label
           className="input"
           for="setting1">
-          Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C
+          Change tonnes of C per hectare per year here. Current value: {props.carbonRate} t/h of C
         </label>
         <br/>
         <input
@@ -156,7 +168,7 @@ function SettingsDisplay(props) {
           className="display-save"
           type="button"
           onClick={() => {
-            SaveCarbonValue();
+            SaveCarbonValue(props);
             props.onRefresh();
           }}
         >
@@ -167,7 +179,7 @@ function SettingsDisplay(props) {
           className="input"
           for="setting2"
         >
-          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('stormwater')} L/m<sup>2</sup>
+          Change litres of avoided runoff per meter squared per year here. Current value: {props.runoffRate} L/m<sup>2</sup>
         </label>
         <br/>
         <input
@@ -180,7 +192,7 @@ function SettingsDisplay(props) {
           className="display-save"
           type="button"
           onClick={() => {
-            SaveStormwaterValue();
+            SaveStormwaterValue(props);
             props.onRefresh();
           }}
         >
@@ -216,6 +228,8 @@ class Settings extends React.Component {
       visible: true,
       menu: null,
       editMode: false,
+      carbonRate: props.carbonRate,
+      runoffRate: props.runoffRate,
     };
     this.areasOfInterest = new SettingsList(this.props.neighborhoodPolygonsList,
       this.props.onAddAreaOfInterest, this.props.onRemoveAreaOfInterest)
@@ -228,6 +242,13 @@ class Settings extends React.Component {
       editMode:this.state.editMode,
       onRefresh: () => this.onRefresh(),
       areasOfInterest: this.areasOfInterest,
+      polyList: this.props.polyList,
+      displayList: this.props.displayList,
+      setPolygonLayer: (displayList) => this.setPolygonLayer(displayList),
+      onUpdateCarbon: (carbonValue) => this.onUpdateCarbon(carbonValue),
+      onUpdateRunoff: (runoffValue) => this.onUpdateRunoff(runoffValue),
+      carbonRate: this.state.carbonRate,
+      runoffRate: this.state.runoffRate
     });
 
     this.setState({
@@ -248,6 +269,24 @@ class Settings extends React.Component {
       editMode: editMode
     })
     this.props.onToggleMode(editMode)
+  }
+
+  onUpdateCarbon(carbonValue) {
+    this.setState({
+      carbonRate: carbonValue
+    });
+    this.props.onUpdateCarbon(carbonValue)
+  }
+
+  onUpdateRunoff(runoffValue) {
+    this.setState({
+      runoffRate: runoffValue,
+    });
+    this.props.onUpdateRunoff(runoffValue)
+  }
+
+  setPolygonLayer(displayList) {
+    this.props.setPolygonLayer(displayList)
   }
 
   onRefresh(){

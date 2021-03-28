@@ -11,13 +11,15 @@ import { PolygonEditor } from './polygon-editor';
 var polygons = null;
 var all_polygon_sets = {};
 var neighborhood_polygons = {};
+var displayList = [];
+var polyKeys = [];
+//var polyKeys = ["2018 LiDAR", "2018 Orthophoto"];
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 const default_centre_coords = {lat: 49.2367, lng: -123.2031};
 
 var CARBON_RATE = 30.600; // tonnes/hectare/year
 var TREE_RUNOFF_RATE = 0.881; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
-const TREE_RUNOFF_EFFECTS = 0.881 // L/m2/year
 const gradient = [
   "rgba(0, 255, 255, 0)",
   "rgba(0, 255, 255, 1)",
@@ -60,6 +62,7 @@ function parseDatabase(database) {
   all_polygon_sets = database["Tree Cover Polygon Datasets"];
   // remove after TIC-96
   polygons = all_polygon_sets["LiDAR 2018"];
+  polyKeys = Object.keys(all_polygon_sets);
 }
 
 export class MapContainer extends Component {
@@ -76,6 +79,8 @@ export class MapContainer extends Component {
             polygonLayer: null,
             intersectionLayer: null,
             editMode: false,
+            carbonRate: CARBON_RATE,
+            runoffRate: TREE_RUNOFF_RATE,
             editingIntersection: null,
         };
         this.drawingView = null;
@@ -101,12 +106,11 @@ export class MapContainer extends Component {
             });
           }
         )
-        console.log("here");
     }
-    
+
     //Functions for calculating ecosystem services
-    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * CARBON_RATE;
-    getAvoidedRunoffAnnually = (area) => area * TREE_RUNOFF_RATE;
+    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.carbonRate;
+    getAvoidedRunoffAnnually = (area) => area * this.state.runoffRate;
 
     onMarkerClick = (props, m, e) =>
         this.setState({
@@ -200,6 +204,22 @@ export class MapContainer extends Component {
             intersectionLayer: null,
         })
     }
+    
+    setPolygonLayer = (displayList) => {
+      polygons = all_polygon_sets[displayList[0]];
+    }
+
+    onUpdateCarbon = (carbonValue) => {
+      this.setState({
+        carbonRate: carbonValue
+      })
+    }
+
+    onUpdateRunoff = (runoffValue) => {
+      this.setState({
+        runoffRate: runoffValue
+      })
+    }
 
     loadPolygonLayer = () => {
         this.setState({
@@ -237,11 +257,11 @@ export class MapContainer extends Component {
 
     //Display a set of polygons
     displayPolygons = (polygons, color, zIndex) => {
-        return polygons.map(polygon => 
+        return polygons.map(polygon =>
         <Polygon
             paths={polygon.points}
             key={polygon.key}
-            onClick={(t, map, coords) => 
+            onClick={(t, map, coords) =>
                 this.handleClick(polygon, map, coords.latLng)
             }
             strokeColor={color}
@@ -378,13 +398,13 @@ export class MapContainer extends Component {
                 <h3>Total Area of Tree Cover: {totalArea ? totalArea : null} m<sup>2</sup></h3>
                 <h3>Total Carbon sequestered: {totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</h3>
                 <h3>Total Avoided rainwater run-off: {totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</h3>
-            </div>) 
+            </div>)
         } else {
             return(<div>
                 <h3>Area: {this.state.clickedPolygon ? this.state.clickedPolygon.area : null} m<sup>2</sup></h3>
                 <h3>Carbon sequestered: {this.state.clickedPolygon ? this.getCarbonSequesteredAnnually(this.state.clickedPolygon.area).toFixed(2) : null} tonnes/year</h3>
                 <h3>Avoided rainwater run-off: {this.state.clickedPolygon ? this.getAvoidedRunoffAnnually(this.state.clickedPolygon.area).toFixed(2) : null} litres/year</h3>
-            </div>)  
+            </div>)
         }
     }
     //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
@@ -449,8 +469,8 @@ export class MapContainer extends Component {
                 visible={this.state.showInfoWindow}
                 marker={this.state.marker}
                 onClose={this.onClose}
-                onOpen={() => {this.state.clickedIntersection == null ? 
-                    this.onInfoWindowOpen(this.state.clickedPolygon) : 
+                onOpen={() => {this.state.clickedIntersection == null ?
+                    this.onInfoWindowOpen(this.state.clickedPolygon) :
                     this.onIntersectionInfoWindowOpen(this.state.clickedIntersection)}}
             >
                 <div id="iwc" />
@@ -461,6 +481,13 @@ export class MapContainer extends Component {
                 neighborhoodPolygonsList={neighborhood_polygons}
                 onAddAreaOfInterest={this.onAddAreaOfInterest}
                 onRemoveAreaOfInterest={this.onRemoveAreaOfInterest}
+                polyList={polyKeys}
+                displayList={displayList}
+                setPolygonLayer={this.setPolygonLayer}
+                onUpdateCarbon={this.onUpdateCarbon}
+                onUpdateRunoff={this.onUpdateRunoff}
+                carbonRate={this.state.carbonRate}
+                runoffRate={this.state.runoffRate}
             />
             {this.displayPolygonLayer()}
             {this.displayIntersections()}
