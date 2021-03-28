@@ -22,6 +22,12 @@ export class DrawingView {
         return drawingManager
     }
 
+    resetDrawingMode() {
+        this.drawingManager.setOptions({
+            drawingMode: null
+        })
+    }
+
     openDrawingManager(){
         this.drawingManager.setOptions({
             drawingControl: true

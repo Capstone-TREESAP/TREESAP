@@ -1,13 +1,17 @@
 import { PolygonEditor } from './polygon-editor'
 
+const CUSTOM_KEY = "C"
+var customKeyNum = 0
+
 export class PolygonLayer {
     constructor(polygonList, props, map) {
-        this.polygons = this.parsePolygons(polygonList);
-        this.positions = this.parseRawPoints(this.polygons);
         this.props = props
         this.map = map
         this.polygon = null
         this.editablePolygon = null
+
+        this.polygons = this.parsePolygons(polygonList);
+        this.positions = this.parseRawPoints(this.polygons);
     }
 
     selectPolygon(polygon) {
@@ -19,23 +23,18 @@ export class PolygonLayer {
     
         for(var i = 0; i < polygons.features.length; i++) {
       
-            var polygon = polygons.features[i].geometry.coordinates[0];
-            var area = polygons.features[i].properties.area;
-            var points = [];
-            for(var point in polygon) {
-                points.push(
-                {
-                    lat: parseFloat(polygon[point][1]),
-                    lng: parseFloat(polygon[point][0])
-                }
-                )
-            }
+            var coordinates = polygons.features[i].geometry.coordinates[0];
+            var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
+            var area = PolygonEditor.getPolygonArea(this.props, points.map(
+                point => PolygonEditor.pointToLatLng(this.props, point)
+            ))
             collectedPolygons.push(
                 {
-                "id": i,
-                "points": points,
-                "area": area,
-                "editable": false
+                    // "key": polygons.features[i].properties.id, //TODO change this if it gets renamed to key
+                    "key": i,
+                    "points": points,
+                    "area": area,
+                    "editable": false
                 }
             )
         }
@@ -69,8 +68,8 @@ export class PolygonLayer {
     makePolygonEditable = (polygon) => {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1);
+        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#014421", 0);
         this.positions = this.parseRawPoints(this.polygons)
-        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map);
     }
 
     makeCurrentPolygonUneditable = () => {
@@ -82,7 +81,7 @@ export class PolygonLayer {
         let newArea = PolygonEditor.getPolygonArea(this.props, newPoints)
         PolygonEditor.removeEditablePolygon(this.editablePolygon)
 
-        this.polygon.points = newPoints
+        this.polygon.points = PolygonEditor.googleToJSONCoords(newPoints)
         this.polygon.area = newArea
         this.polygons.push(this.polygon)
         this.positions = this.parseRawPoints(this.polygons)
@@ -107,17 +106,11 @@ export class PolygonLayer {
         }
 
         let area = PolygonEditor.getPolygonArea(this.props, points)
-        //TODO: should we use UUIDs?
-        // or use some system where first x bits represents whether it's frontend created or not,
-        // then just increment up for the rest of the bits
-        //This depends on the broader question of how we create IDs for polygons in the backend,
-        // so I'm leaving it for now.
-        let id = this.polygons.length
 
         this.polygons.push(
             {
-                "id": id,
-                "points": points,
+                "key": PolygonEditor.createKey(CUSTOM_KEY, customKeyNum++),
+                "points": PolygonEditor.googleToJSONCoords(points),
                 "area": area,
                 "editable": false
             }
@@ -126,5 +119,15 @@ export class PolygonLayer {
 
         polygon.overlay.setMap(null);
         
+    }
+
+    containsPolygon(polygon) {
+        for (var i = 0; i < this.polygons.length; i++) {
+            if (polygon === this.polygons[i]) {
+                return true
+            }
+        }
+
+        return false
     }
 }
