@@ -1,21 +1,22 @@
 import { PolygonEditor } from "./polygon-editor";
 
 export class SettingsList {
-    constructor(geojsonList, functionOnCheck, functionOnUncheck) {
-        this.items = this.parseItemsFromGeoJSON(geojsonList)
+    constructor(geojsonList, parseFunction, functionOnCheck, functionOnUncheck) {
+        this.items = parseFunction(geojsonList)
         this.loaded = (geojsonList.features != null)
         this.checkboxes = this.renderListAsCheckboxes()
         this.functionOnCheck = functionOnCheck
         this.functionOnUncheck = functionOnUncheck
+        this.parseFunction = parseFunction
     }
 
     updateItemsList(geojsonList) {
-        this.items = this.parseItemsFromGeoJSON(geojsonList)
+        this.items = this.parseFunction(geojsonList)
         this.checkboxes = this.renderListAsCheckboxes()
         this.loaded = (geojsonList.features != null)
     }
 
-    parseItemsFromGeoJSON(featureCollection) {
+    static parseAreasOfInterest(featureCollection) {
         let items = new Map();
         
         for (let i in featureCollection.features) {
@@ -44,7 +45,7 @@ export class SettingsList {
         let checkboxes = [];
 
         for(let key of this.items.keys()) {
-            checkboxes.push(SettingsList.createCheckbox(key, this.items));
+            checkboxes.push(SettingsList.createCheckbox(key));
         }
 
         return checkboxes;
@@ -66,11 +67,11 @@ export class SettingsList {
         }
     }
 
-    static createCheckbox(key, map) {
+    static createCheckbox(key) {
         return (
           <div>
-            <label for={map.get(key)}>{key}</label>
             <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/>
+            <label for={key}>{key}</label>
           </div>
         );
     }

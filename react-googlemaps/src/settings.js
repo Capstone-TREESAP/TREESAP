@@ -75,17 +75,18 @@ function SaveStormwaterValue(props) {
 }
 
 function renderPolygonList(polyList) {
+  itemList = [];
   for(var key in polyList) {
     itemList.push(buildListItem(polyList[key]));
   }
   return itemList;
 }
 
-function buildListItem(key, map) {
+function buildListItem(key) {
   return (
     <div className="poly_list">
-      <label for={key}>{key}</label>
       <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/>
+      <label for={key}>{key}</label>
     </div>
   );
 }
@@ -115,6 +116,7 @@ function SettingsDisplay(props) {
           onClick={() => {
             updatePolyList(props);
             props.setPolygonLayer(props.displayList);
+            props.onClick();
           }}
         >
           Save and Update Map
@@ -125,7 +127,10 @@ function SettingsDisplay(props) {
         <button
           className="display-save"
           type="button"
-          onClick={() => props.areasOfInterest.updateCheckedWithAction()}
+          onClick={() => {
+            props.areasOfInterest.updateCheckedWithAction();
+            props.onClick();
+          }}
         >
           Save and Update Areas of Interest
         </button>
@@ -232,7 +237,9 @@ class Settings extends React.Component {
       runoffRate: props.runoffRate,
     };
     this.areasOfInterest = new SettingsList(this.props.neighborhoodPolygonsList,
-      this.props.onAddAreaOfInterest, this.props.onRemoveAreaOfInterest)
+      SettingsList.parseAreasOfInterest, 
+      this.props.onAddAreaOfInterest, 
+      this.props.onRemoveAreaOfInterest)
   }
 
   openMenu(){
