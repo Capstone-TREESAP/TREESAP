@@ -8,14 +8,12 @@ import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
 // import { IntersectionReport } from './report';
 
-var polygons = null;
 var all_polygon_sets = {};
 var neighborhood_polygons = {};
-var displayList = [];
 var polyKeys = [];
-//var polyKeys = ["2018 LiDAR", "2018 Orthophoto"];
+var polygons = [];
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
-const default_centre_coords = {lat: 49.2367, lng: -123.2031};
+const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
 var CARBON_RATE = 30.600; // tonnes/hectare/year
 var TREE_RUNOFF_RATE = 0.881; // L/m2/year
@@ -24,18 +22,18 @@ const gradient = [
   "rgba(0, 255, 255, 0)",
   "rgba(0, 255, 255, 1)",
   "rgba(0, 191, 255, 1)",
-  "rgba(0, 127, 255, 1)",
-  "rgba(0, 63, 255, 1)",
-  "rgba(0, 0, 255, 1)",
-  "rgba(0, 0, 223, 1)",
-  "rgba(0, 0, 191, 1)",
-  "rgba(0, 0, 159, 1)",
-  "rgba(0, 0, 127, 1)",
-  "rgba(63, 0, 91, 1)",
-  "rgba(127, 0, 63, 1)",
-  "rgba(191, 0, 31, 1)",
-  "rgba(255, 0, 0, 1)"
 ];
+
+const colours = [
+  "#1C55FF", //dark blue
+  "#5CBF9B", //light green
+  "#D9CA00", //yellow
+  "#E03FCE", //pink
+  "#00A6E8", //teal
+  "#E68E00", //orange
+  "#6530E3", //purple
+  "#014421", //dark green
+]
 
 const points = [
   {
@@ -53,15 +51,12 @@ const mapStyles = {
 };
 
 function parseDatabase(database) {
-  //database = JSON.parse(database);
   console.log(database)
   var constants = database["Calculation Constants"];
   CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
   TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
   neighborhood_polygons = database["Neighborhood Polygons"];
   all_polygon_sets = database["Tree Cover Polygon Datasets"];
-  // remove after TIC-96
-  polygons = all_polygon_sets["LiDAR 2018"];
   polyKeys = Object.keys(all_polygon_sets);
 }
 
@@ -76,12 +71,13 @@ export class MapContainer extends Component {
             clickedPolygon: null,
             clickedIntersection: null,
             marker: null,
-            polygonLayer: null,
+            polygonLayers: null,
             intersectionLayer: null,
             editMode: false,
             carbonRate: CARBON_RATE,
             runoffRate: TREE_RUNOFF_RATE,
             editingIntersection: null,
+            displayList: [],
         };
         this.drawingView = null;
         this.intersections = [];
@@ -96,6 +92,7 @@ export class MapContainer extends Component {
               isLoaded: true
             });
             parseDatabase(result);
+            this.state.displayList.push(polyKeys[0])
             this.loadPolygonLayer();
           },
           (error) => {
@@ -128,11 +125,12 @@ export class MapContainer extends Component {
     };
 
     handleClick = (polygon, map, coords) => {
-        this.state.polygonLayer.makeCurrentPolygonUneditable();
+      //TODO: check for mulitple layers and only allow if one layer checked
+        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
         let isIntersectionPolygon = (this.state.clickedIntersection != null)
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
-        if (isIntersectionPolygon && !this.state.polygonLayer.containsPolygon(polygon)) {
+        if (isIntersectionPolygon && !this.state.polygonLayers[0].containsPolygon(polygon)) {
             //Treat it as a generic click to avoid displaying information about the wrong polygon
             this.onGenericClick()
             return
@@ -144,24 +142,26 @@ export class MapContainer extends Component {
             intersectionLayer: null,
             clickedPolygon: polygon,
         })
-
-        this.state.polygonLayer.selectPolygon(this.state.clickedPolygon)
+//TODO: check for mulitple layers and only allow if one layer checked
+        this.state.polygonLayers[0].selectPolygon(this.state.clickedPolygon)
     };
 
     handleIntersectionClick = (intersection, map, coords) => {
-        this.state.polygonLayer.makeCurrentPolygonUneditable();
+      //TODO: check for mulitple layers and only allow if one layer checked
+        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
             clickedLocation: coords,
             clickedPolygon: null,
             clickedIntersection: intersection,
-            intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayer.polygons)
+            intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[0].polygons)
         })
     }
 
     onGenericClick = () => {
-        this.state.polygonLayer.makeCurrentPolygonUneditable();
+      //TODO: check for mulitple layers and only allow if one layer checked
+        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
@@ -181,7 +181,9 @@ export class MapContainer extends Component {
     }
 
     setPolygonLayer = (displayList) => {
-      polygons = all_polygon_sets[displayList[0]];
+      this.setState({
+        displayList: displayList
+      })
     }
 
     onUpdateCarbon = (carbonValue) => {
@@ -197,8 +199,13 @@ export class MapContainer extends Component {
     }
 
     loadPolygonLayer = () => {
+      var layersList = [];
+      for(var polygons in polyKeys){
+        console.log(polyKeys[polygons])
+        layersList.push(new PolygonLayer(all_polygon_sets[polyKeys[polygons]], this.props, this._map.map))
+      }
         this.setState({
-            polygonLayer: new PolygonLayer(polygons, this.props, this._map.map)
+            polygonLayers: layersList,
         })
     }
 
@@ -225,8 +232,14 @@ export class MapContainer extends Component {
     }
 
     displayPolygonLayer = () => {
-        if (this.state.polygonLayer != null) {
-            return this.displayPolygons(this.state.polygonLayer.polygons, "#014421", 0)
+      console.log("in display polygon layer: ", this.state.displayList)
+      var layerList = [];
+        if (this.state.polygonLayers != null) {
+          for (var poly in this.state.displayList) {
+            var index = polyKeys.indexOf(this.state.displayList[poly]);
+            layerList.push(this.displayPolygons(this.state.polygonLayers[index].polygons, colours[index], poly))
+          }
+            return layerList;//this.displayPolygons(this.state.polygonLayers[0].polygons, "#014421", 0)
         }
     }
 
@@ -269,7 +282,8 @@ export class MapContainer extends Component {
     }
 
     deletePolygon(polygon) {
-        this.state.polygonLayer.deletePolygon(polygon)
+      //TODO: check for mulitple layers and only allow if one layer checked
+        this.state.polygonLayers[0].deletePolygon(polygon)
         this.setState({
             clickedLocation: null,
             clickedPolygon: null
@@ -277,8 +291,9 @@ export class MapContainer extends Component {
     }
 
     addPolygon(polygon) {
+      //TODO: check for mulitple layers and only allow if one layer checked
         if (this.state.editMode) {
-            this.state.polygonLayer.addPolygon(polygon)
+            this.state.polygonLayers[0].addPolygon(polygon)
             this.setState({
                 clickedLocation: null,
                 clickedPolygon: null,
@@ -292,7 +307,7 @@ export class MapContainer extends Component {
                 clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO this should probably not be so hardcoded
                 clickedPolygon: null,
                 clickedIntersection: intersection,
-                intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayer.polygons)
+                intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[0].polygons)
             })
             this.drawingView.resetDrawingMode()
         }
@@ -335,11 +350,11 @@ export class MapContainer extends Component {
 
     onInfoWindowOpen(polygon) {
         var buttons;
-
+//TODO: check for mulitple layers and only allow if one layer checked
         if (this.state.editMode) {
             buttons = (<div>
                 <button type="button">Report</button>
-                <button type="button" onClick={() => {this.state.polygonLayer.makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button type="button" onClick={() => {this.state.polygonLayers[0].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
                 <button type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
         } else {
@@ -382,15 +397,15 @@ export class MapContainer extends Component {
     }
     //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
   renderHeatmap = () => {
-    if (this.state.polygonLayer == null) {
+    if (this.state.polygonLayers == null) {
         return null
     }
 
     var heatmap = [];
     var clusterMaker = require('clusters')
 
-    let positions = this.state.polygonLayer.positions;
-    let polygons = this.state.polygonLayer.polygons;
+    let positions = this.state.polygonLayers[0].positions;
+    let polygons = this.state.polygonLayers[0].polygons;
 
     //for(var polygon in positions) {
     //  var numClusters = Math.ceil(polygons[polygon].area/50000);
@@ -452,7 +467,7 @@ export class MapContainer extends Component {
             <SettingsView
                 onToggleMode={this.onToggleMode}
                 polyList={polyKeys}
-                displayList={displayList}
+                displayList={this.state.displayList}
                 setPolygonLayer={this.setPolygonLayer}
                 onUpdateCarbon={this.onUpdateCarbon}
                 onUpdateRunoff={this.onUpdateRunoff}

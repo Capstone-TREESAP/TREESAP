@@ -5,20 +5,6 @@ import LandingScreenView from './landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 let constants = new Map()
-constants.set('stormwater', 0.881)
-constants.set('carbon', 30.600)
-
-let polyMap = new Map();
-polyMap.set('2014 Orthophoto', 'polygons here');
-polyMap.set('2015 Orthophoto', 'polygons here');
-polyMap.set('2016 Orthophoto', 'polygons here');
-polyMap.set('2017 Orthophoto', 'polygons here');
-polyMap.set('2018 Orthophoto', 'polygons here');
-polyMap.set('2019 Orthophoto', 'polygons here');
-polyMap.set('2020 Orthophoto', 'polygons here');
-polyMap.set('2015 LiDAR', 'polygons here');
-polyMap.set('2018 LiDAR', 'polygons here');
-
 let itemList = [];
 
 export default class SettingsView extends React.Component {
@@ -59,30 +45,32 @@ function MenuButton(props) {
 
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
+  constants.set('carbon', setting.value);
   props.onUpdateCarbon(setting.value);
-  props.carbonRate = setting.value;
   setting.value = "";
 }
 
 function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2')
+  constants.set('runoff', setting.value);
   props.onUpdateRunoff(setting.value);
-  props.runoffRate = setting.value;
   setting.value = "";
 }
 
-function renderPolygonList(polyList) {
+function renderPolygonList(polyList, displayList) {
+  itemList = [];
   for(var key in polyList) {
-    itemList.push(buildListItem(polyList[key]));
+    itemList.push(buildListItem(polyList[key], displayList.includes(polyList[key])));
   }
   return itemList;
 }
 
-function buildListItem(key) {
+function buildListItem(key, checked) {
   return (
     <div className="poly_list">
       <label for={key}>{key}</label>
-      <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/>
+      { checked && <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()} defaultChecked/>}
+      { !checked && <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/> }
     </div>
   );
 }
@@ -97,7 +85,7 @@ function updatePolyList(props){
   }
   props.displayList = newPolyList;
   console.log(props.displayList);
-  //props.setPolygonLayer(props.displayList);
+  props.setPolygonLayer(newPolyList);
 }
 
 function SettingsDisplay(props) {
@@ -105,13 +93,14 @@ function SettingsDisplay(props) {
     <div key={'settings'} className="settings">
     <h1>UBC Vancouver Tree Inventory Settings</h1>
       <div className="display">
-        {renderPolygonList(props.polyList)}
+        {renderPolygonList(props.polyList, props.displayList)}
         <button
           className="display-save"
           type="button"
           onClick={() => {
             updatePolyList(props);
             props.setPolygonLayer(props.displayList);
+            props.onClick();
           }}
         >
           Save and Update Map
@@ -121,7 +110,7 @@ function SettingsDisplay(props) {
         <label
           className="input"
           for="setting1">
-          Change tonnes of C per hectare per year here. Current value: {props.carbonRate} t/h of C
+          Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C
         </label>
         <br/>
         <input
@@ -145,7 +134,7 @@ function SettingsDisplay(props) {
           className="input"
           for="setting2"
         >
-          Change litres of avoided runoff per meter squared per year here. Current value: {props.runoffRate} L/m<sup>2</sup>
+          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} L/m<sup>2</sup>
         </label>
         <br/>
         <input
@@ -215,9 +204,9 @@ class Settings extends React.Component {
       visible: true,
       menu: null,
       editMode: false,
-      carbonRate: props.carbonRate,
-      runoffRate: props.runoffRate,
     };
+    constants.set('carbon', this.props.carbonRate);
+    constants.set('runoff', this.props.runoffRate);
   }
 
   openMenu(){
@@ -229,10 +218,8 @@ class Settings extends React.Component {
       polyList: this.props.polyList,
       displayList: this.props.displayList,
       setPolygonLayer: (displayList) => this.setPolygonLayer(displayList),
-      onUpdateCarbon: (carbonValue) => this.onUpdateCarbon(carbonValue),
-      onUpdateRunoff: (runoffValue) => this.onUpdateRunoff(runoffValue),
-      carbonRate: this.state.carbonRate,
-      runoffRate: this.state.runoffRate
+      onUpdateCarbon: (carbonValue) => this.props.onUpdateCarbon(carbonValue),
+      onUpdateRunoff: (runoffValue) => this.props.onUpdateRunoff(runoffValue),
     });
 
     this.setState({
@@ -253,20 +240,6 @@ class Settings extends React.Component {
       editMode: editMode
     })
     this.props.onToggleMode(editMode)
-  }
-
-  onUpdateCarbon(carbonValue) {
-    this.setState({
-      carbonRate: carbonValue
-    });
-    this.props.onUpdateCarbon(carbonValue)
-  }
-
-  onUpdateRunoff(runoffValue) {
-    this.setState({
-      runoffRate: runoffValue,
-    });
-    this.props.onUpdateRunoff(runoffValue)
   }
 
   setPolygonLayer(displayList) {
