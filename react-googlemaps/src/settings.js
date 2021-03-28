@@ -123,7 +123,7 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div>
-        {props.areasOfInterest.checkboxes}
+        {props.areasOfInterest.getCheckboxes()}
         <button
           className="display-save"
           type="button"
@@ -309,9 +309,7 @@ class Settings extends React.Component {
   }
 
   render() {
-    if (!this.areasOfInterest.loaded && this.props.neighborhoodPolygonsList.features != null) {
-      this.areasOfInterest.updateItemsList(this.props.neighborhoodPolygonsList)
-    }
+    this.areasOfInterest.loadSettingsList(this.props.neighborhoodPolygonsList)
 
     return (
       <div>

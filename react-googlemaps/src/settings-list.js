@@ -4,16 +4,20 @@ export class SettingsList {
     constructor(geojsonList, parseFunction, functionOnCheck, functionOnUncheck) {
         this.items = parseFunction(geojsonList)
         this.loaded = (geojsonList.features != null)
-        this.checkboxes = this.renderListAsCheckboxes()
         this.functionOnCheck = functionOnCheck
         this.functionOnUncheck = functionOnUncheck
         this.parseFunction = parseFunction
     }
 
-    updateItemsList(geojsonList) {
-        this.items = this.parseFunction(geojsonList)
-        this.checkboxes = this.renderListAsCheckboxes()
-        this.loaded = (geojsonList.features != null)
+    getCheckboxes() {
+        return this.renderListAsCheckboxes()
+    }
+
+    loadSettingsList(geojsonList) {
+        if (!this.loaded) {
+            this.items = this.parseFunction(geojsonList)
+            this.loaded = (geojsonList.features != null)
+        }
     }
 
     static parseAreasOfInterest(featureCollection) {
@@ -27,9 +31,7 @@ export class SettingsList {
                 continue;
             }
 
-
             let coords = PolygonEditor.backwardsGeoJSONToJSONCoords(feature.geometry.coordinates[0])
-        
             items.set(feature.properties.NAME, 
                 {
                     "polygon": coords,
@@ -45,7 +47,7 @@ export class SettingsList {
         let checkboxes = [];
 
         for(let key of this.items.keys()) {
-            checkboxes.push(SettingsList.createCheckbox(key));
+            checkboxes.push(SettingsList.createCheckbox(key, this.items.get(key).isChecked));
         }
 
         return checkboxes;
@@ -67,10 +69,10 @@ export class SettingsList {
         }
     }
 
-    static createCheckbox(key) {
+    static createCheckbox(key, isChecked) {
         return (
           <div>
-            <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/>
+            <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()} defaultChecked={isChecked}/>
             <label for={key}>{key}</label>
           </div>
         );
