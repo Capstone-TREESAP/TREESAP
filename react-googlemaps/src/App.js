@@ -150,18 +150,16 @@ function parseDatabase(database) {
     all_polygon_sets = database["Tree Cover Polygon Datasets"];
     buildings = database["UBC Buildings"];
     ubc_boundary = database["UBC Boundary"];
+    polyKeys = Object.keys(all_polygon_sets);
+    
+    // vv uncomment for cross-validation testing vv
+    /*
     var lidar_polygons = all_polygon_sets["LiDAR 2018"];
     lidar_polygons.name = "LiDAR 2018";    
     var ortho_polygons = all_polygon_sets["Orthophoto 2018"];
     ortho_polygons.name = "Orthophoto 2018";    
-    ubc_boundary_polygons = database["UBC Boundary"];
-    polygons = all_polygon_sets["LiDAR 2018"];
-    polyKeys = Object.keys(all_polygon_sets);
-    // vv uncomment for cross-validation testing vv
-    /*
-
-    ortho_polygons = findIntersections(ortho_polygons, ubc_boundary_polygons);    
-    lidar_polygons = findIntersections(lidar_polygons, ubc_boundary_polygons);
+    ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
+    lidar_polygons = findIntersections(lidar_polygons, ubc_boundary);
     polygons = ortho_polygons;    
     var lidar_ortho = findIntersections(lidar_polygons, ortho_polygons);
     polygons = lidar_ortho;
