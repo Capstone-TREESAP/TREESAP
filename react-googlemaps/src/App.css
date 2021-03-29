@@ -85,3 +85,26 @@ h3{
     transform: rotate(360deg);
   }
 }
+
+.report-button {
+  color: white;
+  font-size: 14px;
+  padding: 5px 15px;
+  background-color: #313628;
+}
+
+.edit-button {
+  margin-left: 10px;
+  color: white;
+  font-size: 14px;
+  padding: 5px 15px;
+  background-color: #313628;
+}
+
+.delete-button {
+  margin-left: 10px;
+  color: white;
+  font-size: 14px;
+  padding: 5px 15px;
+  background-color: #313628;
+}

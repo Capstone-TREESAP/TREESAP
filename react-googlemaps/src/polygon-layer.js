@@ -21,14 +21,12 @@ export class PolygonLayer {
     parsePolygons(polygons, type){
         let collectedPolygons = [];
         for (var i = 0; i < polygons.features.length; i++) {
-            console.log(polygons.features[i]);
             for (var j = 0; j < polygons.features[i].geometry.coordinates.length; j++) {
                 if (polygons.features[i].geometry.type == "MultiPolygon") {
                     var coordinates = polygons.features[i].geometry.coordinates[j][0];
                 } else {
                     var coordinates = polygons.features[i].geometry.coordinates[j];
                 }
-                console.log(coordinates);
                 var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
                 var area = PolygonEditor.getPolygonArea(this.props, points.map(
                     point => PolygonEditor.pointToLatLng(this.props, point)

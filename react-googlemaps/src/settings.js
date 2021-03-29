@@ -27,6 +27,7 @@ export default class SettingsView extends React.Component {
             onUpdateRunoff={this.props.onUpdateRunoff}
             carbonRate={this.props.carbonRate}
             runoffRate={this.props.runoffRate}
+            onToggleShadingMode={this.props.onToggleShadingMode}
           />
         </div>
       </div>
@@ -120,7 +121,7 @@ function SettingsDisplay(props) {
         <label
           className="input"
           for="setting1">
-          Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C
+          <p>Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C</p>
         </label>
         <br/>
         <input
@@ -174,7 +175,7 @@ function SettingsDisplay(props) {
             props.onClick();
           }}
         >
-          Access Shading and Cooling Tool
+          {props.shadingMode ? "Exit Shading and Cooling Tool" : "Access Shading and Cooling Tool"}
         </button>
       </div>
       <div className="for-button">
@@ -197,6 +198,7 @@ class Settings extends React.Component {
       visible: true,
       menu: null,
       editMode: false,
+      shadingMode: false
     };
     constants.set('carbon', this.props.carbonRate);
     constants.set('runoff', this.props.runoffRate);
@@ -215,6 +217,7 @@ class Settings extends React.Component {
       onToggleMode: (editMode) => this.onToggleMode(editMode),
       onToggleShadingMode: () => this.onToggleShadingMode(),
       editMode:this.state.editMode,
+      shadingMode:this.state.shadingMode,
       onRefresh: () => this.onRefresh(),
       areasOfInterest: this.areasOfInterest,
       polygonLayers: this.polygonLayers,
@@ -244,6 +247,13 @@ class Settings extends React.Component {
     this.props.onToggleMode(editMode)
   }
 
+  onToggleShadingMode() {
+    this.setState({
+      shadingMode: !this.state.shadingMode
+    })
+    console.log('changing shadingMode in settings to ' + this.state.shadingMode);
+    this.props.onToggleShadingMode();
+  }
   onRefresh(){
     this.openMenu();
   }
