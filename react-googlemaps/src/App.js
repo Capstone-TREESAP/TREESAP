@@ -8,7 +8,9 @@ import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
 import './App.css';
 import { IntersectionReport } from './report';
+import * as turf from '@turf/turf'
 
+var buildings = [];
 var all_polygon_sets = {};
 var neighborhood_polygons = {};
 var polyKeys = [];
@@ -46,19 +48,23 @@ const points = [
 //TODO: The different colors should also be constants here
 // Also different stroke weights, etc
 
+const SHADING_LINE_COLOR = "#303030";
 const mapStyles = {
     width: '100%',
     height: '100%'
 };
 
 function parseDatabase(database) {
-  console.log(database)
-  var constants = database["Calculation Constants"];
-  CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
-  TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
-  neighborhood_polygons = database["Neighborhood Polygons"];
-  all_polygon_sets = database["Tree Cover Polygon Datasets"];
-  polyKeys = Object.keys(all_polygon_sets);
+    console.log(database)
+    var constants = database["Calculation Constants"];
+    CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
+    TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
+    neighborhood_polygons = database["Neighborhood Polygons"];
+    all_polygon_sets = database["Tree Cover Polygon Datasets"];
+    buildings = database["UBC Buildings"];
+    // remove after TIC-96
+    polygons = all_polygon_sets["LiDAR 2018"];
+    polyKeys = Object.keys(all_polygon_sets);
 }
 
 export class MapContainer extends Component {
@@ -66,7 +72,6 @@ export class MapContainer extends Component {
         super(props);
         this.state = {
             isLoaded: false,
-            data: null,
             showInfoWindow: false, //Whether a polygon info window is shown
             clickedLocation: null,
             clickedPolygon: null,
@@ -80,6 +85,13 @@ export class MapContainer extends Component {
             editingIntersection: null,
             displayList: [],
             ready: false,
+            // shading/cooling state variables:
+            buildingLayer: null,
+            clickedBuilding: null,
+            clickedShadingPolygon: null,
+            clickedBuildingLocation: null,
+            clickedShadingPolygonLocation: null,
+            shadingMode: false
         };
         this.drawingView = null;
         this.intersections = [];
@@ -96,6 +108,7 @@ export class MapContainer extends Component {
             parseDatabase(result);
             this.state.displayList.push(polyKeys[0])
             this.loadPolygonLayer();
+            this.loadBuildingLayer();
           },
           (error) => {
             console.log(error);
@@ -111,18 +124,76 @@ export class MapContainer extends Component {
     getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.carbonRate;
     getAvoidedRunoffAnnually = (area) => area * this.state.runoffRate;
 
-    onMarkerClick = (props, m, e) =>
+    getShadelineLengthAndOrientation = () => {
+        var buildingPoint = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [this.state.clickedBuildingLocation.lng(), this.state.clickedBuildingLocation.lat()]
+            }
+        };
+        
+         var treePoint = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [this.state.clickedShadingPolygonLocation.lng(), this.state.clickedShadingPolygonLocation.lat()]
+            }
+        };
+        // get distance between points, in meters
+        var distance = turf.distance(buildingPoint, treePoint, "kilometers") * 1000.0;
+        var direction = turf.bearing(buildingPoint, treePoint);
+       
+        var getCardinalDirection = (angle) => {
+            var smallest_angle = 180.0;
+            var direction = null;
+            var cardinalDirections = 
+            [
+                ["N", 0.0],
+                ["NE", 45.0],
+                ["E", 90.0],
+                ["SE", 135.0],
+                ["S", 180.0],
+                ["S", -180.0],
+                ["SW", -135],
+                ["W", -90.0],
+                ["NW", -45.0]
+            ]
+            var diff =  (a, b) => a > b ? a - b : b - a;
+    
+            for (var i = 0; i < cardinalDirections.length; i++) {
+                var angle_difference = diff(angle, cardinalDirections[i][1]);
+                if (angle_difference < smallest_angle) {
+                    smallest_angle = angle_difference;
+                    direction = cardinalDirections[i][0];
+                }
+            }
+            return direction;
+        }
+        var cardinalDirection = getCardinalDirection(direction);
+        console.log(cardinalDirection);
+        return {
+            "distance": distance,
+            "direction": cardinalDirection
+        }
+    }
+
+    onMarkerClick = (props, m, e) => {
+        console.log(m.position);
         this.setState({
-        marker: m,
-        showInfoWindow: true
-    });
+            marker: m,
+            showInfoWindow: true
+        });
+    }
 
     onClose = props => {
         if (this.state.showInfoWindow) {
-        this.setState({
-            showInfoWindow: false,
-            marker: null
-        });
+            this.setState({
+                showInfoWindow: false,
+                marker: null
+            });
         }
     };
 
@@ -149,8 +220,37 @@ export class MapContainer extends Component {
             intersectionLayer: null,
             clickedPolygon: polygon,
         })
-        this.state.polygonLayers[index].selectPolygon(this.state.clickedPolygon)
+        this.state.polygonLayers[index].selectPolygon(this.state.clickedPolygon);
     };
+
+    handleBuildingClick = (building, map, coords) => {
+        // set the selected building/clicked location in state variables
+        this.setState({
+            clickedLocation: coords,
+            clickedBuilding: building,
+            clickedBuildingLocation: coords,
+            clickedShadingPolygon: null,
+            clickedShadingPolygonLocation: null
+        })
+        console.log("Handling a building being clicked on in shading mode. Here's what the state looks like right now: ");
+        console.log(building);
+        console.log(this.state);
+    }
+
+    handleShadingPolygonClick = (polygon, map, coords) => {
+        // this handler should only be called if a building was previously clicked
+        // by setting the selected polygon/clicked location, this enables us to draw a polyline and offer relative positioning info
+        this.setState({
+            clickedLocation: coords,
+            clickedShadingPolygon: polygon,
+            clickedShadingPolygonLocation: coords,
+            clickedIntersection: null,
+            intersectionLayer: null,
+            clickedPolygon: polygon,
+        });
+        console.log("Handling a tree cluster being clicked on in shading mode, after building clicked on. Here's what the state looks like right now: ");
+        console.log(this.state);
+    }
 
     handleIntersectionClick = (intersection, map, coords) => {
       if (this.state.displayList.length != 1) {
@@ -183,6 +283,10 @@ export class MapContainer extends Component {
             clickedIntersection: null,
             intersectionLayer: null,
             showInfoWindow: false,
+            clickedBuilding: null,
+            clickedBuildingLocation: null,
+            clickedShadingPolygon: null,
+            clickedShadingPolygonLocation: null
         })
     }
 
@@ -256,13 +360,30 @@ export class MapContainer extends Component {
       })
     }
 
+    onToggleShadingMode = () => {
+        this.setState({
+            shadingMode: !this.state.shadingMode,
+            showInfoWindow: false,
+            clickedBuilding: null,
+            clickedBuildingLocation: null,
+            clickedShadingPolygon: null,
+            clickedShadingPolygonLocation: null
+        })
+    }
+
     loadPolygonLayer = () => {
       var layersList = [];
       for(var polygons in polyKeys){
-        layersList.push(new PolygonLayer(all_polygon_sets[polyKeys[polygons]], this.props, this._map.map))
+        layersList.push(new PolygonLayer(all_polygon_sets[polyKeys[polygons]], this.props, this._map.map, "tree"));
       }
         this.setState({
             polygonLayers: layersList,
+        })
+    }
+
+    loadBuildingLayer = () => {
+        this.setState({
+            buildingLayer: new PolygonLayer(buildings, this.props, this._map.map, "building")
         })
     }
 
@@ -299,14 +420,42 @@ export class MapContainer extends Component {
         }
     }
 
+    displayBuildingLayer = () => {
+        if (this.state.buildingLayer != null) {
+            return this.displayPolygons(this.state.buildingLayer.polygons, "#6699CC", 0)
+        }
+    }
+
     //Display a set of polygons
     displayPolygons = (polygons, color, zIndex) => {
         return polygons.map(polygon =>
         <Polygon
             paths={polygon.points}
             key={polygon.key}
-            onClick={(t, map, coords) =>
-                this.handleClick(polygon, map, coords.latLng)
+            onClick={(t, map, coords) => 
+                {   
+                    console.log(coords);
+                    // if shading mode, then first check if a building has been clicked, and handle accordingly
+                    if (this.state.shadingMode) {
+                        if (polygon.type == "building") {
+                            console.log("I think a building is being clicked on in shading mode.");
+                            this.handleBuildingClick(polygon, map, coords.latLng);
+                        /* if shading mode, and a tree cluster was clicked, check if a building was previously clicked
+                           if so, we can draw a polyline, plant a marker, offer relative positioning info etc.*/
+                        } else if (this.state.clickedBuilding) {
+                            console.log("I think a tree cluster is being clicked on in shading mode, after a building was clicked on")
+                            this.handleShadingPolygonClick(polygon, map, coords.latLng);
+                        // if shading mode and a tree cluster was clicked without a building first being clicked, just behave as usual
+                        } else {
+                            console.log("I think a tree cluster is being clicked on in shading mode, before a building was clicked on")
+                            this.handleClick(polygon, map, coords.latLng);
+                        }
+                    // if not shading mode, just handle tree polygon click as normal
+                    } else if (polygon.type == "tree") {
+                        console.log("Hey, I don't think we're in shading mode and I think a tree cluster is being clicked on")
+                        this.handleClick(polygon, map, coords.latLng);
+                    }
+                }
             }
             strokeColor={color}
             strokeOpacity={0.8}
@@ -430,6 +579,7 @@ export class MapContainer extends Component {
         ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
     }
 
+
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
         let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate)
@@ -460,7 +610,28 @@ export class MapContainer extends Component {
                 <h3>Total Area of Tree Cover: {totalArea ? totalArea : null} m<sup>2</sup></h3>
                 <h3>Total Carbon sequestered: {totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</h3>
                 <h3>Total Avoided rainwater run-off: {totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</h3>
-            </div>)
+            </div>) 
+        } else if (this.state.shadingMode && this.state.clickedBuildingLocation) {
+            if (this.state.clickedShadingPolygonLocation) {
+                var relative_position = this.getShadelineLengthAndOrientation();
+                console.log(relative_position);
+                var distance = relative_position.distance.toFixed(2);
+                var direction = relative_position.direction;
+                return(<div>
+                    <h2>{this.state.clickedBuilding.name}</h2>
+                    <h3>{this.state.clickedBuilding.address}</h3>
+                    <h3>Tree cluster is {distance} metres {direction} of the building</h3>
+                </div>) 
+            } else {
+                var occupied_date = this.state.clickedBuilding.occupied_date.toString();
+                return(<div>
+                    <h2>{this.state.clickedBuilding.name}</h2>
+                    <h3>{this.state.clickedBuilding.address}</h3>
+                    <h3>Neighbourhood: {this.state.clickedBuilding.neighbourhood ? this.state.clickedBuilding.neighbourhood : "Unknown"}</h3>
+                    <h3>Date Occupied (yyyy/mm/dd): {occupied_date.substring(0, 4) + "/" + occupied_date.substring(4, 6) + "/" + occupied_date.substring(6, 8)}</h3>
+                    <h3>Maximum Floors: {this.state.clickedBuilding.max_floors ? this.state.clickedBuilding.max_floors : "Unknown"}</h3>
+                </div>) 
+            }
         } else {
             return(<div>
                 <h3>Area: {this.state.clickedPolygon ? this.state.clickedPolygon.area : null} m<sup>2</sup></h3>
@@ -469,6 +640,7 @@ export class MapContainer extends Component {
             </div>)
         }
     }
+    
     //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
   renderHeatmap = () => {
     if (this.state.polygonLayers == null || this.state.displayList.length < 1) {
@@ -540,11 +712,11 @@ export class MapContainer extends Component {
             yesIWantToUseGoogleMapApiInternals
             onReady={() => {this.setState({ready: true}); this.loadDrawingManager();}}
             onClick={this.onGenericClick}
-        >
+        >   
             <Marker
                 onClick={this.onMarkerClick}
                 visible={this.state.clickedLocation != null}
-                position={this.state.clickedLocation}
+                position={this.state.clickedLocation }
             />
             <InfoWindow
                 visible={this.state.showInfoWindow}
@@ -557,6 +729,15 @@ export class MapContainer extends Component {
                 <div id="iwc" />
                 {this.renderInfoWindow()}
             </InfoWindow>
+            <Polyline
+                visible={this.state.clickedBuildingLocation && this.state.clickedShadingPolygonLocation}
+                path={[this.state.clickedBuildingLocation, this.state.clickedShadingPolygonLocation]}
+                strokeColor={SHADING_LINE_COLOR}
+                strokeOpacity={0.8}
+                strokeWeight={5}
+                //onClick={}
+                zIndex={1}
+            />
             <SettingsView
                 onToggleMode={this.onToggleMode}
                 neighborhoodPolygonsList={neighborhood_polygons}
@@ -569,8 +750,10 @@ export class MapContainer extends Component {
                 onUpdateRunoff={this.onUpdateRunoff}
                 carbonRate={this.state.carbonRate}
                 runoffRate={this.state.runoffRate}
+                onToggleShadingMode={this.onToggleShadingMode}
             />
             {this.state.ready && this.displayPolygonLayer()}
+            {this.displayBuildingLayer()}
             {this.displayIntersections()}
             {this.renderHeatmap()}
             <div className="legend-container">

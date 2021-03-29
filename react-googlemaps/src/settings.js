@@ -169,8 +169,12 @@ function SettingsDisplay(props) {
         <button
           className="display-save"
           type="button"
+          onClick={() => {
+            props.onToggleShadingMode();
+            props.onClick();
+          }}
         >
-          Access Shading and Cooling Interface
+          Access Shading and Cooling Tool
         </button>
       </div>
       <div className="for-button">
@@ -209,6 +213,7 @@ class Settings extends React.Component {
     let menu = SettingsDisplay({
       onClick: () => this.closeMenu(),
       onToggleMode: (editMode) => this.onToggleMode(editMode),
+      onToggleShadingMode: () => this.onToggleShadingMode(),
       editMode:this.state.editMode,
       onRefresh: () => this.onRefresh(),
       areasOfInterest: this.areasOfInterest,

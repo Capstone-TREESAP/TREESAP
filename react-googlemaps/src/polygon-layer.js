@@ -4,13 +4,13 @@ const CUSTOM_KEY = "C"
 var customKeyNum = 0
 
 export class PolygonLayer {
-    constructor(polygonList, props, map) {
+    constructor(polygonList, props, map, type) {
         this.props = props
         this.map = map
         this.polygon = null
         this.editablePolygon = null
-
-        this.polygons = this.parsePolygons(polygonList);
+        this.type = type;
+        this.polygons = this.parsePolygons(polygonList, type);
         this.positions = this.parseRawPoints(this.polygons);
     }
 
@@ -18,25 +18,38 @@ export class PolygonLayer {
         this.polygon = polygon
     }
 
-    parsePolygons(polygons){
+    parsePolygons(polygons, type){
         let collectedPolygons = [];
-    
-        for(var i = 0; i < polygons.features.length; i++) {
-      
-            var coordinates = polygons.features[i].geometry.coordinates[0];
-            var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
-            var area = PolygonEditor.getPolygonArea(this.props, points.map(
-                point => PolygonEditor.pointToLatLng(this.props, point)
-            ))
-            collectedPolygons.push(
-                {
+        for (var i = 0; i < polygons.features.length; i++) {
+            console.log(polygons.features[i]);
+            for (var j = 0; j < polygons.features[i].geometry.coordinates.length; j++) {
+                if (polygons.features[i].geometry.type == "MultiPolygon") {
+                    var coordinates = polygons.features[i].geometry.coordinates[j][0];
+                } else {
+                    var coordinates = polygons.features[i].geometry.coordinates[j];
+                }
+                console.log(coordinates);
+                var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
+                var area = PolygonEditor.getPolygonArea(this.props, points.map(
+                    point => PolygonEditor.pointToLatLng(this.props, point)
+                ))
+                var polygon = {
                     // "key": polygons.features[i].properties.id, //TODO change this if it gets renamed to key
-                    "key": i,
+                    "key": type == "tree" ? i : polygons.features[i].properties["BLDG_UID"] + "." + j,
                     "points": points,
                     "area": area,
-                    "editable": false
+                    "editable": false,
+                    "type": type
+                };
+                if (type == "building") {
+                    polygon.address = polygons.features[i].properties["PRIMARY_ADDRESS"];
+                    polygon.name = polygons.features[i].properties["NAME"];
+                    polygon.neighbourhood = polygons.features[i].properties["NEIGHBOURHOOD"];
+                    polygon.occupied_date = polygons.features[i].properties["OCCU_DATE"];
+                    polygon.max_floors = polygons.features[i].properties["MAX_FLOORS"];
                 }
-            )
+                collectedPolygons.push(polygon);
+            }
         }
     
         return collectedPolygons;
