@@ -4,12 +4,17 @@ import { Document, Page, Text, View, StyleSheet, BlobProvider, Font, Canvas, Ima
 import { PolygonEditor } from './polygon-editor';
 import { ReportGeometry } from './report-geometry';
 import ReactDOM from 'react-dom';
+import * as turf from '@turf/turf'
 
 const SQUARE_METRE_TO_HECTARE = 10000;
+const TOP_MARGIN = 30;
+const BOTTOM_MARGIN = 30;
+const LEFT_MARGIN = 20;
+const RIGHT_MARGIN = 20;
 
 export class IntersectionReport {
-    constructor(boundingLine, intersectingPolygons, carbonRate, runoffRate) {
-
+    constructor(props, boundingLine, intersectingPolygons, carbonRate, runoffRate) {
+        this.props = props
         this.boundingLine = boundingLine
         this.intersectingPolygons = intersectingPolygons
         this.carbonRate = carbonRate
@@ -17,10 +22,7 @@ export class IntersectionReport {
 
         this.styles = StyleSheet.create({
             title: {
-                marginTop: 30,
-                marginLeft: 10,
-                marginRight: 10,
-                marginBottom: 10,
+                paddingBottom: 10,
             },
             titleText: {
                 fontSize: 20,
@@ -30,12 +32,9 @@ export class IntersectionReport {
             subtitleText: {
                 fontSize: 18,
                 textAlign: "left",
-                paddingBottom: 5,
+                paddingBottom: 20,
             },
             bodySection: {
-                marginLeft: 10,
-                marginRight: 10,
-                marginTop: 10,
                 
                 // borderBottomWidth: 1,
                 // borderBottomColor: '#112131',
@@ -47,161 +46,90 @@ export class IntersectionReport {
                 lineHeight: 1.5,
             },
             page: {
-                flexDirection: "row"
-            },
-            section: {
-                flexGrow: 1
+                paddingTop: TOP_MARGIN,
+                paddingBottom: BOTTOM_MARGIN,
+                paddingLeft: LEFT_MARGIN,
+                paddingRight: RIGHT_MARGIN
             },
             canvasContainer: {
-                marginLeft: 10,
-                marginRight: 10,
-                textAlign: "center",
+                paddingTop: 20,
+                paddingLeft: 100,
             },
             canvas: {
                 height: 300,
                 width: 300,
-                align: "inline"
             },
-            breakdownRow: {
+            smallCanvas: {
+                height: 100,
+                width: 100,
+            },
+            summaryRow: {
                 flex: 1,
                 flexDirection: 'row',
                 flexGrow: 1,
             },
+            summaryLeft: {
+                width: '40%'
+            },
+            summaryRight: {
+                textAlign: "center",
+                width: '60%'
+            },
+            breakdownRow: {
+                flex: 1,
+                flexDirection: 'row',
+                paddingBottom: 20,
+            },
             breakdownLeft: {
-                marginLeft: 10,
-                marginRight: 10,
                 width: '50%'
             },
             breakdownRight: {
-                marginLeft: 10,
-                marginRight: 10,
-                textAlign: "center",
+                width: '50%'
+            },
+            subBreakdownRow: {
+                flex: 1,
+                flexDirection: 'row',
+            },
+            subBreakdownLeft: {
+                width: '50%'
+            },
+            subBreakdownRight: {
                 width: '50%'
             },
         });
     }
 
-    getBoundingLineText() {
-        return (
-            "Bounding polygon:\n" + JSON.stringify(this.boundingLine, null, 2)
-        )
-    }
-
-    createTitleSection() {
-        let date = new Date();
-        return (
-            <View style={this.styles.title}>
-                <Text style={this.styles.titleText}>Ecosystem Services Report</Text>
-                <Text style={this.styles.bodyText}>{"Date Created: " + date}</Text>
-            </View>
-        )
-        
-    }
-
-    //TODO add details section with coordinates
-    createSummarySection() {
-        //TODO avoid duplicating code
-        //TODO add name
-        //TODO add vegetation density
-        //TODO add centroid coordinate
-        let totalArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
-        let totalCarbon = (totalArea / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
-        let totalRunoff = (totalArea * this.runoffRate).toFixed(2);
-        let numPolygons = this.intersectingPolygons.length;
-        let geometry = new ReportGeometry();
-
-        console.log("Creating summary")
-
-        return (
-            <View>
-            <View style={this.styles.bodySection}>
-                <Text style={this.styles.subtitleText}>Summary</Text>
-            </View>
-            <View style={this.styles.bodySection}>
-                <Text style={this.styles.bodyText}>{"Total area of tree clusters: " + totalArea + " square metres"}</Text>
-                <Text style={this.styles.bodyText}>{"Total carbon sequestration: " + totalCarbon + " tonnes/year"}</Text>
-                <Text style={this.styles.bodyText}>{"Total avoided stormwater runoff: " + totalRunoff + " litres/year"}</Text>
-                <Text style={this.styles.bodyText}>{"Number of tree clusters within bounds: " + numPolygons}</Text>
-            </View>
-            <View style={this.styles.canvasContainer}>
-                {/* TODO figure out how to center this */}
-                <Canvas 
-                    style={this.styles.canvas}
-                    paint={painter => 
-                    geometry.drawPolygons(
-                        painter, 
-                        this.boundingLine.coordinates, 
-                        this.intersectingPolygons,
-                        {"x": 0, "y":0},
-                        this.styles.canvas.height, 
-                        this.styles.canvas.width
-                    )}
-                >
-                </Canvas>
-            </View>
-            </View>
-        )
-    }
-
-    createBreakdownSection() {
-        let subsections = [];
-        for (let i in this.intersectingPolygons) {
-            subsections.push(this.createSinglePolygonSection(this.intersectingPolygons[i], parseInt(i) + 1))
-        }
-
-        return subsections
-    }
-
-    createSinglePolygonSection(polygon, num) {
-        //TODO avoid duplicating code
-        let area = polygon.area
-        let carbon = (area / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
-        let runoff = (area * this.runoffRate).toFixed(2);
-        let geometry = new ReportGeometry();
-
-        return (
-            <View style={this.styles.breakdownRow}>
-            <View style={this.styles.breakdownLeft}>
-                <Text style={this.styles.bodyText}>{num + ". Area:" + area + " square metres"}</Text>
-                <Text style={this.styles.bodyText}>{"\tCarbon sequestration: " + carbon + " tonnes/year"}</Text>
-                <Text style={this.styles.bodyText}>{"\tAvoided stormwater runoff: " + runoff + " litres/year"}</Text>
-            </View>
-            <View style={this.styles.breakdownRight}>
-                {/* TODO figure out how to center this */}
-                <Canvas 
-                    style={this.styles.canvas}
-                    paint={painter => 
-                    geometry.drawPolygon(
-                        painter, 
-                        polygon.points, 
-                        {"x": 0, "y":0},
-                        50, 50
-                    )}
-                >
-                </Canvas>
-            </View>
-            </View>
-        )
-    }
-
+    
     displayReportButton() {
-        return this.createReport()
+        return(
+            <button
+                className="info-window-button"
+                type="button"
+                onClick={() => {
+                    let button = this.createReport()
+                    ReactDOM.render(React.Children.only(button), document.getElementById("iwc"))
+                }}
+            >
+                Generate Report
+            </button>
+        )
     }
 
     createReport() {
         const MyDocument = (
         <Document>
-            <Page size="A4">
+            <Page size="A4" style={this.styles.page}>
                 {this.createTitleSection()}
                 {this.createSummarySection()}
             </Page>
-            {/* <Page size="A4">
+            <Page size="A4" style={this.styles.page}>
                 {this.createBreakdownSection()}
-            </Page> */}
+            </Page>
+            <Page size="A4" style={this.styles.page}>
+                {this.createLineDetailsSection()}
+            </Page>
         </Document>
         );
-
-        console.log("Created document")
 
         return (
         <div>
@@ -225,5 +153,155 @@ export class IntersectionReport {
         </div>)
     }
 
+    createTitleSection() {
+        let date = new Date();
+        return (
+            <View style={this.styles.title}>
+                <Text style={this.styles.titleText}>Ecosystem Services Report</Text>
+                <Text style={this.styles.bodyText}>{"Date Created: " + date}</Text>
+            </View>
+        )
+        
+    }
+
+    createNameLine() {
+        if (this.boundingLine.name != undefined) {
+            return this.createStatRow("Name", this.boundingLine.name)
+        }
+    }
+
+    createStatRow(statText, statValue) {
+        return (
+            <View style={this.styles.summaryRow}>
+                <View style={this.styles.summaryLeft}>
+                    <Text style={this.styles.bodyText}>{statText + ": "}</Text>
+                </View>
+                <View style={this.styles.summaryRight}>
+                    <Text style={this.styles.bodyText}>{statValue}</Text>
+                </View>
+            </View>
+        )
+    }
+
+    createStatSubRow(statText, statValue) {
+        return (
+            <View style={this.styles.subBreakdownRow}>
+                <View style={this.styles.subBreakdownLeft}>
+                    <Text style={this.styles.bodyText}>{statText + ": "}</Text>
+                </View>
+                <View style={this.styles.subBreakdownRight}>
+                    <Text style={this.styles.bodyText}>{statValue}</Text>
+                </View>
+            </View>
+        )
+    }
+
+    createSummarySection() {
+        //TODO avoid duplicating code
+        let area = PolygonEditor.getPolygonArea(this.props, PolygonEditor.jsonToGoogleCoords(this.props, this.boundingLine.coordinates))
+        let totalArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
+        let totalCarbon = (totalArea / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
+        let totalRunoff = (totalArea * this.runoffRate).toFixed(2);
+        let numPolygons = this.intersectingPolygons.length;
+        let geometry = new ReportGeometry();
+        let vegetationDensity = (totalArea / area * 100).toFixed(2)
+        let centroid = turf.centroid(turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(this.boundingLine.coordinates)))
+
+        return (
+            <View>
+            <View style={this.styles.bodySection}>
+                <Text style={this.styles.subtitleText}>Summary</Text>
+            </View>
+            <View style={this.styles.bodySection}>
+                {this.createNameLine()}
+                {this.createStatRow("Area", area + " square metres")}
+                {this.createStatRow("Total area of tree clusters", totalArea + " square metres")}
+                {this.createStatRow("Vegetation density", vegetationDensity + "%")}
+                {this.createStatRow("Total carbon sequestered", totalCarbon + " tonnes/year")}
+                {this.createStatRow("Total avoided stormwater runoff", totalRunoff + " litres/year")}
+                {this.createStatRow("Number of tree clusters within bounds", numPolygons)}
+                {this.createStatRow("Center point of area", "(" + centroid.geometry.coordinates[0] + ", " + centroid.geometry.coordinates[0] + ")")}
+            </View>
+            <View style={this.styles.canvasContainer}>
+                <Canvas 
+                    style={this.styles.canvas}
+                    paint={painter => 
+                    geometry.drawPolygons(
+                        painter, 
+                        this.boundingLine.coordinates, 
+                        this.intersectingPolygons,
+                        {"x": 0, "y":0},
+                        this.styles.canvas.height, 
+                        this.styles.canvas.width
+                    )}
+                >
+                </Canvas>
+            </View>
+            </View>
+        )
+    }
+
+    createLineDetailsSection() {
+        let coordinateList = "";
+        for (var i in this.boundingLine.coordinates) {
+            let point = this.boundingLine.coordinates[i]
+            coordinateList += "(" + point.lat + ", " + point.lng + ")\n"
+        }
+
+        return (
+            <View>
+                <Text style={this.styles.subtitleText}>List of Coordinates in Bounds</Text>
+                <Text style={this.styles.bodyText}>{coordinateList}</Text>
+            </View>
+        )
+    }
+
+    createBreakdownSection() {
+        let subsections = [];
+        for (let i in this.intersectingPolygons) {
+            subsections.push(this.createSinglePolygonSection(this.intersectingPolygons[i], parseInt(i) + 1))
+        }
+
+        return (
+            <View>
+                <Text style={this.styles.subtitleText}>Breakdown of Contained Tree Clusters</Text>
+                <View style={this.styles.bodySection}>{subsections}</View>
+            </View>
+        )
+    }
+
+    createSinglePolygonSection(polygon, num) {
+        //TODO avoid duplicating code
+        let area = polygon.area
+        let carbon = (area / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
+        let runoff = (area * this.runoffRate).toFixed(2);
+        let geometry = new ReportGeometry();
+
+        return (
+            <View style={this.styles.breakdownRow}>
+                <View style={this.styles.breakdownLeft} wrap={false}>
+                    {this.createStatSubRow(num + ". Area", area + " square metres")}
+                    {this.createStatSubRow("Carbon sequestration", carbon + " tonnes/year")}
+                    {this.createStatSubRow("Avoided stormwater runoff", runoff + " litres/year")}
+                </View>
+                <View style={this.styles.breakdownRight}>
+                    <Canvas 
+                        style={this.styles.smallCanvas}
+                        paint={painter => 
+                        geometry.drawPolygons(
+                            painter, 
+                            this.boundingLine.coordinates, 
+                            this.intersectingPolygons,
+                            {"x": 0, "y":0},
+                            this.styles.smallCanvas.height, 
+                            this.styles.smallCanvas.width,
+                            num
+                        )}
+                    >
+                    </Canvas>
+                </View>
+            </View>
+        )
+    }
 
 }

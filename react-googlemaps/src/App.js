@@ -379,7 +379,7 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
-        let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate)
+        let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate)
 
         //TODO this is hacky but works for now
         if (intersection.name == undefined) {

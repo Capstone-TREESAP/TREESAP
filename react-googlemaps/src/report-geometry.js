@@ -1,3 +1,6 @@
+const OUTLINE_COLOR = "#575656"
+const INTERIOR_COLOR = "#D3D3D3"
+const FILL_COLOR = "#014421"
 
 export class ReportGeometry {
     constructor() {
@@ -22,14 +25,22 @@ export class ReportGeometry {
         let transformedPolygons = this.transformPolygonAll(boundingCoordinates, polygonList, startingPoint, height, width)
 
         for (var i = 0; i < transformedPolygons.length; i++) {
-            console.log(i)
             let points = transformedPolygons[i]
 
             painter.moveTo(points[0].x, points[0].y)
             for (var j = 1; j < points.length; j++) {
                 painter.lineTo(points[j].x, points[j].y)
             }
-            painter.stroke()
+
+            if (parseInt(i) === 0) {
+                painter.stroke(OUTLINE_COLOR)
+            } else if (polygonNumToFill == undefined || polygonNumToFill == null) {
+                painter.fillAndStroke(FILL_COLOR, FILL_COLOR)
+            } else if (parseInt(i) === polygonNumToFill) {
+                painter.fillAndStroke(FILL_COLOR, FILL_COLOR)
+            } else {
+                painter.stroke(INTERIOR_COLOR)
+            }
         }
     }
 

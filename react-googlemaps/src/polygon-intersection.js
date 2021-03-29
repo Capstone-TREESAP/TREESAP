@@ -37,6 +37,7 @@ export class PolygonIntersection {
         let boundingLine = turf.polygonToLine(this.boundingPolygon)
         let coordinates = boundingLine.geometry.coordinates;
         return {
+            "name": this.name,
             "key": PolygonEditor.createKey(INTERSECTION_KEY, intersectionKeyNum++),
             "coordinates": PolygonEditor.geoJSONtoJSONCoords(coordinates),
         }
