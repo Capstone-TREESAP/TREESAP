@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
         
         self.__process_output_update()
         self.__test_output_update()
+        self.__tooltip_setup()
         
         self.plotter = GraphGUI()
         self.__check_test_data()
@@ -60,9 +61,8 @@ class MainWindow(QMainWindow):
         
     def __process_test_data(self):
         self.statusBar().showMessage('Processing...')
-
         self.timer.restart()
-
+        
         pipeline = ProcessingPipeline(notebook=True)
         pipeline.pre_process_las_files(configure['Test']['dest_dir_path'])
         points_x, points_y = pipeline.collect_points_from_map()
@@ -81,7 +81,6 @@ class MainWindow(QMainWindow):
         self.webEngineView.reload()
         self.webEngineView.setUrl(QUrl("file://" + os.path.abspath(configure.get("Constants", "plot_html_file_path"))))
         
-
         self.__test_output_update(cluster_time=(end_time - start_time), number_of_clusters=np.amax(clustering.labels_), total_time=self.timer.elapsed())
         data_path = configure.get('Download','dest_dir_path')
         self.__process_output_update(self.timer.elapsed() * pipeline.pre_processor.collect_las_file_from_folder(new_path=data_path), estimated=True)
@@ -97,8 +96,14 @@ class MainWindow(QMainWindow):
     def __process_output_update(self, total_processing_time=0, estimated=False):
         total_seconds = total_processing_time / 1000.0
         self.label_process_output.setText("%s total processing time: %.2f seconds (%.2f minutes)\n" % ("(estimated)" if estimated else "", total_seconds, total_seconds/60.0))
-    """[summary]
-    """
+    
+    def __tooltip_setup(self):
+        # self.pushButton_eps_update.setToolTip("<b>EPS parameter(float)</b>: The maximum distance between two samples for one to be considered as in the neighborhood of the other. This is not a maximum bound on the distances of points within a cluster. This is the most important DBSCAN parameter to choose appropriately for your data set and distance function.")
+        self.pushButton_eps_update.setToolTip(configure.get("ToolTips", "eps"))
+        self.pushButton_down_size_update.setToolTip(configure.get("ToolTips", "down_size"))
+        self.pushButton_min_sample_update.setToolTip(configure.get("ToolTips", "min_sample"))
+        
+    
     @pyqtSlot()
     def __on_click_down_size_update(self):
         down_size_value = int(self.LineEdit_downsize.text())
