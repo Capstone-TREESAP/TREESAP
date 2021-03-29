@@ -7,7 +7,7 @@ import { PolygonLayer } from './polygon-layer'
 import { PolygonIntersection } from './polygon-intersection';
 import { PolygonEditor } from './polygon-editor';
 import './App.css';
-// import { IntersectionReport } from './report';
+import { IntersectionReport } from './report';
 
 var polygons = null;
 var all_polygon_sets = {};
@@ -207,7 +207,7 @@ export class MapContainer extends Component {
     }
     
     setPolygonLayer = (displayList) => {
-      polygons = all_polygon_sets[displayList[0]];
+      polygons = all_polygon_sets["LiDAR 2018"];
     }
 
     onUpdateCarbon = (carbonValue) => {
@@ -379,19 +379,19 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
-        // let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer)
+        let report = new IntersectionReport(intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate)
 
         //TODO this is hacky but works for now
         if (intersection.name == undefined) {
             buttons = (<div>
                 <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
                 <button className="info-window-button" type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
-                {/* {report.createReport()} */}
+                {report.displayReportButton()}
             </div>)
         } else {
             buttons = (<div>
                 <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
-                {/* {report.createReport()} */}
+                {report.displayReportButton()}
             </div>)
         }
 
