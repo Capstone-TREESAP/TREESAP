@@ -28,6 +28,7 @@ progress = "^1.5"
 laszip = "^0.0.1"
 tqdm = "^4.59.0"
 PyQtWebEngine = "^5.15.4"
+geopandas = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

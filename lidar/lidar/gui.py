@@ -6,13 +6,14 @@ from progress.bar import Bar
 import plotly.io as pio
 # too many points, cannot render embedded
 # https://plotly.com/python/renderers/
-
+from config import configure
 class GraphGUI():
     def __init__(self):
         self._x = np.array([])
         self._y = np.array([])
         self._z = np.array([])
         self._label = np.array([])
+        self._plot_path = configure.get("Constants", "plot_html_file_path")
         self.add_image = True
         self.small_img = Image.open("../data/481E_5456N_tiny.png")
     @property
@@ -85,7 +86,7 @@ class GraphGUI():
         )
         fig.show()
         
-    def display_2d_labelled_pcd(self, offset, render="browser"):
+    def display_2d_labelled_pcd(self, offset, save_file=False, render="browser"):
         """[summary]
 
         Args:
@@ -94,7 +95,6 @@ class GraphGUI():
         """
         if not self.__data_checker(pcd_2d=True, pcd_label=True):
             return 
-        pio.renderers.default = render
         fig = go.Figure()
         for i in np.arange(np.amax(self._label)):
             x_cluster = self._x[np.where(self._label == i)]
@@ -127,7 +127,14 @@ class GraphGUI():
             scaleanchor = "x",
             scaleratio = 1,
         )
-        fig.show()
+        if save_file:
+            from plotly.offline import plot
+            url= plot(fig, filename=self._plot_path)
+            fig = None
+        else:
+            pio.renderers.default = render
+            fig.show()
+        
         
     def display_3d_pcd(self, render="browser"):
         """[summary]

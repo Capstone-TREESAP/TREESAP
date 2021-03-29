@@ -6,13 +6,13 @@ from alpha_shapes.alpha_shapes import Alpha_Shaper
 import alphashape
 import utm
 from tqdm import tqdm
-from config import CONSTANT
+from config import configure
 from pre_processing import PreProcessor
 import pandas as pd
 import os
 import argparse
 
-class ProcessingPipeline(CONSTANT):
+class ProcessingPipeline():
     """ The main LiDAR processing pipeline that contains the preprocessing and processing stages. 
 
     Args:
@@ -47,20 +47,23 @@ class ProcessingPipeline(CONSTANT):
                 las_file.point_x, las_file.point_y =  self.pre_processor.extract_relative_las_data(las_file)
                 las_file.valid = True
             except LookupError:
-                if self.DEBUG:
+                if configure.getboolean('Configure', 'DEBUG'):
                     print("No trees are classified on the tile")
                 las_file.valid = False
 
-    def processing_by_map(self, output_file):
-        """ process the whole map at once
+    def processing_by_map(self, output_file, callback=None):
+        """process the whole map at once
 
         Args:
             output_file (str): the path to output file to save to.
+
+        Returns:
+            [type]: [description]
         """
         all_point_x = np.array([])
         all_point_y = np.array([])
 
-        if not self.reload and os.path.exists(self.PKL_FILE_PATH):
+        if not self.reload and os.path.exists(configure.get('Constants', 'pkl_file_path')):
             points = self.load_points_from_pkl()
             all_point_x = points[:, 0].T 
             all_point_y = points[:, 1].T
@@ -72,10 +75,11 @@ class ProcessingPipeline(CONSTANT):
             self.save_points_as_pkl(np.vstack((all_point_x, all_point_y)).T)
         
         print(all_point_x.shape)
-        self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y)
+        self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y, callback=callback)
         self.export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
+        return all_point_x, all_point_y
     
-    def extract_polygon_features(self, point_x, point_y):
+    def extract_polygon_features(self, point_x, point_y, callback=None):
         """Extract polygons from given p oints
 
         Args:
@@ -90,31 +94,31 @@ class ProcessingPipeline(CONSTANT):
         start_time = time.perf_counter()
         
         # Cluster the points based on paramters
-        clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE, n_jobs=12).fit(points)
+        clustering = DBSCAN(eps=configure.getfloat('Parameters', 'eps'), min_samples=configure.getfloat('Parameters', 'min_sample'), n_jobs=-1).fit(points)
 
         end_time = time.perf_counter()
         self.processing_time += end_time - start_time
         
-        if self.DEBUG:
-            print("Clustering took %f seconds, found %d clusters" % (np.amax(clustering.labels_), self.processing_time))
-        
-        
+        if configure.getboolean('Configure', 'debug'):
+            print("Clustering took %f seconds, found %d clusters" % (self.processing_time, np.amax(clustering.labels_)))
+            
         polygons = []
         
         # set up a progress bar
-        
         for i in tqdm(np.arange(np.amax(clustering.labels_))):
+            if callback is not None:
+                callback(i, np.amax(clustering.labels_))
             x_cluster = points[:, 0][np.where(clustering.labels_ == i)]
             y_cluster = points[:, 1][np.where(clustering.labels_ == i)]
             sample = np.vstack((x_cluster, y_cluster)).T
 
-            if np.unique(sample, axis=0).shape[0] <= self.MIN_SIZE:
+            if np.unique(sample, axis=0).shape[0] <= configure.getint('Parameters', 'min_size'):
                 continue
             
-            alpha_opt = self.DEFAULT_ALPHA_SHAPE
+            alpha_opt = configure.getfloat('Constants', 'default_alpha_shape')
             alpha_shape = alphashape.alphashape(sample, alpha_opt)
 
-            if alpha_shape.area > self.MIN_POLYGON_AREA:
+            if alpha_shape.area > configure.getint('Parameters', 'min_polygon_area'):
                 sample_size = sample.shape[0]
                 """
                 if polygon's area is bigger than an single estimated tree area, that means there are more than one tree in the cluster 
@@ -128,11 +132,11 @@ class ProcessingPipeline(CONSTANT):
                     # TODO: don't use optimze, instead use pre-defined alpha
                     alpha_shape = alphashape.alphashape(sample[down_sample_index])
 
-            if alpha_shape.geom_type == self.ALPHA_SHAPE_MULTIPOLYGON_TYPE:
+            if alpha_shape.geom_type == configure.get('Constants', 'alpha_shape_multipolygon_type'):
                 # sometimes there will be more than one polygons from alpha shape. 
                 for each_polyon in alpha_shape:
                     polygons.append(self.__get_polygon_from_feature(each_polyon))
-            elif alpha_shape.geom_type == self.ALPHA_SHAPE_POLYGON_TYPE:
+            elif alpha_shape.geom_type == configure.get('Constants', 'alpha_shape_polygon_type'):
                 polygons.append(self.__get_polygon_from_feature(alpha_shape))
                 
         return polygons
@@ -152,12 +156,12 @@ class ProcessingPipeline(CONSTANT):
         start_time = time.perf_counter()
         
         # Cluster the points based on paramters
-        clustering = DBSCAN(eps=self.EPS, min_samples=self.MIN_SAMPLE, n_jobs=-1).fit(points)
+        clustering = DBSCAN(eps=configure.getfloat('Parameters', 'eps'), min_samples=configure.getfloat('Parameters', 'min_sample'), n_jobs=-1).fit(points)
 
         end_time = time.perf_counter()
         self.processing_time += end_time - start_time
         
-        if self.DEBUG:
+        if configure.getboolean('Configure', 'debug'):
             print("Clustering took %f seconds, found %d clusters" % (self.processing_time, np.amax(clustering.labels_)))
         
         
@@ -173,10 +177,10 @@ class ProcessingPipeline(CONSTANT):
             y_cluster = points[:, 1][np.where(clustering.labels_ == i)]
             sample = np.vstack((x_cluster, y_cluster)).T
 
-            if np.unique(sample, axis=0).shape[0] <= self.MIN_SIZE:
+            if np.unique(sample, axis=0).shape[0] <= configure.getint('Parameters', 'min_size'):
                 continue
             
-            alpha_opt = self.DEFAULT_ALPHA_SHAPE
+            alpha_opt = configure.getfloat('Constants', 'default_alpha_shape')
             alpha_shape = alphashape.alphashape(sample, alpha_opt)
 
             if alpha_shape.area > max:
@@ -194,30 +198,23 @@ class ProcessingPipeline(CONSTANT):
                 
                 # save these polygons to a pkl file
                 
-                if alpha_shape.geom_type == self.ALPHA_SHAPE_MULTIPOLYGON_TYPE:
+                if alpha_shape.geom_type == configure.get('Constants', 'alpha_shape_multipolygon_type'):
                     # sometimes there will be more than one polygons from alpha shape. 
                     for each_polyon in alpha_shape:
                         polygons.append(self.__get_polygon_from_feature(each_polyon))
                         shapely_polygons.append(each_polyon)
-                elif alpha_shape.geom_type == self.ALPHA_SHAPE_POLYGON_TYPE:
+                elif alpha_shape.geom_type == configure.get('Constants', 'alpha_shape_polygon_type'):
                     polygons.append(self.__get_polygon_from_feature(alpha_shape))
                     shapely_polygons.append(alpha_shape)
         print("max is ", max)
         return polygons, shapely_polygons
-
-                
-    def update_parameters(self, down_size=CONSTANT.DOWN_SIZE, eps=CONSTANT.EPS, min_sample=CONSTANT.MIN_SAMPLE, min_size = CONSTANT.MIN_SIZE):
-        self.pre_processor.DOWN_SIZE = down_size
-        self.EPS = eps
-        self.MIN_SAMPLE = min_sample 
-        self.MIN_SIZE = min_size 
     
     def save_points_as_pkl(self, points):
         data = pd.DataFrame(data=points)
-        data.to_pickle(self.PKL_FILE_PATH, compression='zip')
+        data.to_pickle(configure.get('Constants', 'pkl_file_path'), compression='zip')
 
     def load_points_from_pkl(self):
-        return pd.read_pickle(self.PKL_FILE_PATH, compression='zip').to_numpy()
+        return pd.read_pickle(configure.get('Constants', 'pkl_file_path'), compression='zip').to_numpy()
 
     def export_polygon_features_to_file(self, output_file, polygon_features):
         """ Save list of geojson features into a file

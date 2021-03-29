@@ -32,7 +32,24 @@
       <property name="bottomMargin">
        <number>10</number>
       </property>
-      <item row="0" column="0">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="pushButton_test_dir_update">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="lineEdit_data_dir_path"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButton_data_dir_update">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QLabel" name="label_down_size">
         <property name="minimumSize">
          <size>
@@ -51,7 +68,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="2" column="1">
        <widget class="QLabel" name="label_down_size_text">
         <property name="text">
          <string>TextLabel</string>
@@ -61,14 +78,14 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="3" column="0">
        <widget class="QLineEdit" name="LineEdit_downsize">
         <property name="text">
          <string>100</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="3" column="1">
        <widget class="QPushButton" name="pushButton_down_size_update">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -87,7 +104,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_dbsacn">
         <property name="text">
          <string>DBSCAN param</string>
@@ -97,7 +114,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="4" column="1">
        <widget class="QLabel" name="label_dbscan_text">
         <property name="text">
          <string>TextLabel</string>
@@ -107,14 +124,14 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="5" column="0">
        <widget class="QLineEdit" name="lineEdit_eps">
         <property name="text">
          <string>300</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="5" column="1">
        <widget class="QPushButton" name="pushButton_eps_update">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -133,14 +150,14 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="6" column="0">
        <widget class="QLineEdit" name="lineEdit_min_sample">
         <property name="text">
          <string>10</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="6" column="1">
        <widget class="QPushButton" name="pushButton_min_sample_update">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -153,8 +170,24 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QLabel" name="label_output">
+      <item row="7" column="0" colspan="2">
+       <widget class="QLabel" name="label_test_output">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" colspan="2">
+       <widget class="QLabel" name="label_process_output">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -175,14 +208,14 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="9" column="0">
        <widget class="QProgressBar" name="progressBar">
         <property name="value">
          <number>0</number>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="9" column="1">
        <widget class="QDialogButtonBox" name="process_control">
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
@@ -194,6 +227,9 @@
          <bool>false</bool>
         </property>
        </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLineEdit" name="lineEdit_test_dir_path"/>
       </item>
      </layout>
     </item>

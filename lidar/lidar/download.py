@@ -11,9 +11,9 @@ def download_lidar_dataset(dir_path , tile_list):
     """
     print('Beginning file download with urllib2...')
     for tile in tile_list:
-        src_url = configure.get('Test', 'src_url') + tile + configure.get('Constants', 'ZIP_EXT')
-        dst_file = dir_path + tile + configure.get('Constants', 'ZIP_EXT')
-        print("Downloading %s ..." % (configure.get('Test', 'src_url') + tile + configure.get('Constants', 'ZIP_EXT')))
+        src_url = configure.get('Test', 'src_url') + tile + configure.get('Constants', 'zip_ext')
+        dst_file = dir_path + tile + configure.get('Constants', 'zip_ext')
+        print("Downloading %s ..." % (configure.get('Test', 'src_url') + tile + configure.get('Constants', 'zip_ext')))
         download_url(src_url, dst_file)
         
 def download_url(url, save_path, chunk_size=128):
@@ -37,7 +37,7 @@ def unzip_files(src_dir):
     """
     for root, dirs, files in os.walk(src_dir):
         for file in files:
-            if file.endswith(configure.get('Constants', 'ZIP_EXT')):
+            if file.endswith(configure.get('Constants', 'zip_ext')):
                 print("Extracting " + os.path.join(root, file))
                 with zipfile.ZipFile(os.path.join(root, file), 'r') as zip_ref:
                     zip_ref.extractall(src_dir)
