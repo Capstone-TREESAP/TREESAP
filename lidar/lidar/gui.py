@@ -127,10 +127,10 @@ class GraphGUI():
             scaleanchor = "x",
             scaleratio = 1,
         )
+        
         if save_file:
             from plotly.offline import plot
-            url= plot(fig, filename=self._plot_path)
-            fig = None
+            url= plot(fig, filename=self._plot_path, auto_open=False)
         else:
             pio.renderers.default = render
             fig.show()

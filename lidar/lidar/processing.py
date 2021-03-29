@@ -51,11 +51,8 @@ class ProcessingPipeline():
                     print("No trees are classified on the tile")
                 las_file.valid = False
 
-    def processing_by_map(self, output_file, callback=None):
-        """process the whole map at once
-
-        Args:
-            output_file (str): the path to output file to save to.
+    def collect_points_from_map(self):
+        """[summary]
 
         Returns:
             [type]: [description]
@@ -73,10 +70,6 @@ class ProcessingPipeline():
                     all_point_x = np.append(all_point_x, las_file.point_x)
                     all_point_y = np.append(all_point_y, las_file.point_y)
             self.save_points_as_pkl(np.vstack((all_point_x, all_point_y)).T)
-        
-        print(all_point_x.shape)
-        self.whole_campus_polygon_features = self.extract_polygon_features(all_point_x, all_point_y, callback=callback)
-        self.export_polygon_features_to_file(output_file, self.whole_campus_polygon_features)
         return all_point_x, all_point_y
     
     def extract_polygon_features(self, point_x, point_y, callback=None):
