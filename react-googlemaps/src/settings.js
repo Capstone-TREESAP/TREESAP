@@ -231,7 +231,7 @@ class Settings extends React.Component {
       areasOfInterest: this.areasOfInterest,
       polyList: this.props.polyList,
       displayList: this.props.displayList,
-      setPolygonLayer: (displayList) => this.setPolygonLayer(displayList),
+      setPolygonLayer: (displayList) => this.props.setPolygonLayer(displayList),
       onUpdateCarbon: (carbonValue) => this.props.onUpdateCarbon(carbonValue),
       onUpdateRunoff: (runoffValue) => this.props.onUpdateRunoff(runoffValue),
     });
@@ -254,10 +254,6 @@ class Settings extends React.Component {
       editMode: editMode
     })
     this.props.onToggleMode(editMode)
-  }
-
-  setPolygonLayer(displayList) {
-    this.props.setPolygonLayer(displayList)
   }
 
   onRefresh(){

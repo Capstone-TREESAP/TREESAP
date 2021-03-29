@@ -79,6 +79,7 @@ export class MapContainer extends Component {
             runoffRate: TREE_RUNOFF_RATE,
             editingIntersection: null,
             displayList: [],
+            ready: false,
         };
         this.drawingView = null;
         this.intersections = [];
@@ -500,6 +501,25 @@ export class MapContainer extends Component {
     );
   }
 
+  renderLegend = () => {
+    var legend = [];
+    for (var polyLayer in this.state.displayList) {
+      legend.push(this.renderListItem(polyKeys.indexOf(this.state.displayList[polyLayer])))
+    }
+    return legend;
+  }
+
+  renderListItem = (item) => {
+    return(
+      <div className="row">
+        <div className="legend" style={{color: "black"}}>
+          <p>{polyKeys[item]}</p>
+        </div>
+        <div className="colour-square" style={{backgroundColor: colours[item], color: colours[item]}}/>
+      </div>
+    )
+  }
+
     render() {
         return (
         <Map
@@ -509,7 +529,7 @@ export class MapContainer extends Component {
             style={mapStyles}
             initialCenter={default_centre_coords}
             yesIWantToUseGoogleMapApiInternals
-            onReady={() => {/*this.loadPolygonLayer();*/ this.loadDrawingManager();}}
+            onReady={() => {this.setState({ready: true}); this.loadDrawingManager();}}
             onClick={this.onGenericClick}
         >
             <Marker
@@ -541,9 +561,15 @@ export class MapContainer extends Component {
                 carbonRate={this.state.carbonRate}
                 runoffRate={this.state.runoffRate}
             />
-            {this.displayPolygonLayer()}
+            {this.state.ready && this.displayPolygonLayer()}
             {this.displayIntersections()}
             {this.renderHeatmap()}
+            <div className="legend-container">
+              <div className="row">
+                <h3>Legend</h3>
+              </div>
+              {this.state.ready && this.renderLegend()}
+            </div>
         </Map>
         );
     }
