@@ -35,8 +35,12 @@ export class DrawingView {
     }
 
     closeDrawingManager() {
+        this.resetDrawingMode()
+        this.drawingManager.setMap(null)
+        this.drawingManager = this.createDrawingManager()
         this.drawingManager.setOptions({
             drawingControl: false
-        })
+        });
+        this.resetDrawingMode()
     }
 }
