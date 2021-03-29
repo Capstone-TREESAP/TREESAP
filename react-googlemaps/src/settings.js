@@ -63,22 +63,12 @@ function SaveStormwaterValue(props) {
 function renderPolygonList(polyList, displayList) {
   itemList = [];
   for(var key in polyList) {
-    itemList.push(buildListItem(polyList[key], displayList.includes(polyList[key])));
+    itemList.push(SettingsList.createCheckbox(polyList[key], displayList.includes(polyList[key])));
   }
   return itemList;
 }
 
-function buildListItem(key, checked) {
-  return (
-    <div className="poly_list">
-      <label for={key}>{key}</label>
-      { checked && <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()} defaultChecked/>}
-      { !checked && <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()}/> }
-    </div>
-  );
-}
-
-function updatePolyList(props){
+function updatePolyList(setPolygonLayer){
   var newPolyList = []
   var boxes = document.querySelectorAll(".check")
   for (let box of boxes) {
@@ -86,9 +76,7 @@ function updatePolyList(props){
       newPolyList.push(box.value);
     }
   }
-  props.displayList = newPolyList;
-  console.log(props.displayList);
-  props.setPolygonLayer(newPolyList);
+  setPolygonLayer(newPolyList);
 }
 
 function SettingsDisplay(props) {
@@ -101,8 +89,7 @@ function SettingsDisplay(props) {
           className="display-save"
           type="button"
           onClick={() => {
-            updatePolyList(props);
-            props.setPolygonLayer(props.displayList);
+            updatePolyList(props.setPolygonLayer);
             props.onClick();
           }}
         >
@@ -124,24 +111,29 @@ function SettingsDisplay(props) {
       </div>
       <div className="display-no-columns">
         <p>Select Mode</p>
-        <input
-          className={props.editMode ? "intersection unselected" : "intersection selected"}
-          type="button"
-          onClick={() => {
-            props.onToggleMode(false);
-            props.onClick();
-          }}
-          value="Intersection"
-        />
-        <input
-          className={props.editMode ? "edit selected" : "edit unselected"}
-          type="button"
-          onClick={() => {
-            props.onToggleMode(true);
-            props.onClick();
-          }}
-          value="Edit"
-        />
+        {props.displayList.length > 1 && <p>(Edit mode not supported when viewing multiple years of data)</p>}
+        {props.displayList.length <= 1 &&
+          <input
+            className={props.editMode ? "intersection unselected" : "intersection selected"}
+            type="button"
+            onClick={() => {
+              props.onToggleMode(false);
+              props.onClick();
+            }}
+            value="Intersection"
+          />
+        }
+        {props.displayList.length <= 1 &&
+          <input
+            className={props.editMode ? "edit selected" : "edit unselected"}
+            type="button"
+            onClick={() => {
+              props.onToggleMode(true);
+              props.onClick();
+            }}
+            value="Edit"
+          />
+        }
       </div>
       <div className="dropdown">
         <label

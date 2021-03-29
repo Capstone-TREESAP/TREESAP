@@ -22,7 +22,7 @@ export class SettingsList {
 
     static parseAreasOfInterest(featureCollection) {
         let items = new Map();
-        
+
         for (let i in featureCollection.features) {
             let feature = featureCollection.features[i]
 
@@ -32,7 +32,7 @@ export class SettingsList {
             }
 
             let coords = PolygonEditor.backwardsGeoJSONToJSONCoords(feature.geometry.coordinates[0])
-            items.set(feature.properties.NAME, 
+            items.set(feature.properties.NAME,
                 {
                     "polygon": coords,
                     "isChecked": false
@@ -47,7 +47,7 @@ export class SettingsList {
         let checkboxes = [];
 
         for(let key of this.items.keys()) {
-            checkboxes.push(SettingsList.createCheckbox(key, this.items.get(key).isChecked));
+          checkboxes.push(SettingsList.createCheckbox(key, this.items.get(key).isChecked));
         }
 
         return checkboxes;
@@ -56,7 +56,6 @@ export class SettingsList {
     updateCheckedWithAction() {
         for (let key of this.items.keys()) {
             let checkbox = document.getElementById(key)
-            
             if (checkbox.checked && !this.items.get(key).isChecked) {
                 this.items.get(key).isChecked = true
                 console.log("Checked box", key)
@@ -72,7 +71,7 @@ export class SettingsList {
     static createCheckbox(key, isChecked) {
         return (
           <div>
-            <input className="check" type="checkbox" id={key} name={key.toString()} value={key.toString()} defaultChecked={isChecked}/>
+            <input className="check" type="checkbox" id={key} name={key} value={key} defaultChecked={isChecked}/>
             <label for={key}>{key}</label>
           </div>
         );

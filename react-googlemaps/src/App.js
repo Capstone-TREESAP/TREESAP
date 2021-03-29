@@ -126,12 +126,16 @@ export class MapContainer extends Component {
     };
 
     handleClick = (polygon, map, coords) => {
-      //TODO: check for mulitple layers and only allow if one layer checked
-        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
+        if(this.state.displayList.length != 1) {
+          return;
+        }
+        //finding the index of the layer that is currently being displayed
+        var index = polyKeys.indexOf(this.state.displayList[0]);
+        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         let isIntersectionPolygon = (this.state.clickedIntersection != null)
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
-        if (isIntersectionPolygon && !this.state.polygonLayers[0].containsPolygon(polygon)) {
+        if (isIntersectionPolygon && !this.state.polygonLayers[index].containsPolygon(polygon)) {
             //Treat it as a generic click to avoid displaying information about the wrong polygon
             this.onGenericClick()
             return
@@ -143,26 +147,31 @@ export class MapContainer extends Component {
             intersectionLayer: null,
             clickedPolygon: polygon,
         })
-//TODO: check for mulitple layers and only allow if one layer checked
-        this.state.polygonLayers[0].selectPolygon(this.state.clickedPolygon)
+        this.state.polygonLayers[index].selectPolygon(this.state.clickedPolygon)
     };
 
     handleIntersectionClick = (intersection, map, coords) => {
-      //TODO: check for mulitple layers and only allow if one layer checked
-        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
+      if (this.state.displayList.length != 1) {
+        return;
+      }
+      var index = polyKeys.indexOf(this.state.displayList[0]);
+        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
             clickedLocation: coords,
             clickedPolygon: null,
             clickedIntersection: intersection,
-            intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[0].polygons)
+            intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[index].polygons)
         })
     }
 
     onGenericClick = () => {
-      //TODO: check for mulitple layers and only allow if one layer checked
-        this.state.polygonLayers[0].makeCurrentPolygonUneditable();
+      if (this.state.displayList.length != 1) {
+        return;
+      }
+      var index = polyKeys.indexOf(this.state.displayList[0]);
+        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
@@ -207,6 +216,19 @@ export class MapContainer extends Component {
     }
 
     setPolygonLayer = (displayList) => {
+      //making sure any info windows that are currently displayed are removed before changing which layers are displayed
+      this.setState({
+          clickedLocation: null,
+          clickedPolygon: null,
+          clickedIntersection: null,
+          intersectionLayer: null,
+          showInfoWindow: false,
+      })
+      //finding the index of the layer that is currently being displayed
+      if (this.state.displayList.length > 0) {
+        var index = polyKeys.indexOf(this.state.displayList[0]);
+        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
+      }
       this.setState({
         displayList: displayList
       })
@@ -227,7 +249,6 @@ export class MapContainer extends Component {
     loadPolygonLayer = () => {
       var layersList = [];
       for(var polygons in polyKeys){
-        console.log(polyKeys[polygons])
         layersList.push(new PolygonLayer(all_polygon_sets[polyKeys[polygons]], this.props, this._map.map))
       }
         this.setState({
@@ -258,14 +279,13 @@ export class MapContainer extends Component {
     }
 
     displayPolygonLayer = () => {
-      console.log("in display polygon layer: ", this.state.displayList)
       var layerList = [];
         if (this.state.polygonLayers != null) {
           for (var poly in this.state.displayList) {
             var index = polyKeys.indexOf(this.state.displayList[poly]);
             layerList.push(this.displayPolygons(this.state.polygonLayers[index].polygons, colours[index], poly))
           }
-            return layerList;//this.displayPolygons(this.state.polygonLayers[0].polygons, "#014421", 0)
+            return layerList;
         }
     }
 
@@ -308,8 +328,11 @@ export class MapContainer extends Component {
     }
 
     deletePolygon(polygon) {
-      //TODO: check for mulitple layers and only allow if one layer checked
-        this.state.polygonLayers[0].deletePolygon(polygon)
+      if (this.state.displayList.length != 1) {
+        return;
+      }
+      var index = polyKeys.indexOf(this.state.displayList[0]);
+        this.state.polygonLayers[index].deletePolygon(polygon)
         this.setState({
             clickedLocation: null,
             clickedPolygon: null
@@ -317,9 +340,13 @@ export class MapContainer extends Component {
     }
 
     addPolygon(polygon) {
-      //TODO: check for mulitple layers and only allow if one layer checked
+      if (this.state.displayList.length != 1) {
+        this.drawingView.resetDrawingMode()
+        return;
+      }
+      var index = polyKeys.indexOf(this.state.displayList[0]);
         if (this.state.editMode) {
-            this.state.polygonLayers[0].addPolygon(polygon)
+            this.state.polygonLayers[index].addPolygon(polygon)
             this.setState({
                 clickedLocation: null,
                 clickedPolygon: null,
@@ -333,7 +360,7 @@ export class MapContainer extends Component {
                 clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO this should probably not be so hardcoded
                 clickedPolygon: null,
                 clickedIntersection: intersection,
-                intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[0].polygons)
+                intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[index].polygons)
             })
             this.drawingView.resetDrawingMode()
         }
@@ -376,11 +403,12 @@ export class MapContainer extends Component {
 
     onInfoWindowOpen(polygon) {
         var buttons;
-//TODO: check for mulitple layers and only allow if one layer checked
+        var index = polyKeys.indexOf(this.state.displayList[0]);
+
         if (this.state.editMode) {
             buttons = (<div>
                 <button className="info-window-button" type="button">Report Error</button>
-                <button className="info-window-button" type="button" onClick={() => {this.state.polygonLayers[0].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={() => {this.state.polygonLayers[index].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
                 <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
         } else {
@@ -433,15 +461,15 @@ export class MapContainer extends Component {
     }
     //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
   renderHeatmap = () => {
-    if (this.state.polygonLayers == null) {
+    if (this.state.polygonLayers == null || this.state.displayList.length < 1) {
         return null
     }
 
     var heatmap = [];
     var clusterMaker = require('clusters')
-
-    let positions = this.state.polygonLayers[0].positions;
-    let polygons = this.state.polygonLayers[0].polygons;
+    var index = polyKeys.indexOf(this.state.displayList[0]);
+    let positions = this.state.polygonLayers[index].positions;
+    let polygons = this.state.polygonLayers[index].polygons;
 
     //for(var polygon in positions) {
     //  var numClusters = Math.ceil(polygons[polygon].area/50000);
