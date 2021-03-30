@@ -2,7 +2,8 @@ from config import configure
 from enum import IntEnum
 import os
 import ntpath
-import fnmatch, re
+import fnmatch
+import re
 import numpy as np
 from laspy.file import File
 from config import configure
@@ -28,7 +29,8 @@ class LasFile:
 
     def __init__(self, file_path):
         self._file_path = file_path
-        self._east, self._north = LasFile.extract_utm_from_file_name(self._file_path)
+        self._east, self._north = LasFile.extract_utm_from_file_name(
+            self._file_path)
         self._point_x = np.array([])
         self._point_y = np.array([])
         # self.point_z = None
@@ -158,7 +160,8 @@ class PreProcessor:
         if test.shape[0] > configure.getint("Parameters", "min_points_for_downsize"):
             # down sample the point cloud if there are too many points to speed up the processing
             sample = np.random.choice(
-                test, int(test.shape[0] / configure.getint("Parameters", "down_size"))
+                test, int(
+                    test.shape[0] / configure.getint("Parameters", "down_size"))
             )
         # if test.shape[0] > configure.getint('Parameters', 'MIN_POINTS_FOR_DOWNSIZE'):
         #     # down sample the point cloud if there are too many points to speed up the processing

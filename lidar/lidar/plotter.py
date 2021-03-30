@@ -266,7 +266,8 @@ class GraphGUI:
                     {"title": "Slider switched to step: " + str(i)},
                 ],  # layout attribute
             )
-            step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
+            # Toggle i'th trace to "visible"
+            step["args"][0]["visible"][i] = True
             steps.append(step)
 
         sliders = [

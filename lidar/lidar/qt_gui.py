@@ -93,8 +93,12 @@ class MainWindow(QMainWindow):
         pipeline = ProcessingPipeline(notebook=True)
         pipeline.pre_process_las_files(configure["Test"]["dest_dir_path"])
         points_x, points_y = pipeline.collect_points_from_map()
-        _ = pipeline.extract_polygon_features(
+        whole_campus_polygon_features = pipeline.extract_polygon_features(
             points_x, points_y, callback=self.__set_progressbar_value
+        )
+        pipeline.export_polygon_features_to_file(
+            configure.get("Test", "output_map_file_path"),
+            whole_campus_polygon_features,
         )
 
         points = np.vstack((points_x, points_y)).T
@@ -110,12 +114,14 @@ class MainWindow(QMainWindow):
         self.plotter.x = points_x
         self.plotter.y = points_y
         self.plotter.label = clustering.labels_
-        self.plotter.display_2d_labelled_pcd(100000, save_file=True, render="png")
+        self.plotter.display_2d_labelled_pcd(
+            100000, save_file=True, render="png")
         self.webEngineView.reload()
         self.webEngineView.setUrl(
             QUrl(
                 "file://"
-                + os.path.abspath(configure.get("Constants", "plot_html_file_path"))
+                + os.path.abspath(configure.get("Constants",
+                                                "plot_html_file_path"))
             )
         )
 
@@ -188,12 +194,16 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def __on_click_reset(self):
         configure.read(CONFIG_PATH)
-        self.LineEdit_downsize.setText(configure.get("Parameters", "down_size"))
+        self.LineEdit_downsize.setText(
+            configure.get("Parameters", "down_size"))
         self.lineEdit_eps.setText(configure.get("Parameters", "eps"))
-        self.lineEdit_min_sample.setText(configure.get("Parameters", "min_sample"))
+        self.lineEdit_min_sample.setText(
+            configure.get("Parameters", "min_sample"))
 
-        self.lineEdit_test_dir_path.setText(configure.get("Test", "dest_dir_path"))
-        self.lineEdit_data_dir_path.setText(configure.get("Download", "dest_dir_path"))
+        self.lineEdit_test_dir_path.setText(
+            configure.get("Test", "dest_dir_path"))
+        self.lineEdit_data_dir_path.setText(
+            configure.get("Download", "dest_dir_path"))
         self.statusBar().showMessage("Reset all parameters")
 
     @pyqtSlot()

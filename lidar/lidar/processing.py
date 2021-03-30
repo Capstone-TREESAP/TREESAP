@@ -139,7 +139,8 @@ class ProcessingPipeline:
                 """
                 if sample_size > 1000:
                     reduce_to_1000 = (
-                        lambda x: int(x) if x <= 1000 else reduce_to_1000(x / 10)
+                        lambda x: int(
+                            x) if x <= 1000 else reduce_to_1000(x / 10)
                     )
                     desired_size = reduce_to_1000(sample_size)
                     down_sample_index = np.random.choice(
@@ -147,14 +148,16 @@ class ProcessingPipeline:
                     )
                     # use optimized alpha shape value
                     # TODO: don't use optimze, instead use pre-defined alpha
-                    alpha_shape = alphashape.alphashape(sample[down_sample_index])
+                    alpha_shape = alphashape.alphashape(
+                        sample[down_sample_index])
 
             if alpha_shape.geom_type == configure.get(
                 "Constants", "alpha_shape_multipolygon_type"
             ):
                 # sometimes there will be more than one polygons from alpha shape.
                 for each_polyon in alpha_shape:
-                    polygons.append(self.__get_polygon_from_feature(each_polyon))
+                    polygons.append(
+                        self.__get_polygon_from_feature(each_polyon))
             elif alpha_shape.geom_type == configure.get(
                 "Constants", "alpha_shape_polygon_type"
             ):
@@ -236,19 +239,22 @@ class ProcessingPipeline:
                 ):
                     # sometimes there will be more than one polygons from alpha shape.
                     for each_polyon in alpha_shape:
-                        polygons.append(self.__get_polygon_from_feature(each_polyon))
+                        polygons.append(
+                            self.__get_polygon_from_feature(each_polyon))
                         shapely_polygons.append(each_polyon)
                 elif alpha_shape.geom_type == configure.get(
                     "Constants", "alpha_shape_polygon_type"
                 ):
-                    polygons.append(self.__get_polygon_from_feature(alpha_shape))
+                    polygons.append(
+                        self.__get_polygon_from_feature(alpha_shape))
                     shapely_polygons.append(alpha_shape)
         print("max is ", max)
         return polygons, shapely_polygons
 
     def save_points_as_pkl(self, points):
         data = pd.DataFrame(data=points)
-        data.to_pickle(configure.get("Constants", "pkl_file_path"), compression="zip")
+        data.to_pickle(configure.get(
+            "Constants", "pkl_file_path"), compression="zip")
 
     def load_points_from_pkl(self):
         return pd.read_pickle(
