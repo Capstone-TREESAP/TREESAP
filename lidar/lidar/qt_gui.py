@@ -11,7 +11,7 @@ import numpy as np
 import download
 from config import configure, CONFIG_PATH
 from processing import ProcessingPipeline
-from gui import GraphGUI
+from plotter import GraphGUI
 from sklearn.cluster import DBSCAN
 from math import ceil
 
@@ -39,7 +39,6 @@ class MainWindow(QMainWindow):
         self.pushButton_min_sample_update.clicked.connect(
             self.__on_click_min_sample_update
         )
-
         self.process_control.button(QDialogButtonBox.Reset).clicked.connect(
             self.__on_click_reset
         )
@@ -137,7 +136,7 @@ class MainWindow(QMainWindow):
     def __test_output_update(self, cluster_time=0, number_of_clusters=0, total_time=0):
         total_seconds = total_time / 1000.0
         self.label_count.setText("%d" % number_of_clusters)
-        self.label_time.setText("%.3f S" % total_seconds)
+        self.label_time.setText("%.3f s" % total_seconds)
         self.label_test_output.setText(
             "processing time: %.2f seconds\nnumber of clusters: %d\ntotal time: %.4f seconds"
             % (cluster_time, number_of_clusters, total_seconds)
@@ -225,7 +224,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
+    app.setStyle("Oxygen")
     window = MainWindow()
 
     app.exec_()
