@@ -32,8 +32,7 @@ export class PolygonLayer {
                     point => PolygonEditor.pointToLatLng(this.props, point)
                 ))
                 var polygon = {
-                    // "key": polygons.features[i].properties.id, //TODO change this if it gets renamed to key
-                    "key": type == "tree" ? i : polygons.features[i].properties["BLDG_UID"] + "." + j,
+                    "key": type == "tree" ? polygons.features[i].properties.id + "." + j : polygons.features[i].properties["BLDG_UID"] + "." + j,
                     "points": points,
                     "area": area,
                     "editable": false,
