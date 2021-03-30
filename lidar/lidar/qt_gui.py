@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyle("Oxygen")
+    # app.setStyle("Oxygen")
     window = MainWindow()
 
     app.exec_()

@@ -10,7 +10,12 @@ CEDAR-lidar
 cd lidar # Go to where Dockerfile is 
 docker build --tag lidar . # build the image
 docker run --rm -it --env="DISPLAY" lidar 
-docker run --rm -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -e QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY=1 --entrypoint bash lidar
+docker run --rm -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -e QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY=1 --entrypoint 
+
+sudo docker run --rm -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" --device /dev/dri/ --security-opt seccomp=./docker/chrome.json --privileged lidar
+
+# on the host
+xhost +local:docker
 ```
 
 ### Download las files 

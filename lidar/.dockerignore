@@ -1,7 +1,6 @@
 data/
 dst/
 docs/
-tests/
 *.geojson 
 __pycache__/
 *.ipynb

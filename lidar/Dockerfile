@@ -9,10 +9,29 @@ RUN apt-get update \
     && apt-get install -y wget
 SHELL [ "/bin/bash", "--login", "-c" ]
 # Create a non-root user
+# Create a non-root user
+ARG username=jarjarbinks
+ARG uid=1000
+ARG gid=100
+ENV USER $username
+ENV UID $uid
+ENV GID $gid
+ENV HOME /home/$USER
+RUN adduser --disabled-password \
+    --gecos "Non-root user" \
+    --uid $UID \
+    --gid $GID \
+    --home $HOME \
+    $USER
 
 COPY environment.yml requirements.txt /tmp/
+RUN chown $UID:$GID /tmp/environment.yml /tmp/requirements.txt
 
 COPY docker/entrypoint.sh /usr/local/bin/
+RUN chown $UID:$GID /usr/local/bin/entrypoint.sh && \
+    chmod u+x /usr/local/bin/entrypoint.sh
+
+USER $USER
 
 # install miniconda
 ENV MINICONDA_VERSION latest
@@ -28,7 +47,7 @@ RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
 # make conda activate command available from /bin/bash --interative shells
 RUN conda init bash
 
-ENV PROJECT_DIR /home
+ENV PROJECT_DIR $HOME
 WORKDIR $PROJECT_DIR
 
 # build the conda environment
@@ -42,19 +61,14 @@ RUN conda env create -f /tmp/environment.yml && \
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
-#  Install packages
-# RUN apt-get update; apt-get -y upgrade
-# RUN apt-get -y install software-properties-common
-# RUN add-apt-repository ppa:deadsnakes/ppa
-# RUN apt-get -y install python3.8 python3-pip
-# # set up codebase
-# COPY requirements.txt requirements.txt
-# RUN pip3 install -r requirements.txt
+COPY --chown=$UID:$GID lidar/*.py src/
 
-COPY lidar/*.py src/
-COPY pipeline.ui .
-RUN mkdir -r tests/test_data
-COPY lidar/config src/config
+COPY --chown=$UID:$GID pipeline.ui .
+RUN mkdir -p tests/test_data
+RUN chown -R $UID:$GID tests
+
+COPY --chown=$UID:$GID lidar/configs/default_config.ini src/configs/default_config.ini 
+COPY --chown=$UID:$GID tests/test_data/481E_5456N_tiny.png data/481E_5456N_tiny.png
 
 WORKDIR $PROJECT_DIR/src
 CMD ["python", "qt_gui.py"]
