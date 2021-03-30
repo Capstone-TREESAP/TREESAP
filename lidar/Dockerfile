@@ -1,5 +1,11 @@
 FROM ubuntu:20.04
-RUN apt-get update && apt-get -y upgrade\
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get -y upgrade \
+    && apt-get install -y ffmpeg libsm6 libxext6 \
+    && apt-get install -y libxcomposite-dev libxtst6 libpci-dev \
     && apt-get install -y wget
 SHELL [ "/bin/bash", "--login", "-c" ]
 # Create a non-root user
@@ -22,14 +28,12 @@ RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
 # make conda activate command available from /bin/bash --interative shells
 RUN conda init bash
 
-ENV PROJECT_DIR /main
-RUN mkdir $PROJECT_DIR
+ENV PROJECT_DIR /home
 WORKDIR $PROJECT_DIR
 
 # build the conda environment
-ENV ENV_PREFIX $PWD/env
-RUN conda update --name base --channel defaults conda && \
-    conda env create --prefix $ENV_PREFIX --file /tmp/environment.yml --force && \
+ENV ENV_PREFIX lidar-raw
+RUN conda env create -f /tmp/environment.yml && \
     conda clean --all --yes
 # run the postBuild script to install any JupyterLab extensions
 # RUN conda activate $ENV_PREFIX && \
@@ -47,5 +51,10 @@ ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 # COPY requirements.txt requirements.txt
 # RUN pip3 install -r requirements.txt
 
-# COPY lidar/*.py src/
-# CMD ["python3", "pipeline.py"]
+COPY lidar/*.py src/
+COPY pipeline.ui .
+RUN mkdir -r tests/test_data
+COPY lidar/config src/config
+
+WORKDIR $PROJECT_DIR/src
+CMD ["python", "qt_gui.py"]

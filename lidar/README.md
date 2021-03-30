@@ -9,23 +9,9 @@ CEDAR-lidar
 ```bash
 cd lidar # Go to where Dockerfile is 
 docker build --tag lidar . # build the image
- docker run --rm -it --entrypoint bash lidar 
+docker run --rm -it --env="DISPLAY" lidar 
+docker run --rm -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -e QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY=1 --entrypoint bash lidar
 ```
-# Build package locally
-
-### Install poetry
-1. install Python poetry: https://python-poetry.org/docs/#installation
-2. make sure your local python version is `3.8.6`. I recommand use `pyenv` to set up a local python version.
-```bash
-cd CEDAR/lidar
-poetry install --no-dev # install just the package for running (recommended)
-poetry install # install all packages
-```
-### Export requirement.txt
-```bash
-poetry export -f requirements.txt --output requirements.txt --without-hashes
-```
-Once all the packages are fixed, export poetry package list to `requirements.txt` for docker to build with. 
 
 ### Download las files 
 
