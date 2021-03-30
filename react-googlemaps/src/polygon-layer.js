@@ -32,7 +32,8 @@ export class PolygonLayer {
                     point => PolygonEditor.pointToLatLng(this.props, point)
                 ))
                 var polygon = {
-                    "key": type == "tree" ? polygons.features[i].properties.id + "." + j : polygons.features[i].properties["BLDG_UID"] + "." + j,
+                    // update this when lidar has ids added
+                    "key": type == "tree" ? (polygons.features[i].properties.id ? polygons.features[i].properties.id + "." + j : customKeyNum++) : polygons.features[i].properties["BLDG_UID"] + "." + j,
                     "points": points,
                     "area": area,
                     "editable": false,
