@@ -2,7 +2,6 @@ from sklearn.cluster import DBSCAN
 import numpy as np
 import time
 import geojson
-from alpha_shapes.alpha_shapes import Alpha_Shaper
 import alphashape
 import utm
 from tqdm import tqdm
