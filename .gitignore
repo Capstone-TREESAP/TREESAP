@@ -132,3 +132,12 @@ dmypy.json
 data/
 
 .vscode/
+*.code-workspace
+*.json
+
+# discontinued project
+orthophoto/
+
+*_test.ipynb
+*.pkl
+*.pdf

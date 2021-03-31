@@ -1,0 +1,9 @@
+data/
+dst/
+docs/
+*.geojson 
+__pycache__/
+*.ipynb
+.ipynb_checkpoints/
+*.pkl
+*.html

@@ -1,0 +1,4 @@
+*.html
+*.las
+*.geojson 
+!map.geojson
