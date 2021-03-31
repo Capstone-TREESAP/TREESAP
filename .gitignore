@@ -139,6 +139,5 @@ data/
 orthophoto/
 
 *_test.ipynb
-*png
 *.pkl
 *.pdf
