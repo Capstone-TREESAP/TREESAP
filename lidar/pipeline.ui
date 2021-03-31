@@ -194,9 +194,16 @@
        </widget>
       </item>
       <item row="8" column="0">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="lineEdit_alpha"/>
       </item>
-      <item row="10" column="0" colspan="2">
+      <item row="8" column="1">
+       <widget class="QPushButton" name="pushButton_shape_update">
+        <property name="text">
+         <string>Update</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0" colspan="2">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -209,35 +216,35 @@
         </property>
        </spacer>
       </item>
-      <item row="11" column="0">
+      <item row="12" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Process time</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
+      <item row="12" column="1">
        <widget class="QLabel" name="label_time">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
+      <item row="13" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Cluster count</string>
         </property>
        </widget>
       </item>
-      <item row="12" column="1">
+      <item row="13" column="1">
        <widget class="QLabel" name="label_count">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="13" column="0" colspan="2">
+      <item row="14" column="0" colspan="2">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -250,7 +257,7 @@
         </property>
        </spacer>
       </item>
-      <item row="14" column="0" colspan="2">
+      <item row="15" column="0" colspan="2">
        <widget class="QLabel" name="label_test_output">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -274,7 +281,7 @@
         </property>
        </widget>
       </item>
-      <item row="15" column="0" colspan="2">
+      <item row="16" column="0" colspan="2">
        <widget class="QLabel" name="label_process_output">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -299,7 +306,7 @@
         </property>
        </widget>
       </item>
-      <item row="16" column="0" colspan="2">
+      <item row="17" column="0" colspan="2">
        <widget class="QProgressBar" name="progressBar">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -315,7 +322,7 @@
         </property>
        </widget>
       </item>
-      <item row="17" column="0" colspan="2">
+      <item row="18" column="0" colspan="2">
        <widget class="QDialogButtonBox" name="process_control">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -337,22 +344,25 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>PushButton</string>
-        </property>
-       </widget>
+      <item row="9" column="0">
+       <widget class="QLineEdit" name="lineEdit_min_area"/>
       </item>
       <item row="9" column="1">
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="pushButton_min_area_update">
         <property name="text">
-         <string>PushButton</string>
+         <string>Update</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+      <item row="10" column="1">
+       <widget class="QPushButton" name="pushButton_max_area">
+        <property name="text">
+         <string>Update</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLineEdit" name="lineEdit_max_area"/>
       </item>
      </layout>
     </item>

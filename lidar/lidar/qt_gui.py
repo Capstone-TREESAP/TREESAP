@@ -33,12 +33,23 @@ class MainWindow(QMainWindow):
         self.shortcut_close.activated.connect(self.__close_app)
 
         self.pushButton_down_size_update.clicked.connect(
-            self.__on_click_down_size_update
+            self.__on_click_dbscan_update
         )
-        self.pushButton_eps_update.clicked.connect(self.__on_click_eps_update)
+        self.pushButton_eps_update.clicked.connect(
+            self.__on_click_dbscan_update
+        )
         self.pushButton_min_sample_update.clicked.connect(
-            self.__on_click_min_sample_update
+            self.__on_click_dbscan_update
         )
+
+        # alphashape related parameters
+        self.pushButton_shape_update.clicked.connect(
+            self.__on_click_alphashape_update
+        )
+        self.pushButton_min_area_update.clicked.connect(
+            self.__on_click_alphashape_update
+        )
+
         self.process_control.button(QDialogButtonBox.Reset).clicked.connect(
             self.__on_click_reset
         )
@@ -120,8 +131,9 @@ class MainWindow(QMainWindow):
         self.webEngineView.setUrl(
             QUrl(
                 "file://"
-                + os.path.abspath(configure.get("Constants",
-                                                "plot_html_file_path"))
+                + os.path.abspath(
+                    configure.get("Constants", "plot_html_file_path")
+                )
             )
         )
 
@@ -156,44 +168,87 @@ class MainWindow(QMainWindow):
         )
 
     def __tooltip_setup(self):
-        self.pushButton_eps_update.setToolTip(configure.get("ToolTips", "eps"))
+        """[summary]
+        """
+        self.pushButton_eps_update.setToolTip(
+            configure.get("ToolTips", "eps")
+        )
         self.pushButton_down_size_update.setToolTip(
             configure.get("ToolTips", "down_size")
         )
         self.pushButton_min_sample_update.setToolTip(
             configure.get("ToolTips", "min_sample")
         )
+        self.pushButton_shape_update.setToolTip(
+            configure.get("ToolTips", "alphashape_reduction")
+        )
+        self.pushButton_min_area_update.setToolTip(
+            configure.get("ToolTips", "min_polygon_area")
+        )
+        self.pushButton_max_area.setToolTip(
+            configure.get("ToolTips", "max_polygon_area")
+        )
+        self.label_test_output.setToolTip(
+            configure.get("ToolTips", "test_output")
+        )
+        self.label_process_output.setToolTip(
+            configure.get("ToolTips", "process_output")
+        )
 
-    @pyqtSlot()
-    def __on_click_down_size_update(self):
+    def __configure_dbscan_update(self):
+        """[summary]
+        """
         down_size_value = int(self.LineEdit_downsize.text())
-        if down_size_value is not configure.get("Parameters", "down_size"):
+        if down_size_value is not configure.getint("Parameters", "down_size"):
             configure.set("Parameters", "down_size", "%s" % down_size_value)
-        self.__process_test_data()
 
-    @pyqtSlot()
-    def __on_click_eps_update(self):
         eps_value = int(self.lineEdit_eps.text())
-        if eps_value is not configure.get("Parameters", "eps"):
+        if eps_value is not configure.getint("Parameters", "eps"):
             configure.set("Parameters", "eps", "%s" % eps_value)
+
+        min_sample_value = int(self.lineEdit_min_sample.text())
+        if min_sample_value is not configure.getint("Parameters", "min_sample"):
+            configure.set("Parameters", "min_sample", "%s" % min_sample_value)
+
+    def __configure_alphashape_update(self):
+        min_area_value = int(self.lineEdit_min_area.text())
+        if min_area_value is not configure.getint("Parameters", "min_polygon_area"):
+            configure.set("Parameters", "min_polygon_area",
+                          "%s" % min_area_value)
+
+        reduction_value = int(self.lineEdit_alpha.text())
+        if reduction_value is not configure.getint("Parameters", "alphashape_reduction"):
+            configure.set("Parameters", "alphashape_reduction",
+                          "%s" % reduction_value)
+
+        max_area_value = int(self.lineEdit_max_area.text())
+        if max_area_value is not configure.getint("Parameters", "max_polygon_area"):
+            configure.set("Parameters", "max_polygon_area",
+                          "%s" % max_area_value)
+
+    @pyqtSlot()
+    def __on_click_dbscan_update(self):
+        self.__configure_dbscan_update()
         self.__process_test_data()
 
     @pyqtSlot()
-    def __on_click_min_sample_update(self):
-        min_sample_value = int(self.lineEdit_eps.text())
-        if min_sample_value is not configure.get("Parameters", "min_sample"):
-            configure.set("Parameters", "min_sample", "%s" % min_sample_value)
+    def __on_click_alphashape_update(self):
+        self.__configure_alphashape_update()
         self.__process_test_data()
 
     @pyqtSlot()
     def __on_click_save_all(self):
+        self.__configure_dbscan_update()
+        self.__configure_alphashape_update()
         with open(CONFIG_PATH, "w") as configfile:
             configure.write(configfile)
+
         self.statusBar().showMessage("Saved all parameters")
 
     @pyqtSlot()
     def __on_click_reset(self):
         configure.read(CONFIG_PATH)
+
         self.LineEdit_downsize.setText(
             configure.get("Parameters", "down_size"))
         self.lineEdit_eps.setText(configure.get("Parameters", "eps"))
@@ -204,6 +259,14 @@ class MainWindow(QMainWindow):
             configure.get("Test", "dest_dir_path"))
         self.lineEdit_data_dir_path.setText(
             configure.get("Download", "dest_dir_path"))
+
+        self.lineEdit_min_area.setText(
+            configure.get("Parameters", "min_polygon_area"))
+        self.lineEdit_alpha.setText(configure.get(
+            "Parameters", "alphashape_reduction"))
+        self.lineEdit_max_area.setText(configure.get(
+            "Parameters", "max_polygon_area"))
+        
         self.statusBar().showMessage("Reset all parameters")
 
     @pyqtSlot()

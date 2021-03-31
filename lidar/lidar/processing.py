@@ -123,31 +123,30 @@ class ProcessingPipeline:
             y_cluster = points[:, 1][np.where(clustering.labels_ == i)]
             sample = np.vstack((x_cluster, y_cluster)).T
 
-            if np.unique(sample, axis=0).shape[0] <= configure.getint(
-                "Parameters", "min_size"
-            ):
-                continue
-
             alpha_opt = configure.getfloat("Constants", "default_alpha_shape")
             alpha_shape = alphashape.alphashape(sample, alpha_opt)
 
+            # ignore the polygons that are too big
+            if alpha_shape.area > configure.getint("Parameters", "max_polygon_area"):
+                continue
+
+            # optimize the alpha for polygons in fitting size
             if alpha_shape.area > configure.getint("Parameters", "min_polygon_area"):
                 sample_size = sample.shape[0]
                 """
                 if polygon's area is bigger than an single estimated tree area, that means there are more than one tree in the cluster 
                 In this case, we want to use optimized alpha, and downscale the points to speed up the process
                 """
-                if sample_size > 1000:
-                    reduce_to_1000 = (
-                        lambda x: int(
-                            x) if x <= 1000 else reduce_to_1000(x / 10)
+                if sample_size > configure.getint("Parameters", "alphashape_reduction"):
+                    reduce_shape_size = (
+                        lambda x: int(x) if x <= configure.getint(
+                            "Parameters", "alphashape_reduction") else reduce_shape_size(x / 10)
                     )
-                    desired_size = reduce_to_1000(sample_size)
+                    desired_size = reduce_shape_size(sample_size)
                     down_sample_index = np.random.choice(
                         np.arange(sample_size), desired_size
                     )
                     # use optimized alpha shape value
-                    # TODO: don't use optimze, instead use pre-defined alpha
                     alpha_shape = alphashape.alphashape(
                         sample[down_sample_index])
 

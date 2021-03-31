@@ -7,8 +7,8 @@ RUN apt-get update \
     && apt-get install -y ffmpeg libsm6 libxext6 \
     && apt-get install -y libxcomposite-dev libxtst6 libpci-dev \
     && apt-get install -y wget
+
 SHELL [ "/bin/bash", "--login", "-c" ]
-# Create a non-root user
 # Create a non-root user
 ARG username=jarjarbinks
 ARG uid=1000
