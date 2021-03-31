@@ -20,8 +20,8 @@ const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Dat
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
-var CARBON_RATE = 30.600; // tonnes/hectare/year
-var TREE_RUNOFF_RATE = 0.881; // L/m2/year
+var CARBON_RATE = 2.58; // tonnes/hectare/year
+var TREE_RUNOFF_RATE = 27.853; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 const gradient = [
   "rgba(0, 255, 255, 0)",
