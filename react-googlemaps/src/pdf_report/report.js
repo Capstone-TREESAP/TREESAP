@@ -1,7 +1,7 @@
 import React from 'react';
-import './App.css';
-import { Document, Page, Text, View, StyleSheet, BlobProvider, Font, Canvas, Image } from "@react-pdf/renderer";
-import { PolygonEditor } from './polygon-editor';
+import '../App.css';
+import { Document, Page, Text, View, StyleSheet, BlobProvider, Canvas } from "@react-pdf/renderer";
+import { PolygonEditor } from '../polygons/polygon-editor';
 import { ReportGeometry } from './report-geometry';
 import ReactDOM from 'react-dom';
 import * as turf from '@turf/turf'

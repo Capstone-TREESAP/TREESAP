@@ -1,4 +1,4 @@
-import { PolygonEditor } from "./polygon-editor";
+import { PolygonEditor } from "../polygons/polygon-editor";
 
 export class SettingsList {
     constructor(geojsonList, parseFunction, functionOnCheck, functionOnUncheck) {

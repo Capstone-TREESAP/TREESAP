@@ -1,11 +1,10 @@
 import React from 'react';
 import './settings.css';
-import LandingScreenView from './landing-screen.js';
+import LandingScreenView from '../landing_screen/landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { SettingsList } from './settings-list';
 
 let constants = new Map()
-let itemList = [];
 
 export default class SettingsView extends React.Component {
   render() {

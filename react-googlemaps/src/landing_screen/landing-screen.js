@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import './landing-screen.css';
 import { CSSTransitionGroup } from 'react-transition-group';
 

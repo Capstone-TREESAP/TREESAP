@@ -1,13 +1,13 @@
-import React, { Component, useReducer, useState } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, Polyline, HeatMap } from 'google-maps-react';
-import SettingsView from './settings';
-import { DrawingView } from './drawing';
-import { PolygonLayer } from './polygon-layer'
-import { PolygonIntersection } from './polygon-intersection';
-import { PolygonEditor } from './polygon-editor';
+import SettingsView from './settings/settings';
+import { DrawingView } from './polygons/drawing';
+import { PolygonLayer } from './polygons/polygon-layer'
+import { PolygonIntersection } from './polygons/polygon-intersection';
+import { PolygonEditor } from './polygons/polygon-editor';
 import './App.css';
-import { IntersectionReport } from './report';
+import { IntersectionReport } from './pdf_report/report';
 import * as turf from '@turf/turf'
 
 var buildings = [];
