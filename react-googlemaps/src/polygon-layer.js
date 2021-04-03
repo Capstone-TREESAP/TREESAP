@@ -31,9 +31,25 @@ export class PolygonLayer {
                 var area = PolygonEditor.getPolygonArea(this.props, points.map(
                     point => PolygonEditor.pointToLatLng(this.props, point)
                 ))
+                var key = null;
+                if (type == "tree") {
+                    if (polygons.features[i].properties.id) {
+                        key = polygons.features[i].properties.id;
+                        
+                    } else {
+                        key = customKeyNum++;
+                    }
+                } else {
+                    key = polygons.features[i].properties["BLDG_UID"];
+                }
+
+                if (polygons.features[i].geometry.type == "MultiPolygon") {
+                    key += "." + j;
+                } 
+                
                 var polygon = {
                     // update this when lidar has ids added
-                    "key": type == "tree" ? (polygons.features[i].properties.id ? polygons.features[i].properties.id + "." + j : customKeyNum++) : polygons.features[i].properties["BLDG_UID"] + "." + j,
+                    "key": key,
                     "points": points,
                     "area": area,
                     "editable": false,

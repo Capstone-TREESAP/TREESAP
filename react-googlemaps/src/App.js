@@ -17,10 +17,11 @@ var polyKeys = [];
 var polygons = [];
 var ubc_boundary = {};
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
+//const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
-var CARBON_RATE = 30.600; // tonnes/hectare/year
-var TREE_RUNOFF_RATE = 0.881; // L/m2/year
+var CARBON_RATE = 2.58; // tonnes/hectare/year
+var TREE_RUNOFF_RATE = 27.853; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 const gradient = [
   "rgba(0, 255, 255, 0)",
@@ -57,6 +58,7 @@ const mapStyles = {
 
 
 // VALIDATION code
+
 
 function findIntersections(polygons1, polygons2) {
     var polygonSet1 = polygons1.features;
@@ -129,8 +131,12 @@ function findIntersections(polygons1, polygons2) {
         features: intersection_issues ? intersection_issues : intersections
     }
     
-    var polygons1_similarity = 1.0 - ((area1 - area_intersection) / area_intersection);
-    var polygons2_similarity = 1.0 - ((area2 - area_intersection) / area_intersection);
+    //var polygons1_similarity = 1.0 - ((area1 - area_intersection) / area_intersection);
+    //var polygons2_similarity = 1.0 - ((area2 - area_intersection) / area_intersection);
+
+    var polygons1_similarity = area_intersection / area1;
+    var polygons2_similarity = area_intersection / area2;
+
     console.log("area of " + polygons1.name + ": " + area1);
     console.log("area of " + polygons2.name + ": " + area2);
     console.log("area of intersection: " + area_intersection);
@@ -153,21 +159,20 @@ function parseDatabase(database) {
     polyKeys = Object.keys(all_polygon_sets);
     
     // vv uncomment for cross-validation testing vv
-    /*
+    /* 
     var lidar_polygons = all_polygon_sets["LiDAR 2018"];
     lidar_polygons.name = "LiDAR 2018";    
     var ortho_polygons = all_polygon_sets["Orthophoto 2018"];
     ortho_polygons.name = "Orthophoto 2018";    
-    ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
+    //ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
     lidar_polygons = findIntersections(lidar_polygons, ubc_boundary);
     polygons = ortho_polygons;    
     var lidar_ortho = findIntersections(lidar_polygons, ortho_polygons);
     polygons = lidar_ortho;
+    */
     // remove after TIC-96
-    polygons = ortho_polygons;
-    polygons = lidar_polygons;
-    
-    */    
+    //polygons = ortho_polygons;
+    //polygons = lidar_polygons;  
 }
 
 export class MapContainer extends Component {
@@ -724,6 +729,23 @@ export class MapContainer extends Component {
     }
 
     renderInfoWindow() {
+        var findPolygonCentroid = (polygon) => {
+            if (polygon) {
+                var polygonGeoJSON = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[]]
+                    }
+                }
+                for (var i = 0; i < polygon.points.length; i ++) {
+                    polygonGeoJSON.geometry.coordinates[0].push([polygon.points[i].lng, polygon.points[i].lat]);
+                }
+                return turf.centroid(polygonGeoJSON);
+            }
+            return null;
+        }
+
         if (this.state.clickedIntersection != null && this.state.intersectionLayer != null) {
             let totalArea = PolygonEditor.getTotalArea(this.state.intersectionLayer)
             let name = this.state.clickedIntersection.name
@@ -739,9 +761,13 @@ export class MapContainer extends Component {
                 console.log(relative_position);
                 var distance = relative_position.distance.toFixed(2);
                 var direction = relative_position.direction;
+                var centroid = findPolygonCentroid(this.state.clickedShadingPolygon);
+                var lat = centroid ? centroid.geometry.coordinates[1].toFixed(8) : null;
+                var lng = centroid ? centroid.geometry.coordinates[0].toFixed(8) : null;
                 return(<div className="info-window">
                     <h3>{this.state.clickedBuilding.name}</h3>
                     <p>{this.state.clickedBuilding.address}</p>
+                    <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
                     <h3>This tree cluster is {distance} metres {direction} of {this.state.clickedBuilding.name}</h3>
                 </div>) 
             } else {
@@ -755,10 +781,15 @@ export class MapContainer extends Component {
                 </div>) 
             }
         } else {
+            var centroid = findPolygonCentroid(this.state.clickedPolygon);
+            var lat = centroid ? centroid.geometry.coordinates[1].toFixed(8) : null;
+            var lng = centroid ? centroid.geometry.coordinates[0].toFixed(8) : null;
+
             return(<div>
                 <h3>Area: </h3><p>{this.state.clickedPolygon ? this.state.clickedPolygon.area : null} m<sup>2</sup></p>
                 <h3>Carbon sequestered: </h3><p>{this.state.clickedPolygon ? this.getCarbonSequesteredAnnually(this.state.clickedPolygon.area).toFixed(2) : null} tonnes/year</p>
                 <h3>Avoided rainwater run-off: </h3><p>{this.state.clickedPolygon ? this.getAvoidedRunoffAnnually(this.state.clickedPolygon.area).toFixed(2) : null} litres/year</p>
+                <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
             </div>)
         }
     }
