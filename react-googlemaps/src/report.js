@@ -7,18 +7,19 @@ import ReactDOM from 'react-dom';
 import * as turf from '@turf/turf'
 
 const SQUARE_METRE_TO_HECTARE = 10000;
-const TOP_MARGIN = 30;
-const BOTTOM_MARGIN = 30;
-const LEFT_MARGIN = 20;
-const RIGHT_MARGIN = 20;
+const TOP_MARGIN = 50;
+const BOTTOM_MARGIN = 50;
+const LEFT_MARGIN = 50;
+const RIGHT_MARGIN = 50;
 
 export class IntersectionReport {
-    constructor(props, boundingLine, intersectingPolygons, carbonRate, runoffRate) {
+    constructor(props, boundingLine, intersectingPolygons, carbonRate, runoffRate, layerName) {
         this.props = props
         this.boundingLine = boundingLine
         this.intersectingPolygons = intersectingPolygons
         this.carbonRate = carbonRate
         this.runoffRate = runoffRate
+        this.layerName = layerName
 
         this.styles = StyleSheet.create({
             title: {
@@ -214,13 +215,14 @@ export class IntersectionReport {
             </View>
             <View style={this.styles.bodySection}>
                 {this.createNameLine()}
+                {this.createStatRow("Tree cover layer", this.layerName)}
                 {this.createStatRow("Area", area + " square metres")}
                 {this.createStatRow("Total area of tree clusters", totalArea + " square metres")}
                 {this.createStatRow("Vegetation density", vegetationDensity + "%")}
                 {this.createStatRow("Total carbon sequestered", totalCarbon + " tonnes/year")}
                 {this.createStatRow("Total avoided stormwater runoff", totalRunoff + " litres/year")}
                 {this.createStatRow("Number of tree clusters within bounds", numPolygons)}
-                {this.createStatRow("Center point of area", "(" + centroid.geometry.coordinates[0] + ", " + centroid.geometry.coordinates[0] + ")")}
+                {this.createStatRow("Center point of area", "(" + centroid.geometry.coordinates[0] + ", " + centroid.geometry.coordinates[1] + ")")}
             </View>
             <View style={this.styles.canvasContainer}>
                 <Canvas 

@@ -701,7 +701,10 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
-        let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate)
+        let index = polyKeys.indexOf(this.state.displayList[0])
+        let polygonLayerName = polyKeys[index]
+        console.log("Layer name:", polygonLayerName)
+        let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName)
 
         //TODO this is hacky but works for now
         if (intersection.name == undefined) {

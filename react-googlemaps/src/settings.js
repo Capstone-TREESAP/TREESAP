@@ -121,7 +121,7 @@ function SettingsDisplay(props) {
         <label
           className="input"
           for="setting1">
-          <p>Change tonnes of C per hectare per year here. Current value: {constants.get('carbon')} t/h of C</p>
+          Change tonnes of carbon per hectare per year here. Current value: {constants.get('carbon')} tonnes/hectare
         </label>
         <br/>
         <input
@@ -145,7 +145,7 @@ function SettingsDisplay(props) {
           className="input"
           for="setting2"
         >
-          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} L/m<sup>2</sup>
+          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} Litres/m<sup>2</sup>
         </label>
         <br/>
         <input
