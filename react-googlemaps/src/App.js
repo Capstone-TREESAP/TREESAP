@@ -11,7 +11,8 @@ import { IntersectionReport } from './pdf_report/report';
 import * as turf from '@turf/turf'
 import { Database } from './database';
 
-const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
+const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/db.json"
+// const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
@@ -91,8 +92,11 @@ export class MapContainer extends Component {
               isLoaded: true
             });
             this.database.parseDatabase(result)
-            this.state.displayList.push(this.database.polyKeys[0])
-            this.loadPolygonLayer();
+            .then(() => {
+                console.log("Database", this.database)
+                this.state.displayList.push(this.database.polyKeys[0])
+                this.loadPolygonLayer();
+            })
           },
           (error) => {
             console.log(error);
