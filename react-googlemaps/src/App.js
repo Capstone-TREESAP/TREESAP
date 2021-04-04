@@ -9,13 +9,8 @@ import { PolygonEditor } from './polygons/polygon-editor';
 import './App.css';
 import { IntersectionReport } from './pdf_report/report';
 import * as turf from '@turf/turf'
+import { Database } from './database';
 
-var buildings = [];
-var all_polygon_sets = {};
-var neighborhood_polygons = {};
-var polyKeys = [];
-var polygons = [];
-var ubc_boundary = {};
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
@@ -56,125 +51,6 @@ const mapStyles = {
     height: '100%'
 };
 
-
-// VALIDATION code
-
-
-function findIntersections(polygons1, polygons2) {
-    var polygonSet1 = polygons1.features;
-    var polygonSet2 = polygons2.features;
-    var intersections = []
-    var area1 = 0;
-    var area2 = 0;
-    var area_intersection = 0;
-    var intersection_issues = null;
-    var num_mp = 0;
-    console.log("calculating intersections: " + polygons1.name + " and " + polygons2.name);
-    for(var i = 0; i < polygonSet1.length; i++) {
-        area1 += turf.area(polygonSet1[i]);
-    }
-    for(var j = 0; j < polygonSet2.length; j++) {
-        area2 += turf.area(polygonSet2[j]);
-    }
-    var error = false;
-    for(var i = 0; i < polygonSet1.length && !error; i++) {
-        for(var j = 0; j < polygonSet2.length && !error; j++) {
-            var intersection = null;
-            try
-            {
-                intersection = turf.intersect(polygonSet1[i], polygonSet2[j]); 
-            } catch(e) {
-                console.log(e);
-                //var difference = turf.difference(polygonSet1[i], polygonSet2[j]);
-                //console.log(polygonSet1[i]);
-                //console.log(polygonSet2[j]);
-                //var split1 = splitPolygon(polygonSet1[i]);
-                //var split2 = splitPolygon(polygonSet2[j]);
-                //intersection_issues = [];
-                //intersection_issues.push(/*split2[0], split2[1], */split1[0], split1[1]);
-                //intersection_issues.push(polygonSet2[j]);
-                //error = true;
-                //polygonSet1.push(split1[0]);
-                //polygonSet1.push(split1[1]);
-                //polygonSet2.push(split2[0]);
-                //polygonSet2.push(split2[1]);
-            }
-            
-            if(intersection && !error) {
-                if(intersection.geometry.type == "MultiPolygon") {
-                    num_mp++;
-                    for(var k = 0; k < intersection.geometry.coordinates.length; k++) {
-                        var polygon = {
-                            type: "Feature",
-                            geometry: {
-                              type: "Polygon",
-                              coordinates: intersection.geometry.coordinates[k]
-                            }
-                        }
-                        var area = turf.area(polygon);
-                        polygon.properties = {area: area}
-                        area_intersection += area;
-                        intersections.push(polygon);
-                    }
-                } else {
-                    var area = turf.area(intersection);
-                    intersection.properties = {area: area}
-                    area_intersection += area;
-                    intersections.push(intersection);
-                }
-            }
-        } 
-    }
-    var intersection_set =  {
-        type: "FeatureCollection",
-        name: polygons1.name + " X " + polygons2.name,
-        features: intersection_issues ? intersection_issues : intersections
-    }
-    
-    //var polygons1_similarity = 1.0 - ((area1 - area_intersection) / area_intersection);
-    //var polygons2_similarity = 1.0 - ((area2 - area_intersection) / area_intersection);
-
-    var polygons1_similarity = area_intersection / area1;
-    var polygons2_similarity = area_intersection / area2;
-
-    console.log("area of " + polygons1.name + ": " + area1);
-    console.log("area of " + polygons2.name + ": " + area2);
-    console.log("area of intersection: " + area_intersection);
-    console.log("similarity of " + polygons1.name + " to intersection: " + polygons1_similarity);
-    console.log("similarity of " + polygons2.name + " to intersection: " + polygons2_similarity);
-    return intersection_set;
-}
-//VALIDATION END
-
-
-function parseDatabase(database) {
-    console.log(database)
-    var constants = database["Calculation Constants"];
-    CARBON_RATE = parseFloat(constants["Carbon Sequestration Rate"]);
-    TREE_RUNOFF_RATE = parseFloat(constants["Tree Run-off Effects Rate"]);
-    neighborhood_polygons = database["Neighborhood Polygons"];
-    all_polygon_sets = database["Tree Cover Polygon Datasets"];
-    buildings = database["UBC Buildings"];
-    ubc_boundary = database["UBC Boundary"];
-    polyKeys = Object.keys(all_polygon_sets);
-    
-    // vv uncomment for cross-validation testing vv
-    /* 
-    var lidar_polygons = all_polygon_sets["LiDAR 2018"];
-    lidar_polygons.name = "LiDAR 2018";    
-    var ortho_polygons = all_polygon_sets["Orthophoto 2018"];
-    ortho_polygons.name = "Orthophoto 2018";    
-    //ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
-    lidar_polygons = findIntersections(lidar_polygons, ubc_boundary);
-    polygons = ortho_polygons;    
-    var lidar_ortho = findIntersections(lidar_polygons, ortho_polygons);
-    polygons = lidar_ortho;
-    */
-    // remove after TIC-96
-    //polygons = ortho_polygons;
-    //polygons = lidar_polygons;  
-}
-
 export class MapContainer extends Component {
     constructor(props) {
         super(props);
@@ -203,6 +79,7 @@ export class MapContainer extends Component {
         };
         this.drawingView = null;
         this.intersections = [];
+        this.database = new Database();
     }
 
     componentDidMount() {
@@ -213,8 +90,8 @@ export class MapContainer extends Component {
             this.setState({
               isLoaded: true
             });
-            parseDatabase(result);
-            this.state.displayList.push(polyKeys[0])
+            this.database.parseDatabase(result)
+            this.state.displayList.push(this.database.polyKeys[0])
             this.loadPolygonLayer();
           },
           (error) => {
@@ -311,7 +188,7 @@ export class MapContainer extends Component {
           return;
         }
         //finding the index of the layer that is currently being displayed
-        var index = polyKeys.indexOf(this.state.displayList[0]);
+        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         let isIntersectionPolygon = (this.state.clickedIntersection != null)
         this.makeIntersectionUneditable(this.state.editingIntersection)
@@ -365,7 +242,7 @@ export class MapContainer extends Component {
         alert("Information about intersections and areas of interest is not available while displaying multiple layers.")
         return;
       }
-      var index = polyKeys.indexOf(this.state.displayList[0]);
+      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
@@ -381,7 +258,7 @@ export class MapContainer extends Component {
       if (this.state.displayList.length != 1) {
         return;
       }
-      var index = polyKeys.indexOf(this.state.displayList[0]);
+      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         this.state.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
@@ -441,7 +318,7 @@ export class MapContainer extends Component {
       })
       //finding the index of the layer that is currently being displayed
       if (this.state.displayList.length > 0) {
-        var index = polyKeys.indexOf(this.state.displayList[0]);
+        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         this.state.polygonLayers[index].makeCurrentPolygonUneditable();
       }
       this.setState({
@@ -491,8 +368,8 @@ export class MapContainer extends Component {
 
     loadPolygonLayer = () => {
       var layersList = [];
-      for(var polygons in polyKeys){
-        layersList.push(new PolygonLayer(all_polygon_sets[polyKeys[polygons]], this.props, this._map.map, "tree"));
+      for(var polygons in this.database.polyKeys){
+        layersList.push(new PolygonLayer(this.database.all_polygon_sets[this.database.polyKeys[polygons]], this.props, this._map.map, "tree"));
       }
         this.setState({
             polygonLayers: layersList,
@@ -501,7 +378,7 @@ export class MapContainer extends Component {
 
     loadBuildingLayer = () => {
         this.setState({
-            buildingLayer: new PolygonLayer(buildings, this.props, this._map.map, "building")
+            buildingLayer: new PolygonLayer(this.database.buildings, this.props, this._map.map, "building")
         })
     }
 
@@ -537,7 +414,7 @@ export class MapContainer extends Component {
       var layerList = [];
         if (this.state.polygonLayers != null) {
           for (var poly in this.state.displayList) {
-            var index = polyKeys.indexOf(this.state.displayList[poly]);
+            var index = this.database.getPolygonSetIndex(this.state.displayList[poly]);
             layerList.push(this.displayPolygons(this.state.polygonLayers[index].polygons, colours[index], poly))
           }
             return layerList;
@@ -614,7 +491,7 @@ export class MapContainer extends Component {
       if (this.state.displayList.length != 1) {
         return;
       }
-      var index = polyKeys.indexOf(this.state.displayList[0]);
+      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         this.state.polygonLayers[index].deletePolygon(polygon)
         this.setState({
             clickedLocation: null,
@@ -627,7 +504,7 @@ export class MapContainer extends Component {
         this.drawingView.resetDrawingMode()
         return;
       }
-      var index = polyKeys.indexOf(this.state.displayList[0]);
+      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
         if (this.state.editMode) {
             this.state.polygonLayers[index].addPolygon(polygon)
             this.setState({
@@ -686,7 +563,7 @@ export class MapContainer extends Component {
 
     onInfoWindowOpen(polygon) {
         var buttons;
-        var index = polyKeys.indexOf(this.state.displayList[0]);
+        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
 
         if (this.state.editMode) {
             buttons = (<div>
@@ -706,8 +583,8 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
-        let index = polyKeys.indexOf(this.state.displayList[0])
-        let polygonLayerName = polyKeys[index]
+        let index = this.database.getPolygonSetIndex(this.state.displayList[0])
+        let polygonLayerName = this.database.polyKeys[index]
         console.log("Layer name:", polygonLayerName)
         let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName)
 
@@ -802,7 +679,7 @@ export class MapContainer extends Component {
 
     var heatmap = [];
     var clusterMaker = require('clusters')
-    var index = polyKeys.indexOf(this.state.displayList[0]);
+    var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
     let positions = this.state.polygonLayers[index].positions;
     let polygons = this.state.polygonLayers[index].polygons;
 
@@ -838,7 +715,7 @@ export class MapContainer extends Component {
   renderLegend = () => {
     var legend = [];
     for (var polyLayer in this.state.displayList) {
-      legend.push(this.renderListItem(polyKeys.indexOf(this.state.displayList[polyLayer])))
+      legend.push(this.renderListItem(this.database.getPolygonSetIndex(this.state.displayList[polyLayer])))
     }
     return legend;
   }
@@ -847,7 +724,7 @@ export class MapContainer extends Component {
     return(
       <div className="row">
         <div className="legend" style={{color: "black"}}>
-          <p>{polyKeys[item]}</p>
+          <p>{this.database.polyKeys[item]}</p>
         </div>
         <div className="colour-square" style={{backgroundColor: colours[item], color: colours[item]}}/>
       </div>
@@ -892,10 +769,10 @@ export class MapContainer extends Component {
             />
             <SettingsView
                 onToggleMode={this.onToggleMode}
-                neighborhoodPolygonsList={neighborhood_polygons}
+                neighborhoodPolygonsList={this.database.neighborhood_polygons}
                 onAddAreaOfInterest={this.onAddAreaOfInterest}
                 onRemoveAreaOfInterest={this.onRemoveAreaOfInterest}
-                polyList={polyKeys}
+                polyList={this.database.polyKeys}
                 displayList={this.state.displayList}
                 setPolygonLayer={this.setPolygonLayer}
                 onUpdateCarbon={this.onUpdateCarbon}
