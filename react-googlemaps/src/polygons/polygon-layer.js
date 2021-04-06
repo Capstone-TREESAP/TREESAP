@@ -4,9 +4,8 @@ const CUSTOM_KEY = "C"
 var customKeyNum = 0
 
 export class PolygonLayer {
-    constructor(polygonList, props, map, type) {
+    constructor(polygonList, props, type) {
         this.props = props
-        this.map = map
         this.polygon = null
         this.editablePolygon = null
         this.type = type;
@@ -21,7 +20,14 @@ export class PolygonLayer {
     parsePolygons(polygons, type){
         let collectedPolygons = [];
         for (var i = 0; i < polygons.features.length; i++) {
+            //TODO this is broken for polygons with inner rings
             for (var j = 0; j < polygons.features[i].geometry.coordinates.length; j++) {
+                //TODO temp fix so it stops yelling: just ignore inner rings
+                if (j > 0 && polygons.features[i].geometry.type == "Polygon") {
+                    console.log("Skipping inner ring")
+                    continue
+                }
+
                 if (polygons.features[i].geometry.type == "MultiPolygon") {
                     var coordinates = polygons.features[i].geometry.coordinates[j][0];
                 } else {
@@ -45,7 +51,7 @@ export class PolygonLayer {
 
                 if (polygons.features[i].geometry.type == "MultiPolygon") {
                     key += "." + j;
-                } 
+                }
                 
                 var polygon = {
                     // update this when lidar has ids added
@@ -92,10 +98,10 @@ export class PolygonLayer {
         return positions;
     };
 
-    makePolygonEditable = (polygon) => {
+    makePolygonEditable = (polygon, map) => {
         let index = this.polygons.findIndex(element => element === polygon)
         this.polygons.splice(index, 1);
-        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#014421", 0);
+        this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, map, "#014421", 0);
         this.positions = this.parseRawPoints(this.polygons)
     }
 

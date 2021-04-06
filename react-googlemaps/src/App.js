@@ -16,8 +16,6 @@ const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Dat
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
-var CARBON_RATE = 2.58; // tonnes/hectare/year
-var TREE_RUNOFF_RATE = 27.853; // L/m2/year
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 const gradient = [
   "rgba(0, 255, 255, 0)",
@@ -62,14 +60,12 @@ export class MapContainer extends Component {
             clickedPolygon: null,
             clickedIntersection: null,
             marker: null,
-            polygonLayers: null,
             intersectionLayer: null,
             editMode: false,
-            carbonRate: CARBON_RATE,
-            runoffRate: TREE_RUNOFF_RATE,
             editingIntersection: null,
             displayList: [],
             ready: false,
+            database: new Database(),
             // shading/cooling state variables:
             buildingLayer: null,
             clickedBuilding: null,
@@ -80,7 +76,6 @@ export class MapContainer extends Component {
         };
         this.drawingView = null;
         this.intersections = [];
-        this.database = new Database();
     }
 
     componentDidMount() {
@@ -88,14 +83,13 @@ export class MapContainer extends Component {
         .then(res => res.json())
         .then(
           (result) => {
-            this.setState({
-              isLoaded: true
-            });
-            this.database.parseDatabase(result)
+            this.state.database.parseDatabase(result, this.props)
             .then(() => {
-                console.log("Database", this.database)
-                this.state.displayList.push(this.database.polyKeys[0])
-                this.loadPolygonLayer();
+                console.log("Database:", this.state.database)
+                this.state.displayList.push(this.state.database.polyKeys[0])
+                this.setState({
+                    isLoaded: true
+                });
             })
           },
           (error) => {
@@ -109,8 +103,8 @@ export class MapContainer extends Component {
     }
 
     //Functions for calculating ecosystem services
-    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.carbonRate;
-    getAvoidedRunoffAnnually = (area) => area * this.state.runoffRate;
+    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.database.carbonRate;
+    getAvoidedRunoffAnnually = (area) => area * this.state.database.runoffRate;
 
     // 
     getShadelineLengthAndOrientation = () => {
@@ -192,12 +186,12 @@ export class MapContainer extends Component {
           return;
         }
         //finding the index of the layer that is currently being displayed
-        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
+        var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+        this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
         let isIntersectionPolygon = (this.state.clickedIntersection != null)
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
-        if (isIntersectionPolygon && !this.state.polygonLayers[index].containsPolygon(polygon)) {
+        if (isIntersectionPolygon && !this.state.database.polygonLayers[index].containsPolygon(polygon)) {
             //Treat it as a generic click to avoid displaying information about the wrong polygon
             this.onGenericClick()
             return
@@ -209,7 +203,7 @@ export class MapContainer extends Component {
             intersectionLayer: null,
             clickedPolygon: polygon,
         })
-        this.state.polygonLayers[index].selectPolygon(this.state.clickedPolygon);
+        this.state.database.polygonLayers[index].selectPolygon(this.state.clickedPolygon);
     };
 
     handleBuildingClick = (building, map, coords) => {
@@ -246,15 +240,15 @@ export class MapContainer extends Component {
         alert("Information about intersections and areas of interest is not available while displaying multiple layers.")
         return;
       }
-      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
+      var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+        this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
             clickedLocation: coords,
             clickedPolygon: null,
             clickedIntersection: intersection,
-            intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[index].polygons)
+            intersectionLayer: intersection.findIntersectingPolygons(this.state.database.polygonLayers[index].polygons)
         })
     }
 
@@ -262,8 +256,8 @@ export class MapContainer extends Component {
       if (this.state.displayList.length != 1) {
         return;
       }
-      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
+      var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+        this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
         this.makeIntersectionUneditable(this.state.editingIntersection)
 
         this.setState({
@@ -322,8 +316,8 @@ export class MapContainer extends Component {
       })
       //finding the index of the layer that is currently being displayed
       if (this.state.displayList.length > 0) {
-        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.polygonLayers[index].makeCurrentPolygonUneditable();
+        var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+        this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
       }
       this.setState({
         displayList: displayList
@@ -338,15 +332,11 @@ export class MapContainer extends Component {
     }
 
     onUpdateCarbon = (carbonValue) => {
-      this.setState({
-        carbonRate: carbonValue
-      })
+        this.state.database.carbonRate = carbonValue
     }
 
     onUpdateRunoff = (runoffValue) => {
-      this.setState({
-        runoffRate: runoffValue
-      })
+        this.state.database.runoffRate = runoffValue
     }
 
     onToggleShadingMode = () => {
@@ -370,19 +360,9 @@ export class MapContainer extends Component {
         })
     }
 
-    loadPolygonLayer = () => {
-      var layersList = [];
-      for(var polygons in this.database.polyKeys){
-        layersList.push(new PolygonLayer(this.database.all_polygon_sets[this.database.polyKeys[polygons]], this.props, this._map.map, "tree"));
-      }
-        this.setState({
-            polygonLayers: layersList,
-        })
-    }
-
     loadBuildingLayer = () => {
         this.setState({
-            buildingLayer: new PolygonLayer(this.database.buildings, this.props, this._map.map, "building")
+            buildingLayer: new PolygonLayer(this.state.database.buildings, this.props, "building")
         })
     }
 
@@ -416,10 +396,12 @@ export class MapContainer extends Component {
 
     displayPolygonLayer = () => {
       var layerList = [];
-        if (this.state.polygonLayers != null) {
+      console.log("isLoaded:", this.state.isLoaded)
+        if (this.state.isLoaded) {
+            console.log(this.state.database.polygonLayers[0].polygons.length)
           for (var poly in this.state.displayList) {
-            var index = this.database.getPolygonSetIndex(this.state.displayList[poly]);
-            layerList.push(this.displayPolygons(this.state.polygonLayers[index].polygons, colours[index], poly))
+            var index = this.state.database.getPolygonSetIndex(this.state.displayList[poly]);
+            layerList.push(this.displayPolygons(this.state.database.polygonLayers[index].polygons, colours[index], poly))
           }
             return layerList;
         }
@@ -495,8 +477,8 @@ export class MapContainer extends Component {
       if (this.state.displayList.length != 1) {
         return;
       }
-      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.polygonLayers[index].deletePolygon(polygon)
+      var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+        this.state.database.polygonLayers[index].deletePolygon(polygon)
         this.setState({
             clickedLocation: null,
             clickedPolygon: null
@@ -508,9 +490,9 @@ export class MapContainer extends Component {
         this.drawingView.resetDrawingMode()
         return;
       }
-      var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
+      var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
         if (this.state.editMode) {
-            this.state.polygonLayers[index].addPolygon(polygon)
+            this.state.database.polygonLayers[index].addPolygon(polygon)
             this.setState({
                 clickedLocation: null,
                 clickedPolygon: null,
@@ -524,7 +506,7 @@ export class MapContainer extends Component {
                 clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO this should probably not be so hardcoded
                 clickedPolygon: null,
                 clickedIntersection: intersection,
-                intersectionLayer: intersection.findIntersectingPolygons(this.state.polygonLayers[index].polygons)
+                intersectionLayer: intersection.findIntersectingPolygons(this.state.database.polygonLayers[index].polygons)
             })
             this.drawingView.resetDrawingMode()
         }
@@ -567,12 +549,12 @@ export class MapContainer extends Component {
 
     onInfoWindowOpen(polygon) {
         var buttons;
-        var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
+        var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
 
         if (this.state.editMode) {
             buttons = (<div>
                 <button className="info-window-button" type="button">Report Error</button>
-                <button className="info-window-button" type="button" onClick={() => {this.state.polygonLayers[index].makePolygonEditable(polygon); this.onClose();}}>Edit</button>
+                <button className="info-window-button" type="button" onClick={() => {this.state.database.polygonLayers[index].makePolygonEditable(polygon, this._map.map); this.onClose();}}>Edit</button>
                 <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
         } else {
@@ -587,8 +569,8 @@ export class MapContainer extends Component {
 
     onIntersectionInfoWindowOpen(intersection) {
         var buttons;
-        let index = this.database.getPolygonSetIndex(this.state.displayList[0])
-        let polygonLayerName = this.database.polyKeys[index]
+        let index = this.state.database.getPolygonSetIndex(this.state.displayList[0])
+        let polygonLayerName = this.state.database.polyKeys[index]
         console.log("Layer name:", polygonLayerName)
         let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName)
 
@@ -677,15 +659,15 @@ export class MapContainer extends Component {
     
     //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
   renderHeatmap = () => {
-    if (this.state.polygonLayers == null || this.state.displayList.length < 1) {
+    if (this.state.database.polygonLayers == null || this.state.displayList.length < 1) {
         return null
     }
 
     var heatmap = [];
     var clusterMaker = require('clusters')
-    var index = this.database.getPolygonSetIndex(this.state.displayList[0]);
-    let positions = this.state.polygonLayers[index].positions;
-    let polygons = this.state.polygonLayers[index].polygons;
+    var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+    let positions = this.state.database.polygonLayers[index].positions;
+    let polygons = this.state.database.polygonLayers[index].polygons;
 
     //for(var polygon in positions) {
     //  var numClusters = Math.ceil(polygons[polygon].area/50000);
@@ -719,7 +701,7 @@ export class MapContainer extends Component {
   renderLegend = () => {
     var legend = [];
     for (var polyLayer in this.state.displayList) {
-      legend.push(this.renderListItem(this.database.getPolygonSetIndex(this.state.displayList[polyLayer])))
+      legend.push(this.renderListItem(this.state.database.getPolygonSetIndex(this.state.displayList[polyLayer])))
     }
     return legend;
   }
@@ -728,7 +710,7 @@ export class MapContainer extends Component {
     return(
       <div className="row">
         <div className="legend" style={{color: "black"}}>
-          <p>{this.database.polyKeys[item]}</p>
+          <p>{this.state.database.polyKeys[item]}</p>
         </div>
         <div className="colour-square" style={{backgroundColor: colours[item], color: colours[item]}}/>
       </div>
@@ -773,16 +755,16 @@ export class MapContainer extends Component {
             />
             <SettingsView
                 onToggleMode={this.onToggleMode}
-                neighborhoodPolygonsList={this.database.neighborhood_polygons}
+                neighborhoodPolygonsList={this.state.database.neighborhood_polygons}
                 onAddAreaOfInterest={this.onAddAreaOfInterest}
                 onRemoveAreaOfInterest={this.onRemoveAreaOfInterest}
-                polyList={this.database.polyKeys}
+                polyList={this.state.database.polyKeys}
                 displayList={this.state.displayList}
                 setPolygonLayer={this.setPolygonLayer}
                 onUpdateCarbon={this.onUpdateCarbon}
                 onUpdateRunoff={this.onUpdateRunoff}
-                carbonRate={this.state.carbonRate}
-                runoffRate={this.state.runoffRate}
+                carbonRate={this.state.database.carbonRate}
+                runoffRate={this.state.database.runoffRate}
                 onToggleShadingMode={this.onToggleShadingMode}
             />
             {this.state.ready && this.displayPolygonLayer()}

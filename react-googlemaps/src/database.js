@@ -1,3 +1,4 @@
+import { PolygonLayer } from './polygons/polygon-layer.js'
 import { findIntersections } from './validation.js'
 
 const AREAS_OF_INTEREST = "Areas of Interest"
@@ -12,36 +13,47 @@ const URL_PREFIX = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-D
 
 export class Database {
     constructor() {
-        this.carbon_rate = 0;
-        this.tree_runoff_rate = 0;
+        this.carbonRate = 0;
+        this.runoffRate = 0;
         this.neighborhood_polygons = {};
-        this.all_polygon_sets = {};
+        this.polygonLayers = [];
         this.buildings = {};
         this.ubc_boundary = {};
         this.polyKeys = {};
         this.polygons = {};
     }
 
-    parseDatabase = async (database) => {
+    parseDatabase = async (database, props) => {
         await this.parseConstants(database)
 
         //TODO rename
         this.neighborhood_polygons = await this.parseFiles(database[AREAS_OF_INTEREST].files)
-        await this.parsePolygonSets(database)
+        let all_polygon_sets = await this.parsePolygonSets(database)
+        for (let set in all_polygon_sets) {
+            this.polygonLayers.push(new PolygonLayer(
+                all_polygon_sets[set],
+                props, 
+                "tree"
+            ))
+        }
+
         this.buildings = await this.parseFiles(database[BUILDINGS].files)
         this.ubc_boundary = await this.parseFiles(database[UBC_BOUNDARY].files)
 
         // vv uncomment for cross-validation testing vv
-        // this.runValidation()
+        // this.runValidation(all_polygon_sets)
     }
 
     parsePolygonSets = async (database) => {
         this.polyKeys = Object.keys(database[ALL_POLYGONS])
+        let all_polygon_sets = {};
         for (let i in this.polyKeys) {
             let setName = this.polyKeys[i]
             let set = await this.parseFiles(database[ALL_POLYGONS][setName].files)
-            this.all_polygon_sets[setName] = set
+            all_polygon_sets[setName] = set
         }
+
+        return all_polygon_sets
     }
 
     parseFiles = async (files) => {
@@ -60,8 +72,8 @@ export class Database {
         let fileURL = URL_PREFIX + database[CALC_CONSTANTS].files[0] //TODO
 
         let constants = await this.parseFile(fileURL)
-        this.carbon_rate = parseFloat(constants[CARBON_RATE]);
-        this.tree_runoff_rate = parseFloat(constants[TREE_RUNOFF_RATE]);
+        this.carbonRate = parseFloat(constants[CARBON_RATE]);
+        this.runoffRate = parseFloat(constants[TREE_RUNOFF_RATE]);
     }
 
     parseFile = async (fileURL) => {
@@ -74,10 +86,10 @@ export class Database {
         .then(res => res.json())
     }
 
-    runValidation() {
-        var lidar_polygons = this.all_polygon_sets["LiDAR 2018"];
+    runValidation(all_polygon_sets) {
+        var lidar_polygons = all_polygon_sets["LiDAR 2018"];
         lidar_polygons.name = "LiDAR 2018";    
-        var ortho_polygons = this.all_polygon_sets["Orthophoto 2018"];
+        var ortho_polygons = all_polygon_sets["Orthophoto 2018"];
         ortho_polygons.name = "Orthophoto 2018";    
         //ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
         // lidar_polygons = findIntersections(lidar_polygons, this.ubc_boundary);

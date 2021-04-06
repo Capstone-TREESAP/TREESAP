@@ -211,6 +211,9 @@ class Settings extends React.Component {
   }
 
   openMenu(){
+    constants.set('carbon', this.props.carbonRate);
+    constants.set('runoff', this.props.runoffRate);
+    
     let menu = SettingsDisplay({
       onClick: () => this.closeMenu(),
       onToggleMode: (editMode) => this.onToggleMode(editMode),
