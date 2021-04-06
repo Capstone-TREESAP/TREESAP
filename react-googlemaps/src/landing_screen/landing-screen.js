@@ -1,5 +1,6 @@
 import React from 'react';
 import './landing-screen.css';
+import logo from './landing-screen-icon.png'
 import { CSSTransitionGroup } from 'react-transition-group';
 
 export default class LandingScreenView extends React.Component {
@@ -23,7 +24,8 @@ export default class LandingScreenView extends React.Component {
           transitionLeaveTimeout={1200}>
           {this.state.visible &&
           <div className="landing-screen">
-            <h1 id="title">Welcome to the UBC Vancouver Campus Tree Inventory</h1>
+            <h1 id="title">Welcome to the UBC Tree Ecosystem Services Analysis Platform</h1>
+            <img src={logo} id="logo"/>
             <h2 id="instructions">Press the button below to explore the map</h2>
             <button
               className="menu-button"

@@ -25,6 +25,12 @@
   align-self: center;
 }
 
+#logo {
+  align-self: center;
+  width: auto;
+  height: 40%;
+}
+
 .launch-screen-leave {
   opacity: 1;
 }
