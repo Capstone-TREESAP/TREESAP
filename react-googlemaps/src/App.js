@@ -339,6 +339,7 @@ export class MapContainer extends Component {
         this.state.database.runoffRate = runoffValue
     }
 
+
     onToggleShadingMode = () => {
         console.log('changing shadingMode in app to ' + !this.state.shadingMode);
         // if not in shading mode, then toggle was clicked to enter shading mode, so render buildings
@@ -553,17 +554,13 @@ export class MapContainer extends Component {
 
         if (this.state.editMode) {
             buttons = (<div>
-                <button className="info-window-button" type="button">Report Error</button>
                 <button className="info-window-button" type="button" onClick={() => {this.state.database.polygonLayers[index].makePolygonEditable(polygon, this._map.map); this.onClose();}}>Edit</button>
                 <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
-        } else {
-            buttons = (<div>
-                <button className="info-window-button" type="button">Report Error</button>
-            </div>)
+            ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
+
         }
 
-        ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
     }
 
 

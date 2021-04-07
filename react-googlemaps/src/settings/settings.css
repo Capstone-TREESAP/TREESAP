@@ -114,3 +114,8 @@ input[type="button"].unselected{
   display: inline-block;
   background-color: white;
 }
+
+input[type="button"]:hover {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}

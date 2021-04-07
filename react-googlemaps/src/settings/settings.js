@@ -48,16 +48,22 @@ function MenuButton(props) {
 
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
-  constants.set('carbon', setting.value);
-  props.onUpdateCarbon(setting.value);
-  setting.value = "";
+  if(!isNaN(setting.value)) {
+    constants.set('carbon', setting.value);
+    props.onUpdateCarbon(setting.value);
+    setting.value = "";
+    document.getElementById('carbon-info-text').innerHTML = "Change tonnes of carbon per hectare per year here. Current value: " + constants.get('carbon') + " tonnes/hectare";
+  }
 }
 
 function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2')
-  constants.set('runoff', setting.value);
-  props.onUpdateRunoff(setting.value);
-  setting.value = "";
+  if(!isNaN(setting.value)) {
+    constants.set('runoff', setting.value);
+    props.onUpdateRunoff(setting.value);
+    setting.value = "";
+    document.getElementById('carbon-info-text').innerHTML = "Change litres of avoided runoff per meter squared per year here. Current value: " + constants.get('runoff') + "Litres/m<sup>2</sup>";
+  }
 }
 
 function SettingsDisplay(props) {
@@ -119,10 +125,10 @@ function SettingsDisplay(props) {
       <div className="dropdown">
         <label
           className="input"
+          id="monkey1"
           for="setting1">
-          Change tonnes of carbon per hectare per year here. Current value: {constants.get('carbon')} tonnes/hectare
+          <p id="carbon-info-text">Change tonnes of carbon per hectare per year here. Current value: {constants.get('carbon')} tonnes/hectare</p>
         </label>
-        <br/>
         <input
           type="text"
           id="setting1"
@@ -142,11 +148,11 @@ function SettingsDisplay(props) {
         <br/>
         <label
           className="input"
+          id="monkey2"
           for="setting2"
         >
-          Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} Litres/m<sup>2</sup>
+          <p id="runoff-info-text">Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
         </label>
-        <br/>
         <input
           type="text"
           id="setting2"

@@ -93,3 +93,8 @@ h3{
   padding: 5px 15px;
   background-color: #313628;
 }
+
+.info-window-button:hover {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}
