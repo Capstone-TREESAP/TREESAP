@@ -71,10 +71,10 @@ function SaveStormwaterValue(props) {
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
-    <h1>UBC Vancouver Tree Inventory Settings</h1>
+    <h1 className="settings-text">UBC Vancouver Tree Inventory Settings</h1>
     <div className="container1">
       <div className="display">
-        <h3>Select a Data Source:</h3>
+        <h3 className="settings-text">Select a Data Source:</h3>
         <div className="checkboxes">{props.polygonLayers.getCheckboxes()}</div>
         <button
           className="display-save"
@@ -88,7 +88,7 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div>
-        <h3>Select Key Areas of Interest:</h3>
+        <h3 className="settings-text">Select Key Areas of Interest:</h3>
         <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
           <button
             className="display-save"
@@ -104,8 +104,8 @@ function SettingsDisplay(props) {
     </div>
     <div className="container2">
       <div className="display-no-columns">
-        <h3>Select Mode:</h3>
-        {props.displayList.length > 1 && <p>(Edit mode not supported when viewing multiple years of data)</p>}
+        <h3 className="settings-text">Select Mode:</h3>
+        {props.displayList.length > 1 && <p className="settings-text">(Edit mode not supported when viewing multiple years of data)</p>}
         {props.displayList.length <= 1 &&
           <input
             className={props.editMode ? "intersection unselected" : "intersection selected"}
@@ -135,13 +135,13 @@ function SettingsDisplay(props) {
           id="monkey1"
           for="setting1">
         </label>
-        <h3>Change tonnes of carbon per hectare per year here:</h3>
+        <h3 className="settings-text">Change tonnes of carbon per hectare per year here:</h3>
         <input
           type="text"
           id="setting1"
           name="setting1"
         />
-        <p id="carbon-info-text">Current value: {constants.get('carbon')} tonnes/hectare</p>
+        <p id="carbon-info-text" className="settings-text">Current value: {constants.get('carbon')} tonnes/hectare</p>
         <br/>
         <button
           className="display-save"
@@ -160,13 +160,13 @@ function SettingsDisplay(props) {
           for="setting2"
         >
         </label>
-        <h3>Change litres of avoided runoff per meter squared per year here:</h3>
+        <h3 className="settings-text">Change litres of avoided runoff per meter squared per year here:</h3>
         <input
           type="text"
           id="setting2"
           name="setting2"
         />
-        <p id="runoff-info-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
+        <p id="runoff-info-text" className="settings-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
         <br/>
         <button
           className="display-save"
@@ -180,7 +180,7 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div className="display-bottom">
-        <h3>Access Shading and Cooling Tool:</h3>
+        <h3 className="settings-text">Access Shading and Cooling Tool:</h3>
           <button
             className="display-save"
             type="button"

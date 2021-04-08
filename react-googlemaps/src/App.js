@@ -772,7 +772,7 @@ export class MapContainer extends Component {
             {this.renderHeatmap()}
             <div className="legend-container">
               <div className="row">
-                <h3>Legend</h3>
+                <h3 id="legend-text">Legend</h3>
               </div>
               {this.state.ready && this.renderLegend()}
             </div>

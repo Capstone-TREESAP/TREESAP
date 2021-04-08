@@ -88,12 +88,11 @@
 
 h1 {
   padding-left: 10px;
-  color: white;
+
 }
 
 p {
   padding-left: 10px;
-  color: white;
 }
 
 input[type="button"].selected{
@@ -151,4 +150,8 @@ input[type="text"]{
 #runoff-info-text{
   margin-left: 10px;
   display: inline-block;
+}
+
+.settings-text{
+  color: white;
 }

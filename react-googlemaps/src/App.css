@@ -99,6 +99,10 @@ h3{
   color: white;
 }
 
-h3{
-  color: white;
+#legend-text{
+  color:black
+}
+
+#legend-data{
+  color:black
 }
