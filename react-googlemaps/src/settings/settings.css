@@ -14,8 +14,8 @@
   position: absolute;
   bottom: 0px;
   width: 100%;
-  height: 80%;
-  background-color: white;
+  height: 90%;
+  background-color: #5B6057;
   overflow: scroll;
 }
 
@@ -30,37 +30,40 @@
   margin-left: 10px;
   margin-top: 10px;
   margin-bottom: 10px;
+  background-color: #5B6057;
   font-size: 16px;
 }
 
 .display-save {
   position: relative;
-  margin-left: 5px;
-  color: white;
+  margin-left: 15px;
+  color: rgb(223, 196, 196);
   font-size: 14px;
   cursor: pointer;
   padding: 5px 15px;
   border: none;
+  margin-top: 0px;
   display: inline-block;
-  background-color: #313628
+  background-color: #313628;
 }
 
 .display {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background-color: #FAFAE8;
-  padding-bottom: 20px
+  background-color: #5B6057;
+  padding-bottom: 20px;
 }
 
 .display-no-columns {
-  background-color: #FAFAE8;
-  padding-bottom: 20px
+  background-color: #5B6057;
+  padding-bottom: 20px;
+  margin-left: 15px;
 }
 
 .display-bottom {
   padding-bottom: 50px;
-  background-color: #FAFAE8;
+  background-color: #5B6057;
 }
 
 .settings-enter {
@@ -85,10 +88,12 @@
 
 h1 {
   padding-left: 10px;
+  color: white;
 }
 
 p {
   padding-left: 10px;
+  color: white;
 }
 
 input[type="button"].selected{
@@ -115,7 +120,35 @@ input[type="button"].unselected{
   background-color: white;
 }
 
-input[type="button"]:hover {
-  background-color: #4CAF50; /* Green */
+input[type="text"]{
+  margin-left: 15px;
+  margin-top: 0px
+}
+
+.checkboxes{
+  margin-left: 10px;
   color: white;
+  
+}
+
+.container1{
+  width: 50%;
+  display: inline-block;
+  vertical-align:top;
+  margin-left: 10px;
+}
+
+.container2{
+  vertical-align:top;
+  display: inline-block;
+}
+
+#carbon-info-text{
+  display: inline-block;
+  margin-left: 10px;
+}
+
+#runoff-info-text{
+  margin-left: 10px;
+  display: inline-block;
 }

@@ -48,21 +48,23 @@ function MenuButton(props) {
 
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
-  if(!isNaN(setting.value)) {
+  console.log(setting.value)
+  console.log(isNaN(setting.value))
+  if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
     constants.set('carbon', setting.value);
     props.onUpdateCarbon(setting.value);
     setting.value = "";
-    document.getElementById('carbon-info-text').innerHTML = "Change tonnes of carbon per hectare per year here. Current value: " + constants.get('carbon') + " tonnes/hectare";
+    document.getElementById('carbon-info-text').innerHTML = "Current value: " + constants.get('carbon') + " tonnes/hectare";
   }
 }
 
 function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2')
-  if(!isNaN(setting.value)) {
+  if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
     constants.set('runoff', setting.value);
     props.onUpdateRunoff(setting.value);
     setting.value = "";
-    document.getElementById('carbon-info-text').innerHTML = "Change litres of avoided runoff per meter squared per year here. Current value: " + constants.get('runoff') + "Litres/m<sup>2</sup>";
+    document.getElementById('runoff-info-text').innerHTML = "Current value: " + constants.get('runoff') + " Litres/m<sup>2</sup>";
   }
 }
 
@@ -70,8 +72,10 @@ function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
     <h1>UBC Vancouver Tree Inventory Settings</h1>
+    <div className="container1">
       <div className="display">
-        {props.polygonLayers.getCheckboxes()}
+        <h3>Select a Data Source:</h3>
+        <div className="checkboxes">{props.polygonLayers.getCheckboxes()}</div>
         <button
           className="display-save"
           type="button"
@@ -84,20 +88,23 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div>
-        {props.areasOfInterest.getCheckboxes()}
-        <button
-          className="display-save"
-          type="button"
-          onClick={() => {
-            props.areasOfInterest.updateCheckedWithAction();
-            props.onClick();
-          }}
-        >
-          Save and Update Areas of Interest
-        </button>
-      </div>
+        <h3>Select Key Areas of Interest:</h3>
+        <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
+          <button
+            className="display-save"
+            type="button"
+            onClick={() => {
+              props.areasOfInterest.updateCheckedWithAction();
+              props.onClick();
+            }}
+          >
+            Save and Update Areas of Interest
+          </button>
+        </div>
+    </div>
+    <div className="container2">
       <div className="display-no-columns">
-        <p>Select Mode</p>
+        <h3>Select Mode:</h3>
         {props.displayList.length > 1 && <p>(Edit mode not supported when viewing multiple years of data)</p>}
         {props.displayList.length <= 1 &&
           <input
@@ -127,13 +134,14 @@ function SettingsDisplay(props) {
           className="input"
           id="monkey1"
           for="setting1">
-          <p id="carbon-info-text">Change tonnes of carbon per hectare per year here. Current value: {constants.get('carbon')} tonnes/hectare</p>
         </label>
+        <h3>Change tonnes of carbon per hectare per year here:</h3>
         <input
           type="text"
           id="setting1"
           name="setting1"
         />
+        <p id="carbon-info-text">Current value: {constants.get('carbon')} tonnes/hectare</p>
         <br/>
         <button
           className="display-save"
@@ -151,13 +159,14 @@ function SettingsDisplay(props) {
           id="monkey2"
           for="setting2"
         >
-          <p id="runoff-info-text">Change litres of avoided runoff per meter squared per year here. Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
         </label>
+        <h3>Change litres of avoided runoff per meter squared per year here:</h3>
         <input
           type="text"
           id="setting2"
           name="setting2"
         />
+        <p id="runoff-info-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
         <br/>
         <button
           className="display-save"
@@ -171,28 +180,31 @@ function SettingsDisplay(props) {
         </button>
       </div>
       <div className="display-bottom">
-      <p>Access to the Shading and Cooling Ecosystem Services for UBC Vancouver Campus</p>
-        <button
-          className="display-save"
-          type="button"
-          onClick={() => {
-            props.onToggleShadingMode();
-            props.onClick();
-          }}
-        >
-          {props.shadingMode ? "Exit Shading and Cooling Tool" : "Access Shading and Cooling Tool"}
-        </button>
+        <h3>Access Shading and Cooling Tool:</h3>
+          <button
+            className="display-save"
+            type="button"
+            onClick={() => {
+              props.onToggleShadingMode();
+              props.onClick();
+            }}
+          >
+            {props.shadingMode ? "Exit Shading Mode" : "Enter Shading Mode"}
+          </button>
+        </div>
+        
       </div>
       <div className="for-button">
-        <button
-          className="menu-button"
-          type="button"
-          onClick={props.onClick}
-        >
-          Close
-        </button>
-      </div>
+          <button
+            className="menu-button"
+            type="button"
+            onClick={props.onClick}
+          >
+            Close
+          </button>
+        </div>
     </div>
+    
   )
 }
 

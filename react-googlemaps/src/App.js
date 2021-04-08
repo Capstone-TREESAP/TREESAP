@@ -89,7 +89,8 @@ export class MapContainer extends Component {
                 this.state.displayList.push(this.state.database.polyKeys[0])
                 this.setState({
                     isLoaded: true
-                });
+                })
+                this.renderLegend();
             })
           },
           (error) => {
@@ -569,7 +570,7 @@ export class MapContainer extends Component {
         let index = this.state.database.getPolygonSetIndex(this.state.displayList[0])
         let polygonLayerName = this.state.database.polyKeys[index]
         console.log("Layer name:", polygonLayerName)
-        let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName)
+        let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.database.carbonRate, this.state.database.runoffRate, polygonLayerName)
 
         //TODO this is hacky but works for now
         if (intersection.name == undefined) {
@@ -697,6 +698,7 @@ export class MapContainer extends Component {
 
   renderLegend = () => {
     var legend = [];
+    console.log(this.state.displayList);
     for (var polyLayer in this.state.displayList) {
       legend.push(this.renderListItem(this.state.database.getPolygonSetIndex(this.state.displayList[polyLayer])))
     }
