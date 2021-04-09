@@ -29,337 +29,286 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="tab_1">
-          <property name="maximumSize">
-           <size>
-            <width>492</width>
-            <height>16777215</height>
-           </size>
-          </property>
+         <widget class="QWidget" name="tab">
           <attribute name="title">
            <string>LiDAR labelled</string>
           </attribute>
-          <widget class="QScrollArea" name="scrollArea">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>451</width>
-             <height>221</height>
-            </rect>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           <property name="leftMargin">
+            <number>0</number>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>451</width>
-             <height>221</height>
-            </size>
+           <property name="topMargin">
+            <number>0</number>
            </property>
-           <property name="sizeAdjustPolicy">
-            <enum>QAbstractScrollArea::AdjustToContents</enum>
+           <property name="rightMargin">
+            <number>0</number>
            </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
+           <property name="bottomMargin">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_3">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>435</width>
-              <height>334</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <layout class="QFormLayout" name="formLayout_2">
-             <item row="0" column="0">
-              <widget class="QLineEdit" name="lineEdit_test_dir_path_2"/>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pushButton_test_dir_update_2">
-               <property name="text">
-                <string>Load</string>
+           <item>
+            <widget class="QScrollArea" name="scrollArea_4">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>466</width>
+                <height>370</height>
+               </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout_4">
+               <property name="leftMargin">
+                <number>9</number>
                </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLineEdit" name="lineEdit_data_dir_path_2"/>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pushButton_data_dir_update_2">
-               <property name="text">
-                <string>Load</string>
+               <property name="topMargin">
+                <number>9</number>
                </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_down_size_2">
-               <property name="minimumSize">
-                <size>
-                 <width>57</width>
-                 <height>0</height>
-                </size>
+               <property name="rightMargin">
+                <number>9</number>
                </property>
-               <property name="text">
-                <string>Down size</string>
+               <property name="bottomMargin">
+                <number>9</number>
                </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-               <property name="margin">
-                <number>4</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLabel" name="label_down_size_text_2">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="margin">
-                <number>4</number>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLineEdit" name="LineEdit_downsize_2">
-               <property name="text">
-                <string>100</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QPushButton" name="pushButton_down_size_update_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_dbsacn_2">
-               <property name="text">
-                <string>DBSCAN param</string>
-               </property>
-               <property name="margin">
-                <number>4</number>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLabel" name="label_dbscan_text_2">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="margin">
-                <number>4</number>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QLineEdit" name="lineEdit_eps_2">
-               <property name="text">
-                <string>300</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QPushButton" name="pushButton_eps_update_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string/>
-               </property>
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLineEdit" name="lineEdit_min_sample_2">
-               <property name="text">
-                <string>10</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QPushButton" name="pushButton_min_sample_update_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string/>
-               </property>
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Alpha shape</string>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="1">
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="8" column="0">
-              <widget class="QLineEdit" name="lineEdit_alpha_2"/>
-             </item>
-             <item row="8" column="1">
-              <widget class="QPushButton" name="pushButton_shape_update_2">
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item row="9" column="0">
-              <widget class="QLineEdit" name="lineEdit_min_area_2"/>
-             </item>
-             <item row="9" column="1">
-              <widget class="QPushButton" name="pushButton_min_area_update_2">
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item row="10" column="0">
-              <widget class="QLineEdit" name="lineEdit_max_area_2"/>
-             </item>
-             <item row="10" column="1">
-              <widget class="QPushButton" name="pushButton_max_area_2">
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+               <item row="1" column="0">
+                <widget class="QLineEdit" name="lineEdit_data_dir_path"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLineEdit" name="lineEdit_test_dir_path"/>
+               </item>
+               <item row="2" column="1">
+                <widget class="QPushButton" name="pushButton_data_dir_path_update">
+                 <property name="text">
+                  <string>Path Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_down_size_text">
+                 <property name="text">
+                  <string>Data down sizing</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLineEdit" name="lineEdit_down_size"/>
+               </item>
+               <item row="5" column="1">
+                <widget class="QPushButton" name="pushButton_down_size_update">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLineEdit" name="lineEdit_eps"/>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_dbscan_text">
+                 <property name="text">
+                  <string>DBSCAN param</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLineEdit" name="lineEdit_min_sample"/>
+               </item>
+               <item row="9" column="0">
+                <widget class="QLabel" name="label_alpha_text">
+                 <property name="text">
+                  <string>Alpha Shape</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLineEdit" name="lineEdit_alpha"/>
+               </item>
+               <item row="11" column="0">
+                <widget class="QLineEdit" name="lineEdit_min_area"/>
+               </item>
+               <item row="11" column="1">
+                <widget class="QPushButton" name="pushButton_shape_update">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0">
+                <widget class="QLineEdit" name="lineEdit_max_area"/>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_data_dir_text">
+                 <property name="text">
+                  <string>Data path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLineEdit" name="lineEdit_output_dir_path"/>
+               </item>
+               <item row="7" column="1">
+                <widget class="QPushButton" name="pushButton_dbscan_update">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
          </widget>
          <widget class="QWidget" name="tab_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <attribute name="title">
            <string>LiDAR unlabelled</string>
           </attribute>
-          <widget class="QScrollArea" name="scrollArea_3">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>491</width>
-             <height>301</height>
-            </rect>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
+           <property name="leftMargin">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_5">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>489</width>
-              <height>299</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </widget>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="scrollArea_3">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_5">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>480</width>
+                <height>312</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
          </widget>
          <widget class="QWidget" name="tab_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <attribute name="title">
            <string>orthophoto (with alpha)</string>
           </attribute>
-          <widget class="QScrollArea" name="scrollArea_2">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>481</width>
-             <height>261</height>
-            </rect>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
+           <property name="leftMargin">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_4">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>479</width>
-              <height>259</height>
-             </rect>
-            </property>
-            <layout class="QFormLayout" name="formLayout">
-             <item row="0" column="0">
-              <widget class="QLineEdit" name="lineEdit"/>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pushButton">
-               <property name="text">
-                <string>PushButton</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLineEdit" name="lineEdit_2"/>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pushButton_2">
-               <property name="text">
-                <string>PushButton</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="scrollArea_2">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_4">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>480</width>
+                <height>312</height>
+               </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="0">
+                <widget class="QLineEdit" name="lineEdit"/>
+               </item>
+               <item row="0" column="1">
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>PushButton</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLineEdit" name="lineEdit_2"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QPushButton" name="pushButton_2">
+                 <property name="text">
+                  <string>PushButton</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QTextBrowser" name="textBrowser_2"/>
+               </item>
+               <item row="6" column="1">
+                <widget class="QTextBrowser" name="textBrowser_3"/>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>TextLabel</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>TextLabel</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>TextLabel</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </item>
@@ -377,6 +326,9 @@
          <layout class="QFormLayout" name="formLayout_3">
           <property name="sizeConstraint">
            <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <property name="formAlignment">
+           <set>Qt::AlignBottom|Qt::AlignHCenter</set>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
@@ -431,7 +383,7 @@
              </sizepolicy>
             </property>
             <property name="value">
-             <number>24</number>
+             <number>0</number>
             </property>
            </widget>
           </item>
