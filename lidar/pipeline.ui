@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1043</width>
-    <height>709</height>
+    <width>1031</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,17 +30,35 @@
           <number>0</number>
          </property>
          <widget class="QWidget" name="tab_1">
+          <property name="maximumSize">
+           <size>
+            <width>492</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <attribute name="title">
-           <string>Tab 1</string>
+           <string>LiDAR labelled</string>
           </attribute>
           <widget class="QScrollArea" name="scrollArea">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>491</width>
-             <height>291</height>
+             <width>451</width>
+             <height>221</height>
             </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>451</width>
+             <height>221</height>
+            </size>
            </property>
            <property name="sizeAdjustPolicy">
             <enum>QAbstractScrollArea::AdjustToContents</enum>
@@ -53,7 +71,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>475</width>
+              <width>435</width>
               <height>334</height>
              </rect>
             </property>
@@ -261,7 +279,7 @@
          </widget>
          <widget class="QWidget" name="tab_4">
           <attribute name="title">
-           <string>Page</string>
+           <string>LiDAR unlabelled</string>
           </attribute>
           <widget class="QScrollArea" name="scrollArea_3">
            <property name="geometry">
@@ -284,20 +302,26 @@
               <height>299</height>
              </rect>
             </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
            </widget>
           </widget>
          </widget>
          <widget class="QWidget" name="tab_3">
           <attribute name="title">
-           <string>Tab 2</string>
+           <string>orthophoto (with alpha)</string>
           </attribute>
           <widget class="QScrollArea" name="scrollArea_2">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>491</width>
-             <height>301</height>
+             <width>481</width>
+             <height>261</height>
             </rect>
            </property>
            <property name="widgetResizable">
@@ -308,45 +332,32 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>489</width>
-              <height>299</height>
+              <width>479</width>
+              <height>259</height>
              </rect>
             </property>
-            <widget class="QWidget" name="formLayoutWidget">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>491</width>
-               <height>291</height>
-              </rect>
-             </property>
-             <layout class="QFormLayout" name="formLayout_4">
-              <property name="sizeConstraint">
-               <enum>QLayout::SetMaximumSize</enum>
-              </property>
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QPushButton" name="pushButton">
-                <property name="text">
-                 <string>PushButton</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLineEdit" name="lineEdit_2"/>
-              </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="pushButton_2">
-                <property name="text">
-                 <string>PushButton</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLineEdit" name="lineEdit"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>PushButton</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLineEdit" name="lineEdit_2"/>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>PushButton</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </widget>
          </widget>
@@ -360,14 +371,77 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <layout class="QFormLayout" name="formLayout_3">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
           <item row="0" column="0">
-           <widget class="QLineEdit" name="lineEdit_3"/>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Process time</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>PushButton</string>
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Cluster count</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QTextBrowser" name="textBrowser"/>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QProgressBar" name="progressBar">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="value">
+             <number>24</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QDialogButtonBox" name="buttonBox">
+            <property name="standardButtons">
+             <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Reset|QDialogButtonBox::SaveAll</set>
+            </property>
+            <property name="centerButtons">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
