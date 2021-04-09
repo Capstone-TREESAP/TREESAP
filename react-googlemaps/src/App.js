@@ -326,7 +326,7 @@ export class MapContainer extends Component {
 
       //Remove drawing manager if more than one layer is going to be displayed
       if (displayList.length == 1) {
-        this.drawingView.openDrawingManager()
+        this.loadDrawingManager()
       } else {
         this.drawingView.closeDrawingManager()
       }
@@ -398,9 +398,7 @@ export class MapContainer extends Component {
 
     displayPolygonLayer = () => {
       var layerList = [];
-      console.log("isLoaded:", this.state.isLoaded)
         if (this.state.isLoaded) {
-            console.log(this.state.database.polygonLayers[0].polygons.length)
           for (var poly in this.state.displayList) {
             var index = this.state.database.getPolygonSetIndex(this.state.displayList[poly]);
             layerList.push(this.displayPolygons(this.state.database.polygonLayers[index].polygons, colours[index], poly))
@@ -440,7 +438,7 @@ export class MapContainer extends Component {
                             this.handleClick(polygon, map, coords.latLng);
                         }
                     // if not shading mode, just handle tree polygon click as normal
-                    } else if (polygon.type == "tree") {
+                    } else {
                         console.log("Hey, I don't think we're in shading mode and I think a tree cluster is being clicked on")
                         this.handleClick(polygon, map, coords.latLng);
                     }
@@ -569,7 +567,6 @@ export class MapContainer extends Component {
         var buttons;
         let index = this.state.database.getPolygonSetIndex(this.state.displayList[0])
         let polygonLayerName = this.state.database.polyKeys[index]
-        console.log("Layer name:", polygonLayerName)
         let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.database.carbonRate, this.state.database.runoffRate, polygonLayerName)
 
         //TODO this is hacky but works for now
@@ -698,7 +695,6 @@ export class MapContainer extends Component {
 
   renderLegend = () => {
     var legend = [];
-    console.log(this.state.displayList);
     for (var polyLayer in this.state.displayList) {
       legend.push(this.renderListItem(this.state.database.getPolygonSetIndex(this.state.displayList[polyLayer])))
     }
