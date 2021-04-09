@@ -165,6 +165,7 @@ export class MapContainer extends Component {
     }
 
     onMarkerClick = (props, m, e) => {
+        //TODO: disable editing so values update and bug doesn't happen
         console.log(m.position);
         this.setState({
             marker: m,
@@ -307,6 +308,7 @@ export class MapContainer extends Component {
     }
 
     setPolygonLayer = (displayList) => {
+      let wasOneLayer = (this.state.displayList.length == 1)
       //making sure any info windows that are currently displayed are removed before changing which layers are displayed
       this.setState({
           clickedLocation: null,
@@ -326,7 +328,9 @@ export class MapContainer extends Component {
 
       //Remove drawing manager if more than one layer is going to be displayed
       if (displayList.length == 1) {
-        this.loadDrawingManager()
+          if (!wasOneLayer) {
+            this.loadDrawingManager()
+          }
       } else {
         this.drawingView.closeDrawingManager()
       }
@@ -508,8 +512,8 @@ export class MapContainer extends Component {
                 clickedIntersection: intersection,
                 intersectionLayer: intersection.findIntersectingPolygons(this.state.database.polygonLayers[index].polygons)
             })
-            this.drawingView.resetDrawingMode()
         }
+        this.drawingView.resetDrawingMode()
     }
 
     deleteIntersection(intersection) {
