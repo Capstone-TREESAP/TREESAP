@@ -71,11 +71,12 @@ function SaveStormwaterValue(props) {
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
-    <h1 className="settings-text">UBC Vancouver Tree Inventory Settings</h1>
+    <h1 className="settings-text" id="settings-header">UBC Vancouver Tree Inventory Settings</h1>
     <div className="container1">
       <div className="display">
         <h3 className="settings-text">Select a Data Source:</h3>
         <div className="checkboxes">{props.polygonLayers.getCheckboxes()}</div>
+        <br/>
         <button
           className="display-save"
           type="button"
@@ -87,22 +88,6 @@ function SettingsDisplay(props) {
           Save and Update Map
         </button>
       </div>
-      <div>
-        <h3 className="settings-text">Select Key Areas of Interest:</h3>
-        <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
-          <button
-            className="display-save"
-            type="button"
-            onClick={() => {
-              props.areasOfInterest.updateCheckedWithAction();
-              props.onClick();
-            }}
-          >
-            Save and Update Areas of Interest
-          </button>
-        </div>
-    </div>
-    <div className="container2">
       <div className="display-no-columns">
         <h3 className="settings-text">Select Mode:</h3>
         {props.displayList.length > 1 && <p className="settings-text">(Edit mode not supported when viewing multiple years of data)</p>}
@@ -129,10 +114,29 @@ function SettingsDisplay(props) {
           />
         }
       </div>
+    </div>
+    <div className="container2">
+      <div>
+        <h3 className="settings-text">Select Key Areas of Interest:</h3>
+        <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
+        <br/>
+          <button
+            className="display-save"
+            type="button"
+            onClick={() => {
+              props.areasOfInterest.updateCheckedWithAction();
+              props.onClick();
+            }}
+          >
+            Save and Update Areas of Interest
+          </button>
+        </div>
+    </div>
+    <div className="container3">
+      
       <div className="dropdown">
         <label
           className="input"
-          id="monkey1"
           for="setting1">
         </label>
         <h3 className="settings-text">Change tonnes of carbon per hectare per year here:</h3>
@@ -141,7 +145,7 @@ function SettingsDisplay(props) {
           id="setting1"
           name="setting1"
         />
-        <p id="carbon-info-text" className="settings-text">Current value: {constants.get('carbon')} tonnes/hectare</p>
+        <h3 id="carbon-info-text" className="settings-text">Current value: {constants.get('carbon')} tonnes/hectare</h3>
         <br/>
         <button
           className="display-save"
@@ -156,7 +160,6 @@ function SettingsDisplay(props) {
         <br/>
         <label
           className="input"
-          id="monkey2"
           for="setting2"
         >
         </label>
@@ -166,7 +169,7 @@ function SettingsDisplay(props) {
           id="setting2"
           name="setting2"
         />
-        <p id="runoff-info-text" className="settings-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></p>
+        <h3 id="runoff-info-text" className="settings-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></h3>
         <br/>
         <button
           className="display-save"
