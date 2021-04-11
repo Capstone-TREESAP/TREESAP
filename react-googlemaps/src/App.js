@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, Polyline, HeatMap } from 'google-maps-react';
+import { Map, GoogleApiWrapper, Polygon, Marker, InfoWindow, Polyline } from 'google-maps-react';
 import SettingsView from './settings/settings';
 import { DrawingView } from './polygons/drawing';
 import { PolygonLayer } from './polygons/polygon-layer'
@@ -17,11 +17,6 @@ const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Dat
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
 const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
-const gradient = [
-  "rgba(0, 255, 255, 0)",
-  "rgba(0, 255, 255, 1)",
-  "rgba(0, 191, 255, 1)",
-];
 
 const colours = [
   "#1C55FF", //dark blue
@@ -33,13 +28,6 @@ const colours = [
   "#6530E3", //purple
   "#014421", //dark green
 ]
-
-const points = [
-  {
-    lat: 0.0,
-    lng: 0.0
-  }
-];
 
 //TODO: The different colors should also be constants here
 // Also different stroke weights, etc
@@ -107,7 +95,7 @@ export class MapContainer extends Component {
     getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.database.carbonRate;
     getAvoidedRunoffAnnually = (area) => area * this.state.database.runoffRate;
 
-    // 
+    //
     getShadelineLengthAndOrientation = () => {
         var buildingPoint = {
             "type": "Feature",
@@ -117,7 +105,7 @@ export class MapContainer extends Component {
                 "coordinates": [this.state.clickedBuildingLocation.lng(), this.state.clickedBuildingLocation.lat()]
             }
         };
-        
+
          var treePoint = {
             "type": "Feature",
             "properties": {},
@@ -129,11 +117,11 @@ export class MapContainer extends Component {
         // get distance between points, in meters
         var distance = turf.distance(buildingPoint, treePoint, "kilometers") * 1000.0;
         var direction = turf.bearing(buildingPoint, treePoint);
-       
+
         var getCardinalDirection = (angle) => {
             var smallest_angle = 180.0;
             var direction = null;
-            var cardinalDirections = 
+            var cardinalDirections =
             [
                 ["north", 0.0],
                 ["northeast", 45.0],
@@ -146,7 +134,7 @@ export class MapContainer extends Component {
                 ["northwest", -45.0]
             ]
             var diff =  (a, b) => a > b ? a - b : b - a;
-    
+
             for (var i = 0; i < cardinalDirections.length; i++) {
                 var angle_difference = diff(angle, cardinalDirections[i][1]);
                 if (angle_difference < smallest_angle) {
@@ -350,7 +338,7 @@ export class MapContainer extends Component {
         // if not in shading mode, then toggle was clicked to enter shading mode, so render buildings
         if (!this.state.shadingMode) {
             this.loadBuildingLayer();
-        
+
         // if in shading mode, then toggle was clicked to exit shading mode, so remove buildings
         } else {
             this.removeBuildingLayer();
@@ -423,8 +411,8 @@ export class MapContainer extends Component {
         <Polygon
             paths={polygon.points}
             key={polygon.key}
-            onClick={(t, map, coords) => 
-                {   
+            onClick={(t, map, coords) =>
+                {
                     console.log(coords);
                     // if shading mode, then first check if a building has been clicked, and handle accordingly
                     if (this.state.shadingMode) {
@@ -561,9 +549,7 @@ export class MapContainer extends Component {
                 <button className="info-window-button" type="button" onClick={() => {this.deletePolygon(polygon); this.onClose();}}>Delete</button>
             </div>)
             ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"))
-
         }
-
     }
 
 
@@ -616,7 +602,7 @@ export class MapContainer extends Component {
                 <h3>Total Area of Tree Cover: </h3><p>{totalArea ? totalArea : null} m<sup>2</sup></p>
                 <h3>Total Carbon sequestered: </h3><p>{totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</p>
                 <h3>Total Avoided rainwater run-off: </h3><p>{totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</p>
-            </div>) 
+            </div>)
         } else if (this.state.shadingMode && this.state.clickedBuildingLocation) {
             if (this.state.clickedShadingPolygonLocation) {
                 var relative_position = this.getShadelineLengthAndOrientation();
@@ -631,7 +617,7 @@ export class MapContainer extends Component {
                     <p>{this.state.clickedBuilding.address}</p>
                     <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
                     <h3>This tree cluster is {distance} metres {direction} of {this.state.clickedBuilding.name}</h3>
-                </div>) 
+                </div>)
             } else {
                 var occupied_date = this.state.clickedBuilding.occupied_date;
                 return(<div className="info-window">
@@ -640,7 +626,7 @@ export class MapContainer extends Component {
                     <h3>Neighbourhood: </h3><p>{this.state.clickedBuilding.neighbourhood ? this.state.clickedBuilding.neighbourhood : "Unknown"}</p>
                     <h3>Date Occupied (yyyy/mm/dd): </h3><p>{occupied_date ? occupied_date.substring(0, 4) + "/" + occupied_date.substring(4, 6) + "/" + occupied_date.substring(6, 8) : "Unknown"}</p>
                     <h3>Maximum Floors: </h3><p>{this.state.clickedBuilding.max_floors ? this.state.clickedBuilding.max_floors : "Unknown"}</p>
-                </div>) 
+                </div>)
             }
         } else {
             var centroid = findPolygonCentroid(this.state.clickedPolygon);
@@ -655,47 +641,6 @@ export class MapContainer extends Component {
             </div>)
         }
     }
-    
-    //TODO: fyi the heatmap doesn't change when polygons are added/deleted. Not sure why :(
-  renderHeatmap = () => {
-    if (this.state.database.polygonLayers == null || this.state.displayList.length < 1) {
-        return null
-    }
-
-    var heatmap = [];
-    var clusterMaker = require('clusters')
-    var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
-    let positions = this.state.database.polygonLayers[index].positions;
-    let polygons = this.state.database.polygonLayers[index].polygons;
-
-    //for(var polygon in positions) {
-    //  var numClusters = Math.ceil(polygons[polygon].area/50000);
-    //  if (numClusters < 1) {
-    //    numClusters = 1;
-    //  }
-    //  clusterMaker.k(numClusters);
-    //  clusterMaker.iterations(300);
-      //clusterMaker.data(positions[polygon]);
-      //var allClusters = clusterMaker.clusters();
-      //for (var cluster in allClusters) {
-      //  heatmap.push(
-          //{
-          //  lat: allClusters[cluster].centroid[1],
-          //  lng: allClusters[cluster].centroid[0],
-          //  weight: numClusters,
-          //}
-        //)
-      //}
-    //}
-    return (
-      <HeatMap
-        positions={points}
-        gradient={gradient}
-        opacity={1}
-        radius={15}
-      />
-    );
-  }
 
   renderLegend = () => {
     var legend = [];
@@ -727,7 +672,7 @@ export class MapContainer extends Component {
             yesIWantToUseGoogleMapApiInternals
             onReady={() => {this.setState({ready: true}); this.loadDrawingManager();}}
             onClick={this.onGenericClick}
-        >   
+        >
             <Marker
                 onClick={this.onMarkerClick}
                 visible={this.state.clickedLocation != null}
@@ -769,7 +714,6 @@ export class MapContainer extends Component {
             {this.state.ready && this.displayPolygonLayer()}
             {this.displayBuildingLayer()}
             {this.displayIntersections()}
-            {this.renderHeatmap()}
             <div className="legend-container">
               <div className="row">
                 <h3 id="legend-text">Legend</h3>
