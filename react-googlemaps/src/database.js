@@ -29,12 +29,17 @@ export class Database {
         //TODO rename
         this.neighborhood_polygons = await this.parseFiles(database[AREAS_OF_INTEREST].files)
         let all_polygon_sets = await this.parsePolygonSets(database)
-        for (let set in all_polygon_sets) {
-            this.polygonLayers.push(new PolygonLayer(
-                all_polygon_sets[set],
-                props, 
-                "tree"
-            ))
+        try {
+            for (let set in all_polygon_sets) {
+                this.polygonLayers.push(new PolygonLayer(
+                    all_polygon_sets[set],
+                    props, 
+                    "tree"
+                ))
+            }
+        } catch(e) {
+            console.log("Error while parsing tree cover polygogns in PolygonLayer");
+            console.log(e);
         }
 
         this.buildings = await this.parseFiles(database[BUILDINGS].files)

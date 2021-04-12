@@ -29,6 +29,7 @@ const colours = [
   "#014421", //dark green
 ]
 
+
 //TODO: The different colors should also be constants here
 // Also different stroke weights, etc
 
@@ -40,6 +41,7 @@ const mapStyles = {
 
 export class MapContainer extends Component {
     constructor(props) {
+        console.log(props);
         super(props);
         this.state = {
             isLoaded: false,
@@ -60,7 +62,9 @@ export class MapContainer extends Component {
             clickedShadingPolygon: null,
             clickedBuildingLocation: null,
             clickedShadingPolygonLocation: null,
-            shadingMode: false
+            shadingMode: false,
+            // uncomment below to run database Fetch Test:
+            databaseJSON: "init"
         };
         this.drawingView = null;
         this.intersections = [];
@@ -71,15 +75,21 @@ export class MapContainer extends Component {
         .then(res => res.json())
         .then(
           (result) => {
-            this.state.database.parseDatabase(result, this.props)
-            .then(() => {
-                console.log("Database:", this.state.database)
-                this.state.displayList.push(this.state.database.polyKeys[0])
-                this.setState({
-                    isLoaded: true
+            // uncomment below to run database Fetch Test:
+            this.state.databaseJSON = result;
+            try {
+                this.state.database.parseDatabase(result, this.props)
+                .then(() => {
+                    console.log("Database:", this.state.database)
+                    this.state.displayList.push(this.state.database.polyKeys[0])
+                    this.setState({
+                        isLoaded: true
+                    })
+                    this.renderLegend();
                 })
-                this.renderLegend();
-            })
+            } catch(e){
+                console.log("Error parsing database:", e);
+            }   
           },
           (error) => {
             console.log(error);
