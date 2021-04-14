@@ -26,27 +26,24 @@ class MainWindow(QMainWindow):
         uic.loadUi("../pipeline.ui", self)
         self.pipeline = None
         self.browser = QWebEngineView()
-        self.__on_click_reset()
         self.timer = QElapsedTimer()
 
         self.shortcut_close = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.shortcut_close.activated.connect(self.__close_app)
 
+        print(self.tabWidget.currentIndex())
+        
+        self.__on_click_reset()
+        
         self.pushButton_down_size_update.clicked.connect(
             self.__on_click_dbscan_update
         )
-        self.pushButton_eps_update.clicked.connect(
-            self.__on_click_dbscan_update
-        )
-        self.pushButton_min_sample_update.clicked.connect(
+        self.pushButton_dbscan_update.clicked.connect(
             self.__on_click_dbscan_update
         )
 
         # alphashape related parameters
         self.pushButton_shape_update.clicked.connect(
-            self.__on_click_alphashape_update
-        )
-        self.pushButton_min_area_update.clicked.connect(
             self.__on_click_alphashape_update
         )
 
@@ -74,6 +71,7 @@ class MainWindow(QMainWindow):
 
     def __check_test_data(self):
         """[summary]"""
+
         filename = json.loads(configure["Test"]["test_tiles"])[0]
         filepath = (
             configure["Test"]["dest_dir_path"]
@@ -247,27 +245,29 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def __on_click_reset(self):
-        configure.read(CONFIG_PATH)
+        if self.tabWidget.currentIndex() == 0:
+            tab = self.tabWidget.currentWidget().scrollArea_tab0
+            configure.read(CONFIG_PATH)
 
-        self.LineEdit_downsize.setText(
-            configure.get("Parameters", "down_size"))
-        self.lineEdit_eps.setText(configure.get("Parameters", "eps"))
-        self.lineEdit_min_sample.setText(
-            configure.get("Parameters", "min_sample"))
+            tab.LineEdit_down_size.setText(
+                configure.get("Parameters", "down_size"))
+            tab.lineEdit_eps.setText(configure.get("Parameters", "eps"))
+            tab.lineEdit_min_sample.setText(
+                configure.get("Parameters", "min_sample"))
 
-        self.lineEdit_test_dir_path.setText(
-            configure.get("Test", "dest_dir_path"))
-        self.lineEdit_data_dir_path.setText(
-            configure.get("Download", "dest_dir_path"))
+            tab.lineEdit_test_dir_path.setText(
+                configure.get("Test", "dest_dir_path"))
+            tab.lineEdit_data_dir_path.setText(
+                configure.get("Download", "dest_dir_path"))
 
-        self.lineEdit_min_area.setText(
-            configure.get("Parameters", "min_polygon_area"))
-        self.lineEdit_alpha.setText(configure.get(
-            "Parameters", "alphashape_reduction"))
-        self.lineEdit_max_area.setText(configure.get(
-            "Parameters", "max_polygon_area"))
-        
-        self.statusBar().showMessage("Reset all parameters")
+            tab.lineEdit_min_area.setText(
+                configure.get("Parameters", "min_polygon_area"))
+            tab.lineEdit_alpha.setText(configure.get(
+                "Parameters", "alphashape_reduction"))
+            tab.lineEdit_max_area.setText(configure.get(
+                "Parameters", "max_polygon_area"))
+            
+            tab.statusBar().showMessage("Reset all parameters")
 
     @pyqtSlot()
     def __on_click_apply(self):
