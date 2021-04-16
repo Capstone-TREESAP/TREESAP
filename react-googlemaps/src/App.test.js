@@ -4,11 +4,16 @@ import {MapContainer} from './App';
 import { shallow, mount } from "enzyme";
 import toJson from "enzyme-to-json";
 import {unmountComponentAtNode} from "react-dom";
-import SettingsView from './settings/settings'; 
-import { Database } from './database';
+import Settings from './settings/settings'; 
+import SettingsListS, { SettingsList } from './settings/settings-list'; 
+import {act} from 'react-dom/test-utils'
 
-
-var database = new Database();
+/*
+ * This is a regression test suite that does some verification that the app can render without crashing, that initial UI components render with the
+ * expected state, that data can be fetched from the database within 10 seconds, and that the settings view can parse sample data successfully.
+ * 
+ * Before running this test suite, search for the tag ##TEST-TAG## in the source code, and uncomment any lines containing this tag.
+ */
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -65,7 +70,21 @@ var mock_areas = {
           }
       }
   ]
-}.toString();
+};
+
+var mock_datasets = [
+  "LiDAR 2018", 
+  "Orthophoto 2014", 
+  "Orthophoto 2015", 
+  "Orthophoto 2016", 
+  "Orthophoto 2017", 
+  "Orthophoto 2018", 
+  "Orthophoto 2019", 
+  "Orthophoto 2020"
+];
+
+var mock_default_display = ["LiDAR 2018"];
+
 let container = null;
 beforeEach(() => {
   // setup a DOM element as a render target
@@ -84,7 +103,7 @@ it("renders without crashing", () => {
   shallow(<App />);
 });
 
-it("renders correctly", () => {
+it("renders correctly (regression test)", () => {
   const tree = shallow(<App />);
   expect(toJson(tree)).toMatchSnapshot();
 });
@@ -110,19 +129,27 @@ it("Fetches data from db correctly", async () => {
     'areas_of_interest/ubc_boundary.geojson'
   ]);
   // checking all expected tree cover datasets present in fetch
-  expect(Object.keys(database['Tree Cover Polygon Datasets'])).toEqual([
-    'LiDAR 2018',
-    'Orthophoto 2014',
-    'Orthophoto 2015',
-    'Orthophoto 2016',
-    'Orthophoto 2017',
-    'Orthophoto 2018',
-    'Orthophoto 2019',
-    'Orthophoto 2020'
-  ]);
+  expect(Object.keys(database['Tree Cover Polygon Datasets'])).toEqual(mock_datasets);
 })
 
-//it("Settings view receives and renders data from app successfully", () => {
-//  const tree = shallow(<App />);
-//  expect(toJson(tree)).toMatchSnapshot();
-//});
+it("Settings view parses and renders Area of Interest and Tree Cover dataset names successfully", async () => {
+  var settings = new Settings(
+    {
+      carbonRate: 2.58,
+      runoffRate: 1.637,
+      neighborhoodPolygonsList: mock_areas,
+      polyList: mock_datasets,
+      displayList: mock_default_display,
+      onAddAreaOfInterest: () => {},
+      onRemoveAreaOfInterest: () => {}
+    }
+  );
+  await sleep(5000);
+  // verify settings view parsed props as expected
+  expect(settings.props.carbonRate).toEqual(2.58)
+  expect(settings.props.runoffRate).toEqual(1.637)
+  expect(settings.props.neighborhoodPolygonsList.features).toEqual(mock_areas.features)
+  expect(settings.props.displayList).toEqual(mock_default_display)
+  expect(settings.props.polyList).toEqual(mock_datasets)
+  
+})

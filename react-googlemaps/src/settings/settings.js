@@ -3,7 +3,6 @@ import './settings.css';
 import LandingScreenView from '../landing_screen/landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { SettingsList } from './settings-list';
-
 let constants = new Map()
 
 export default class SettingsView extends React.Component {
@@ -48,8 +47,6 @@ function MenuButton(props) {
 
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
-  console.log(setting.value)
-  console.log(isNaN(setting.value))
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
     constants.set('carbon', setting.value);
     props.onUpdateCarbon(setting.value);
@@ -71,7 +68,7 @@ function SaveStormwaterValue(props) {
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
-    <h1 className="settings-text" id="settings-header">UBC Vancouver Tree Inventory Settings</h1>
+    <h1 className="settings-text" id="settings-header">UBC Tree Cover Analysis Platform Settings</h1>
     <div className="container1">
       <div className="display">
         <h3 className="settings-text">Select a Data Source:</h3>
@@ -163,7 +160,7 @@ function SettingsDisplay(props) {
           for="setting2"
         >
         </label>
-        <h3 className="settings-text">Change litres of avoided runoff per meter squared per year here:</h3>
+        <h3 className="settings-text">Change litres of avoided run-off per meter squared per year here:</h3>
         <input
           type="text"
           id="setting2"
@@ -226,7 +223,7 @@ class Settings extends React.Component {
     this.areasOfInterest = new SettingsList(this.props.neighborhoodPolygonsList,
       SettingsList.parseAreasOfInterest,
       this.props.onAddAreaOfInterest,
-      this.props.onRemoveAreaOfInterest)
+      this.props.onRemoveAreaOfInterest);
     this.polygonLayers = new SettingsList(this.props.polyList,
       () => SettingsList.parsePolygonList(this.props.polyList, this.props.displayList))
   }
@@ -274,7 +271,6 @@ class Settings extends React.Component {
     this.setState({
       shadingMode: !this.state.shadingMode
     })
-    console.log('changing shadingMode in settings to ' + this.state.shadingMode);
     this.props.onToggleShadingMode();
   }
   onRefresh(){
