@@ -159,7 +159,7 @@ export class IntersectionReport {
         return (
             <View style={this.styles.title}>
                 <Text style={this.styles.titleText}>Ecosystem Services Report</Text>
-                <Text style={this.styles.bodyText}>{"Date Created: " + date}</Text>
+                <Text style={this.styles.bodyText}>{"Created by TREESAP on " + date}</Text>
             </View>
         )
         
