@@ -20,9 +20,10 @@ const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 
 const colours = [
   "#1C55FF", //dark blue
-  "#5CBF9B", //light green
+  "#5CBF9B", //lime green
   "#D9CA00", //yellow
   "#E03FCE", //pink
+  "#acb58a", //light green
   "#00A6E8", //teal
   "#E68E00", //orange
   "#6530E3", //purple
