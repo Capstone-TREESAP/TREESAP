@@ -64,7 +64,7 @@ export class MapContainer extends Component {
             clickedBuildingLocation: null,
             clickedShadingPolygonLocation: null,
             shadingMode: false,
-            databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test 
+            //databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test 
         };
         this.drawingView = null;
         this.intersections = [];
@@ -75,7 +75,7 @@ export class MapContainer extends Component {
         .then(res => res.json())
         .then(
             (result) => {
-            this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test 
+            //this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test 
             try {
                 this.state.database.parseDatabase(result, this.props)
                 .then(() => {
