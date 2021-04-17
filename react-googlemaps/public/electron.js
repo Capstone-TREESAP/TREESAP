@@ -20,7 +20,7 @@ function createWindow() {
     width: 1024,
     height: 1024,
     title: "TREESAP",
-    icon: __dirname + 'favicon.ico'
+    icon: __dirname + '/Icon/icon.icns'
   });
   mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
   mainWindow.on('closed', function () {

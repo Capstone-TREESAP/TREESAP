@@ -1,6 +1,6 @@
 {
-  "name": "react-googlemaps",
-  "version": "0.1.0",
+  "name": "treesap",
+  "version": "1.0.0",
   "main": "public/electron.js",
   "homepage": "./",
   "private": true,
