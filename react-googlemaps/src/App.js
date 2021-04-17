@@ -10,13 +10,12 @@ import './App.css';
 import { IntersectionReport } from './pdf_report/report';
 import * as turf from '@turf/turf'
 import { Database } from './database';
+import {getCarbonSequesteredAnnually, getAvoidedRunoffAnnually} from './constants'
 
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/db.json"
 // const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
-
-const SQUARE_METRE_TO_HECTARE = 10000; // m2/hectare
 
 const colours = [
   "#1C55FF", //dark blue
@@ -100,11 +99,6 @@ export class MapContainer extends Component {
         )
     }
 
-    //Functions for calculating ecosystem services
-    getCarbonSequesteredAnnually = (area) => area / SQUARE_METRE_TO_HECTARE * this.state.database.carbonRate;
-    getAvoidedRunoffAnnually = (area) => area * this.state.database.runoffRate;
-
-    //
     getShadelineLengthAndOrientation = () => {
         var buildingPoint = {
             "type": "Feature",
@@ -609,8 +603,8 @@ export class MapContainer extends Component {
             return(<div>
                 {name && <h3>Name: {name}</h3>}
                 <h3>Total Area of Tree Cover: </h3><p>{totalArea ? totalArea : null} m<sup>2</sup></p>
-                <h3>Total Carbon sequestered: </h3><p>{totalArea ? this.getCarbonSequesteredAnnually(totalArea).toFixed(2) : null} tonnes/year</p>
-                <h3>Total Avoided rainwater run-off: </h3><p>{totalArea ? this.getAvoidedRunoffAnnually(totalArea).toFixed(2) : null} litres/year</p>
+                <h3>Total Carbon sequestered: </h3><p>{totalArea ? getCarbonSequesteredAnnually(totalArea, this.state.database.carbonRate) : null} tonnes/year</p>
+                <h3>Total Avoided rainwater run-off: </h3><p>{totalArea ? getAvoidedRunoffAnnually(totalArea, this.state.database.runoffRate) : null} litres/year</p>
             </div>)
         } else if (this.state.shadingMode && this.state.clickedBuildingLocation) {
             if (this.state.clickedShadingPolygonLocation) {
@@ -644,8 +638,8 @@ export class MapContainer extends Component {
 
             return(<div>
                 <h3>Area: </h3><p>{this.state.clickedPolygon ? this.state.clickedPolygon.area : null} m<sup>2</sup></p>
-                <h3>Carbon sequestered: </h3><p>{this.state.clickedPolygon ? this.getCarbonSequesteredAnnually(this.state.clickedPolygon.area).toFixed(2) : null} tonnes/year</p>
-                <h3>Avoided rainwater run-off: </h3><p>{this.state.clickedPolygon ? this.getAvoidedRunoffAnnually(this.state.clickedPolygon.area).toFixed(2) : null} litres/year</p>
+                <h3>Carbon sequestered: </h3><p>{this.state.clickedPolygon ? getCarbonSequesteredAnnually(this.state.clickedPolygon.area, this.state.database.carbonRate) : null} tonnes/year</p>
+                <h3>Avoided rainwater run-off: </h3><p>{this.state.clickedPolygon ? getAvoidedRunoffAnnually(this.state.clickedPolygon.area, this.state.database.runoffRate) : null} litres/year</p>
                 <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
             </div>)
         }

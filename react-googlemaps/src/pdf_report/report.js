@@ -5,12 +5,14 @@ import { PolygonEditor } from '../polygons/polygon-editor';
 import { ReportGeometry } from './report-geometry';
 import ReactDOM from 'react-dom';
 import * as turf from '@turf/turf'
+import {getCarbonSequesteredAnnually, getAvoidedRunoffAnnually} from '../constants'
 
-const SQUARE_METRE_TO_HECTARE = 10000;
 const TOP_MARGIN = 50;
 const BOTTOM_MARGIN = 50;
 const LEFT_MARGIN = 50;
 const RIGHT_MARGIN = 50;
+
+const POLYGON_LIMIT = 150;
 
 export class IntersectionReport {
     constructor(props, boundingLine, intersectingPolygons, carbonRate, runoffRate, layerName) {
@@ -20,87 +22,9 @@ export class IntersectionReport {
         this.carbonRate = carbonRate
         this.runoffRate = runoffRate
         this.layerName = layerName
-
-        this.styles = StyleSheet.create({
-            title: {
-                paddingBottom: 10,
-            },
-            titleText: {
-                fontSize: 20,
-                textAlign: "center",
-                paddingBottom: 10,
-            },
-            subtitleText: {
-                fontSize: 18,
-                textAlign: "left",
-                paddingBottom: 20,
-            },
-            bodySection: {
-                
-                // borderBottomWidth: 1,
-                // borderBottomColor: '#112131',
-                // borderBottomStyle: 'solid',
-            },
-            bodyText: {
-                fontSize: 11,
-                textAlign: "left",
-                lineHeight: 1.5,
-            },
-            page: {
-                paddingTop: TOP_MARGIN,
-                paddingBottom: BOTTOM_MARGIN,
-                paddingLeft: LEFT_MARGIN,
-                paddingRight: RIGHT_MARGIN
-            },
-            canvasContainer: {
-                paddingTop: 20,
-                paddingLeft: 100,
-            },
-            canvas: {
-                height: 300,
-                width: 300,
-            },
-            smallCanvas: {
-                height: 100,
-                width: 100,
-            },
-            summaryRow: {
-                flex: 1,
-                flexDirection: 'row',
-                flexGrow: 1,
-            },
-            summaryLeft: {
-                width: '40%'
-            },
-            summaryRight: {
-                textAlign: "center",
-                width: '60%'
-            },
-            breakdownRow: {
-                flex: 1,
-                flexDirection: 'row',
-                paddingBottom: 20,
-            },
-            breakdownLeft: {
-                width: '50%'
-            },
-            breakdownRight: {
-                width: '50%'
-            },
-            subBreakdownRow: {
-                flex: 1,
-                flexDirection: 'row',
-            },
-            subBreakdownLeft: {
-                width: '50%'
-            },
-            subBreakdownRight: {
-                width: '50%'
-            },
-        });
+        this.styles = this.createStyleSheet()
     }
 
-    
     displayReportButton() {
         return(
             <button
@@ -117,7 +41,7 @@ export class IntersectionReport {
     }
 
     createReport() {
-        const MyDocument = (
+        const report = (
         <Document>
             <Page size="A4" style={this.styles.page}>
                 {this.createTitleSection()}
@@ -135,7 +59,7 @@ export class IntersectionReport {
         return (
         <div>
             <div>
-            <BlobProvider document={MyDocument}>
+            <BlobProvider document={report}>
             {({ blob, url, loading, error }) => {
                 return (
                 <a className="button" 
@@ -198,26 +122,25 @@ export class IntersectionReport {
     }
 
     createSummarySection() {
-        //TODO avoid duplicating code
-        let area = PolygonEditor.getPolygonArea(this.props, PolygonEditor.jsonToGoogleCoords(this.props, this.boundingLine.coordinates))
-        let totalArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
-        let totalCarbon = (totalArea / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
-        let totalRunoff = (totalArea * this.runoffRate).toFixed(2);
+        let boundingArea = PolygonEditor.getPolygonArea(this.props, PolygonEditor.jsonToGoogleCoords(this.props, this.boundingLine.coordinates))
+        let treeArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
+        let totalCarbon = getCarbonSequesteredAnnually(treeArea, this.carbonRate);
+        let totalRunoff = getAvoidedRunoffAnnually(treeArea, this.runoffRate);
         let numPolygons = this.intersectingPolygons.length;
         let geometry = new ReportGeometry();
-        let vegetationDensity = (totalArea / area * 100).toFixed(2)
+        let vegetationDensity = (treeArea / boundingArea * 100).toFixed(2)
         let centroid = turf.centroid(turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(this.boundingLine.coordinates)))
 
         return (
             <View>
-            <View style={this.styles.bodySection}>
+            <View>
                 <Text style={this.styles.subtitleText}>Summary</Text>
             </View>
-            <View style={this.styles.bodySection}>
+            <View>
                 {this.createNameLine()}
                 {this.createStatRow("Tree cover layer", this.layerName)}
-                {this.createStatRow("Area", area + " square metres")}
-                {this.createStatRow("Total area of tree clusters", totalArea + " square metres")}
+                {this.createStatRow("Area", boundingArea + " square metres")}
+                {this.createStatRow("Total area of tree clusters", treeArea + " square metres")}
                 {this.createStatRow("Vegetation density", vegetationDensity + "%")}
                 {this.createStatRow("Total carbon sequestered", totalCarbon + " tonnes/year")}
                 {this.createStatRow("Total avoided stormwater runoff", totalRunoff + " litres/year")}
@@ -259,24 +182,34 @@ export class IntersectionReport {
     }
 
     createBreakdownSection() {
+        const withinPolygonLimit = (this.intersectingPolygons.length <= POLYGON_LIMIT)
         let subsections = [];
-        for (let i in this.intersectingPolygons) {
-            subsections.push(this.createSinglePolygonSection(this.intersectingPolygons[i], parseInt(i) + 1))
+
+        if (withinPolygonLimit) {
+            for (let i in this.intersectingPolygons) {
+                subsections.push(this.createSinglePolygonSection(this.intersectingPolygons[i], parseInt(i) + 1))
+            }
+        } else {
+            const message = (
+                <View>
+                    <Text style={this.styles.bodyText}>There are too many contained tree clusters to display a breakdown.</Text>
+                </View>
+            )
+            subsections.push(message)
         }
 
         return (
             <View>
                 <Text style={this.styles.subtitleText}>Breakdown of Contained Tree Clusters</Text>
-                <View style={this.styles.bodySection}>{subsections}</View>
+                <View>{subsections}</View>
             </View>
         )
     }
 
     createSinglePolygonSection(polygon, num) {
-        //TODO avoid duplicating code
         let area = polygon.area
-        let carbon = (area / SQUARE_METRE_TO_HECTARE * this.carbonRate).toFixed(2);
-        let runoff = (area * this.runoffRate).toFixed(2);
+        let carbon = getCarbonSequesteredAnnually(area, this.carbonRate);
+        let runoff = getAvoidedRunoffAnnually(area, this.runoffRate);
         let geometry = new ReportGeometry();
 
         return (
@@ -304,6 +237,80 @@ export class IntersectionReport {
                 </View>
             </View>
         )
+    }
+
+    createStyleSheet() {
+        return (StyleSheet.create({
+            title: {
+                paddingBottom: 10,
+            },
+            titleText: {
+                fontSize: 20,
+                textAlign: "center",
+                paddingBottom: 10,
+            },
+            subtitleText: {
+                fontSize: 18,
+                textAlign: "left",
+                paddingBottom: 20,
+            },
+            bodyText: {
+                fontSize: 11,
+                textAlign: "left",
+                lineHeight: 1.5,
+            },
+            page: {
+                paddingTop: TOP_MARGIN,
+                paddingBottom: BOTTOM_MARGIN,
+                paddingLeft: LEFT_MARGIN,
+                paddingRight: RIGHT_MARGIN
+            },
+            canvasContainer: {
+                paddingTop: 20,
+                paddingLeft: 100,
+            },
+            canvas: {
+                height: 300,
+                width: 300,
+            },
+            smallCanvas: {
+                height: 100,
+                width: 100,
+            },
+            summaryRow: {
+                flex: 1,
+                flexDirection: 'row',
+                flexGrow: 1,
+            },
+            summaryLeft: {
+                width: '40%'
+            },
+            summaryRight: {
+                textAlign: "center",
+                width: '60%'
+            },
+            breakdownRow: {
+                flex: 1,
+                flexDirection: 'row',
+                paddingBottom: 20,
+            },
+            breakdownLeft: {
+                width: '50%'
+            },
+            breakdownRight: {
+                width: '50%'
+            },
+            subBreakdownRow: {
+                flex: 1,
+                flexDirection: 'row',
+            },
+            subBreakdownLeft: {
+                width: '50%'
+            },
+            subBreakdownRight: {
+                width: '50%'
+            },
+        }))
     }
 
 }
