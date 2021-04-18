@@ -151,12 +151,14 @@ export class MapContainer extends Component {
     }
 
     onMarkerClick = (props, m, e) => {
-        //TODO: disable editing so values update and bug doesn't happen
-        console.log(m.position);
-        this.setState({
-            marker: m,
-            showInfoWindow: true
-        });
+      var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+      this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
+      this.makeIntersectionUneditable(this.state.editingIntersection);
+      console.log(m.position);
+      this.setState({
+        marker: m,
+        showInfoWindow: true
+      });
     }
 
     onClose = props => {
@@ -245,8 +247,8 @@ export class MapContainer extends Component {
         return;
       }
       var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
-        this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
-        this.makeIntersectionUneditable(this.state.editingIntersection)
+      this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
+      this.makeIntersectionUneditable(this.state.editingIntersection);
 
         this.setState({
             clickedLocation: null,
@@ -708,7 +710,7 @@ export class MapContainer extends Component {
                 carbonRate={this.state.database.carbonRate}
                 runoffRate={this.state.database.runoffRate}
                 onToggleShadingMode={this.onToggleShadingMode}
-                ready={this.state.ready}
+                ready={this.state.isLoaded}
             />
             {this.state.ready && this.displayPolygonLayer()}
             {this.displayBuildingLayer()}
