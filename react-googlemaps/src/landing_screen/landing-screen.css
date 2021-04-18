@@ -1,0 +1,41 @@
+.landing-screen{
+  position: absolute;
+  z-index: 10;
+  background-color: #5B6057;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+#title{
+  padding: 10px;
+  align-self: center;
+  color: #E2E5DC;
+}
+
+#instructions {
+  padding: 10px;
+  align-self: center;
+  color: #E2E5DC;
+}
+
+#launch {
+  align-self: center;
+}
+
+#logo {
+  align-self: center;
+  width: auto;
+  height: 40%;
+}
+
+.launch-screen-leave {
+  opacity: 1;
+}
+
+.launch-screen-leave.launch-screen-leave-active {
+  opacity: 0.01;
+  transition: opacity 1200ms ease-in;
+}
