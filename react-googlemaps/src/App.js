@@ -28,10 +28,6 @@ const colours = [
   "#014421", //dark green
 ]
 
-
-//TODO: The different colors should also be constants here
-// Also different stroke weights, etc
-
 const SHADING_LINE_COLOR = "#342C38";
 const mapStyles = {
     width: '100%',
@@ -62,7 +58,7 @@ export class MapContainer extends Component {
             clickedBuildingLocation: null,
             clickedShadingPolygonLocation: null,
             shadingMode: false,
-            //databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test 
+            //databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test
         };
         this.drawingView = null;
         this.intersections = [];
@@ -73,7 +69,7 @@ export class MapContainer extends Component {
         .then(res => res.json())
         .then(
             (result) => {
-            //this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test 
+            //this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test
             try {
                 this.state.database.parseDatabase(result, this.props)
                 .then(() => {
@@ -86,7 +82,7 @@ export class MapContainer extends Component {
                 })
             } catch(e){
                 console.log("Error parsing database:", e);
-            }   
+            }
           },
           (error) => {
             console.log(error);
@@ -712,6 +708,7 @@ export class MapContainer extends Component {
                 carbonRate={this.state.database.carbonRate}
                 runoffRate={this.state.database.runoffRate}
                 onToggleShadingMode={this.onToggleShadingMode}
+                ready={this.state.ready}
             />
             {this.state.ready && this.displayPolygonLayer()}
             {this.displayBuildingLayer()}

@@ -27,6 +27,14 @@ export default class LandingScreenView extends React.Component {
             <h1 id="title">Welcome to the UBC Tree Ecosystem Services Analysis Platform</h1>
             <img src={logo} id="logo"/>
             <h2 id="instructions">Press the button below to explore the map</h2>
+            {!this.props.ready &&
+            <button
+              id="loading-button"
+              type="button"
+            >
+            Loading...
+            </button>
+            }
             <button
               className="menu-button"
               id="launch"
@@ -35,7 +43,8 @@ export default class LandingScreenView extends React.Component {
             >
             Launch Map
             </button>
-          </div> }
+          </div>
+          }
         </CSSTransitionGroup>
       </div>
     );

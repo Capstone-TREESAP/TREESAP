@@ -10,7 +10,9 @@ export default class SettingsView extends React.Component {
     return (
       <div>
         <div>
-          <LandingScreenView />
+          <LandingScreenView
+            ready={this.props.ready}
+          />
         </div>
         <div className="settings-view">
           <Settings
@@ -130,7 +132,7 @@ function SettingsDisplay(props) {
         </div>
     </div>
     <div className="container3">
-      
+
       <div className="dropdown">
         <label
           className="input"
@@ -192,7 +194,7 @@ function SettingsDisplay(props) {
             {props.shadingMode ? "Exit Shading Mode" : "Enter Shading Mode"}
           </button>
         </div>
-        
+
       </div>
       <div className="for-button">
           <button
@@ -204,7 +206,7 @@ function SettingsDisplay(props) {
           </button>
         </div>
     </div>
-    
+
   )
 }
 
@@ -231,7 +233,7 @@ class Settings extends React.Component {
   openMenu(){
     constants.set('carbon', this.props.carbonRate);
     constants.set('runoff', this.props.runoffRate);
-    
+
     let menu = SettingsDisplay({
       onClick: () => this.closeMenu(),
       onToggleMode: (editMode) => this.onToggleMode(editMode),
