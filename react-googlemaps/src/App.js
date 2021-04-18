@@ -13,9 +13,7 @@ import { Database } from './database';
 import {getCarbonSequesteredAnnually, getAvoidedRunoffAnnually} from './constants'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A'
-const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/db.json"
-// const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
-//const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
+const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 const default_centre_coords = {lat: 49.26307, lng: -123.246655};
 
 const colours = [
