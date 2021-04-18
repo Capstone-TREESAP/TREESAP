@@ -12,6 +12,7 @@ import * as turf from '@turf/turf'
 import { Database } from './database';
 import {getCarbonSequesteredAnnually, getAvoidedRunoffAnnually} from './constants'
 
+const GOOGLE_MAPS_API_KEY = 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A'
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/db.json"
 // const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
@@ -63,7 +64,7 @@ export class MapContainer extends Component {
             clickedBuildingLocation: null,
             clickedShadingPolygonLocation: null,
             shadingMode: false,
-            databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test 
+            //databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test 
         };
         this.drawingView = null;
         this.intersections = [];
@@ -74,7 +75,7 @@ export class MapContainer extends Component {
         .then(res => res.json())
         .then(
             (result) => {
-            this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test 
+            //this.state.databaseJSON = result; //##TEST-TAG##: uncomment this line to run database fetch test 
             try {
                 this.state.database.parseDatabase(result, this.props)
                 .then(() => {
@@ -730,6 +731,6 @@ export class MapContainer extends Component {
 
 //Wrapper for map container
 export default GoogleApiWrapper({
-    apiKey: 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A',
+    apiKey: GOOGLE_MAPS_API_KEY,
     libraries: ['drawing', 'geometry', 'visualization']
 })(MapContainer);
