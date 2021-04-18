@@ -11,6 +11,7 @@ import { IntersectionReport } from './pdf_report/report';
 import * as turf from '@turf/turf'
 import { Database } from './database';
 
+const GOOGLE_MAPS_API_KEY = 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A'
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/db.json"
 // const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json"
 //const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/8ded8e31e0892c2615893b9e925470cf0fcc59dc/db.json"
@@ -736,6 +737,6 @@ export class MapContainer extends Component {
 
 //Wrapper for map container
 export default GoogleApiWrapper({
-    apiKey: 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A',
+    apiKey: GOOGLE_MAPS_API_KEY,
     libraries: ['drawing', 'geometry', 'visualization']
 })(MapContainer);
