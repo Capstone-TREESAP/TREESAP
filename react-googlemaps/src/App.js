@@ -50,6 +50,8 @@ export class MapContainer extends Component {
       editingIntersection: null,
       displayList: [],
       database: new Database(),
+      carbonRate: 0,
+      runoffRate: 0,
       // shading/cooling state variables:
       buildingLayer: null,
       clickedBuilding: null,
@@ -74,6 +76,8 @@ export class MapContainer extends Component {
           .then(() => {
             this.state.displayList.push(this.state.database.polyKeys[0]);
             this.setState({
+              carbonRate: this.state.database.carbonRate,
+              runoffRate: this.state.database.runoffRate,
               isLoaded: true
             });
             this.renderLegend();
@@ -316,11 +320,17 @@ export class MapContainer extends Component {
   }
 
   onUpdateCarbon = (carbonValue) => {
-    this.state.database.carbonRate = carbonValue;
+    // this.state.database.carbonRate = carbonValue;
+    this.setState({
+      carbonRate: carbonValue,
+    })
   }
 
   onUpdateRunoff = (runoffValue) => {
-    this.state.database.runoffRate = runoffValue;
+    // this.state.database.runoffRate = runoffValue;
+    this.setState({
+      runoffRate: runoffValue,
+    })
   }
 
   onToggleShadingMode = () => {
@@ -540,7 +550,7 @@ export class MapContainer extends Component {
     var buttons;
     let index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
     let polygonLayerName = this.state.database.polyKeys[index];
-    let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.database.carbonRate, this.state.database.runoffRate, polygonLayerName);
+    let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName);
 
     //TODO this is hacky but works for now
     if (intersection.name == undefined) {
@@ -576,8 +586,8 @@ export class MapContainer extends Component {
         <div>
           {name && <h3>Name: {name}</h3>}
           <h3>Total Area of Tree Cover: </h3><p>{totalArea ? totalArea : null} m<sup>2</sup></p>
-          <h3>Total Carbon sequestered: </h3><p>{totalArea ? getCarbonSequesteredAnnually(totalArea, this.state.database.carbonRate) : null} tonnes/year</p>
-          <h3>Total Avoided rainwater runoff: </h3><p>{totalArea ? getAvoidedRunoffAnnually(totalArea, this.state.database.runoffRate) : null} litres/year</p>
+          <h3>Total Carbon sequestered: </h3><p>{totalArea ? getCarbonSequesteredAnnually(totalArea, this.state.carbonRate) : null} tonnes/year</p>
+          <h3>Total Avoided rainwater runoff: </h3><p>{totalArea ? getAvoidedRunoffAnnually(totalArea, this.state.runoffRate) : null} litres/year</p>
         </div>
       );
     } else if (this.state.shadingMode && this.state.clickedBuildingLocation) {
@@ -616,8 +626,8 @@ export class MapContainer extends Component {
       return (
         <div>
           <h3>Area: </h3><p>{this.state.clickedPolygon ? this.state.clickedPolygon.area : null} m<sup>2</sup></p>
-          <h3>Carbon sequestered: </h3><p>{this.state.clickedPolygon ? getCarbonSequesteredAnnually(this.state.clickedPolygon.area, this.state.database.carbonRate) : null} tonnes/year</p>
-          <h3>Avoided rainwater runoff: </h3><p>{this.state.clickedPolygon ? getAvoidedRunoffAnnually(this.state.clickedPolygon.area, this.state.database.runoffRate) : null} litres/year</p>
+          <h3>Carbon sequestered: </h3><p>{this.state.clickedPolygon ? getCarbonSequesteredAnnually(this.state.clickedPolygon.area, this.state.carbonRate) : null} tonnes/year</p>
+          <h3>Avoided rainwater runoff: </h3><p>{this.state.clickedPolygon ? getAvoidedRunoffAnnually(this.state.clickedPolygon.area, this.state.runoffRate) : null} litres/year</p>
           <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
         </div>
       );
@@ -689,8 +699,8 @@ export class MapContainer extends Component {
             setPolygonLayer={this.setPolygonLayer}
             onUpdateCarbon={this.onUpdateCarbon}
             onUpdateRunoff={this.onUpdateRunoff}
-            carbonRate={this.state.database.carbonRate}
-            runoffRate={this.state.database.runoffRate}
+            carbonRate={this.state.carbonRate}
+            runoffRate={this.state.runoffRate}
             onToggleShadingMode={this.onToggleShadingMode}
             ready={this.state.isLoaded}
           />
