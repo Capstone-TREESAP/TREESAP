@@ -4,8 +4,6 @@ import LandingScreenView from '../landing_screen/landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { SettingsList } from './settings-list';
 
-let constants = new Map();
-
 export default class SettingsView extends React.Component {
   render() {
     return (
@@ -51,20 +49,18 @@ function MenuButton(props) {
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
-    constants.set('carbon', setting.value);
     props.onUpdateCarbon(setting.value);
+    document.getElementById('carbon-info-text').innerHTML = "Current value: <b>" + setting.value + "</b> tonnes/hectare";
     setting.value = "";
-    document.getElementById('carbon-info-text').innerHTML = "Current value: <b>" + constants.get('carbon') + "</b> tonnes/hectare";
   }
 }
 
 function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2');
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
-    constants.set('runoff', setting.value);
     props.onUpdateRunoff(setting.value);
+    document.getElementById('runoff-info-text').innerHTML = "Current value: <b>" + setting.value + "</b> Litres/m<sup>2</sup>";
     setting.value = "";
-    document.getElementById('runoff-info-text').innerHTML = "Current value: <b>" + constants.get('runoff') + "</b> Litres/m<sup>2</sup>";
   }
 }
 
@@ -144,7 +140,7 @@ function SettingsDisplay(props) {
             id="setting1"
             name="setting1"
           />
-          <p id="carbon-info-text" className="settings-text">Current value: <b>{constants.get('carbon')}</b> tonnes/hectare</p>
+          <p id="carbon-info-text" className="settings-text">Current value: <b>{props.carbonRate}</b> tonnes/hectare</p>
           <br/>
           <button
             className="display-save"
@@ -167,7 +163,7 @@ function SettingsDisplay(props) {
             id="setting2"
             name="setting2"
           />
-          <p id="runoff-info-text" className="settings-text">Current value: <b>{constants.get('runoff')}</b> Litres/m<sup>2</sup></p>
+          <p id="runoff-info-text" className="settings-text">Current value: <b>{props.runoffRate}</b> Litres/m<sup>2</sup></p>
           <br/>
           <button
             className="display-save"
@@ -216,8 +212,6 @@ class Settings extends React.Component {
       editMode: false,
       shadingMode: false
     };
-    constants.set('carbon', this.props.carbonRate);
-    constants.set('runoff', this.props.runoffRate);
 
     this.areasOfInterest = new SettingsList(
       this.props.neighborhoodPolygonsList,
@@ -245,6 +239,8 @@ class Settings extends React.Component {
       setPolygonLayer: (displayList) => this.props.setPolygonLayer(displayList),
       onUpdateCarbon: (carbonValue) => this.props.onUpdateCarbon(carbonValue),
       onUpdateRunoff: (runoffValue) => this.props.onUpdateRunoff(runoffValue),
+      carbonRate: this.props.carbonRate,
+      runoffRate: this.props.runoffRate,
     });
 
     this.setState({
