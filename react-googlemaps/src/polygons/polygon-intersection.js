@@ -24,7 +24,7 @@ export class PolygonIntersection {
       polygon.overlay.setMap(null);
       boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds);
     } else {
-      boundingPoints = PolygonEditor.JSONtoGeoJSONCoords(polygon);
+      boundingPoints = PolygonEditor.JSONToGeoJSONCoords([polygon]);
     }
 
     this.boundingPolygon = turf.polygon(boundingPoints);
@@ -38,7 +38,7 @@ export class PolygonIntersection {
     return {
       "name": this.name,
       "key": PolygonEditor.createKey(INTERSECTION_KEY, intersectionKeyNum++),
-      "coordinates": PolygonEditor.geoJSONtoJSONCoords(coordinates),
+      "coordinates": PolygonEditor.geoJSONToJSONLine(coordinates),
     };
   }
 
@@ -47,18 +47,18 @@ export class PolygonIntersection {
     tempKeyNum = 0;
 
     for (var i = 0; i < polygonList.length; i++) {
-      let polygon = turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(polygonList[i].points));
+      let polygon = turf.polygon(PolygonEditor.JSONToGeoJSONCoords(polygonList[i].points));
       let intersection = turf.intersect(polygon, this.boundingPolygon);
 
       if (intersection != null) {
         if (intersection.geometry.type == "Polygon") {
           intersectingPolygons.push(
-            this.turfToJSONPolygon(intersection.geometry.coordinates[0])
+            this.turfToJSONPolygon(intersection.geometry.coordinates)
           );
         } else {
           for (var polyNum in intersection.geometry.coordinates) {
             intersectingPolygons.push(
-              this.turfToJSONPolygon(intersection.geometry.coordinates[polyNum][0])
+              this.turfToJSONPolygon(intersection.geometry.coordinates[polyNum])
             );
           }
         }
@@ -67,14 +67,12 @@ export class PolygonIntersection {
     return intersectingPolygons;
   }
 
-  turfToJSONPolygon(turfPolygon) {
-    let coordinates = turfPolygon;
-    let googleCoords = PolygonEditor.geoJSONToGoogleCoords(this.props, coordinates);
-
-    let area = PolygonEditor.getPolygonArea(this.props, googleCoords);
+  turfToJSONPolygon(turfCoordinates) {
+    let turfPolygon = turf.polygon(turfCoordinates)
+    let area = turf.area(turfPolygon);
     return {
       "type": "Polygon",
-      "points": PolygonEditor.geoJSONtoJSONCoords(coordinates),
+      "points": PolygonEditor.geoJSONToJSONCoords(turfCoordinates),
       "key": PolygonEditor.createKey(TEMP_KEY, tempKeyNum++),
       "area": area,
     };
@@ -82,7 +80,7 @@ export class PolygonIntersection {
 
   makeEditable = () => {
     let polygon = {
-      "points": PolygonEditor.geoJSONtoJSONCoords(this.boundingPolygon.geometry.coordinates[0])
+      "points": PolygonEditor.geoJSONToJSONCoords(this.boundingPolygon.geometry.coordinates)
     };
     this.editableBounds = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#CC2828", 1);
   }

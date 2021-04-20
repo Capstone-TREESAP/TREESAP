@@ -1,3 +1,5 @@
+import * as turf from '@turf/turf';
+
 export class PolygonEditor {
 
   static getPointsFromPolygon(polygon) {
@@ -17,9 +19,10 @@ export class PolygonEditor {
     return points;
   }
 
-  static getPolygonArea(props, points) {
-    const {google} = props;
-    return +google.maps.geometry.spherical.computeArea(points).toFixed(2);
+  static calculatePolygonArea(points) {
+    let coordinates = PolygonEditor.JSONToGeoJSONCoords(points);
+    let polygon = turf.polygon(coordinates)
+    return turf.area(polygon)
   }
 
   static getTotalArea(polygonList) {
@@ -30,7 +33,6 @@ export class PolygonEditor {
     return area.toFixed(2);
   }
 
-  //TODO pad with zeros
   static createKey(prefix, num) {
     return prefix + "-" + num;
   }
@@ -94,33 +96,52 @@ export class PolygonEditor {
     return jsonCoords;
   }
 
-  static geoJSONtoJSONCoords(geoCoords) {
-    let jsonCoords = [];
-    for (var i = 0; i < geoCoords.length; i++) {
-      jsonCoords.push(
+  static geoJSONToJSONLine(geoLine) {
+    let jsonLine = [];
+
+    for (let i = 0; i < geoLine.length; i++) {
+      jsonLine.push(
         {
-          lat: geoCoords[i][0],
-          lng: geoCoords[i][1]
+          lat: geoLine[i][0],
+          lng: geoLine[i][1]
         }
       );
+    }
+
+    return jsonLine;
+  }
+
+  static geoJSONToJSONCoords(geoCoords) {
+    let jsonCoords = [];
+    for (let i = 0; i < geoCoords.length; i++) {
+      jsonCoords.push(PolygonEditor.geoJSONToJSONLine(geoCoords[i]))
     }
     return jsonCoords;
   }
 
-  static JSONtoGeoJSONCoords(jsonCoords) {
+  //TODO can we use only one coordinate system? Or at least clean up the code
+  // for switching between them
+  static JSONToGeoJSONCoords(jsonCoords) {
     let geoCoords = [];
-    for (var i = 0; i < jsonCoords.length; i++) {
-      geoCoords.push([
-        jsonCoords[i]["lat"],
-        jsonCoords[i]["lng"]
-      ]);
+    for (let i = 0; i < jsonCoords.length; i++) {
+      let subGeoCoords = [];
+      let subJsonCoords = jsonCoords[i];
+      for (let j = 0; j < subJsonCoords.length; j++) {
+        subGeoCoords.push([
+          subJsonCoords[j]["lat"],
+          subJsonCoords[j]["lng"]
+        ]);
+      }
+
+      //Make last point first point if it isn't already
+      if (subGeoCoords[subGeoCoords.length] != subGeoCoords[0]) {
+        subGeoCoords.push(subGeoCoords[0]);
+      }
+
+      geoCoords.push(subGeoCoords)
     }
 
-    //Make last point first point if it isn't already
-    if (geoCoords[geoCoords.length] != geoCoords[0]) {
-      geoCoords.push(geoCoords[0]);
-    }
-    return [geoCoords];
+    return geoCoords;
   }
 
   static googleToGeoJSONCoords(googleCoords) {

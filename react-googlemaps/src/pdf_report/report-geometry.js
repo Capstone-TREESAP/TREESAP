@@ -71,7 +71,7 @@ export class ReportGeometry {
 
     //For the rest of the polygons, scale and offset based on bounding polygon
     for (var i in polygonList) {
-      let polygon = this.jsonToPagePoints(polygonList[i].points);
+      let polygon = this.jsonToPagePoints(polygonList[i].points[0]); //We don't support drawing inner rings on reports, sorry
       let offset = {
         "x": boundingOffset.x + (polygon[0].x - this.jsonToPagePoints(boundingCoordinates)[0].x) * scale,
         "y": boundingOffset.y + (polygon[0].y - this.jsonToPagePoints(boundingCoordinates)[0].y) * scale

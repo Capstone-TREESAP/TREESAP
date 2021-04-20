@@ -36,7 +36,7 @@ export class Database {
                 ))
             }
         } catch(e) {
-            console.log("Error while parsing tree cover polygogns in PolygonLayer");
+            console.log("Error while parsing tree cover polygons in PolygonLayer");
             console.log(e);
         }
 

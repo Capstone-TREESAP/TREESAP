@@ -122,14 +122,14 @@ export class IntersectionReport {
   }
 
   createSummarySection() {
-    let boundingArea = PolygonEditor.getPolygonArea(this.props, PolygonEditor.jsonToGoogleCoords(this.props, this.boundingLine.coordinates));
+    let boundingArea = PolygonEditor.calculatePolygonArea([this.boundingLine.coordinates]);
     let treeArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
     let totalCarbon = getCarbonSequesteredAnnually(treeArea, this.carbonRate);
     let totalRunoff = getAvoidedRunoffAnnually(treeArea, this.runoffRate);
     let numPolygons = this.intersectingPolygons.length;
     let geometry = new ReportGeometry();
     let vegetationDensity = (treeArea / boundingArea * 100).toFixed(2);
-    let centroid = turf.centroid(turf.polygon(PolygonEditor.JSONtoGeoJSONCoords(this.boundingLine.coordinates)));
+    let centroid = turf.centroid(turf.polygon(PolygonEditor.JSONToGeoJSONCoords([this.boundingLine.coordinates])));
 
     return (
       <View>

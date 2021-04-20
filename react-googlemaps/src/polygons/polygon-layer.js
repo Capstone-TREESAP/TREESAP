@@ -16,37 +16,25 @@ export class PolygonLayer {
     this.polygon = polygon;
   }
 
-
-  /*
-  Trees: continue to split multipolygons into polygons and don't allow inner rings,
-  because trying to test that everything works properly otherwise might be a nightmare.
-  (Once the code is rewritten we can see if that's actually true)
-
-  Buildings: allow inner rings and multipolygons? Or just inner rings? Start with just inner
-  rings
-  */
-
   parsePolygons(polygons, type) {
     let collectedPolygons = [];
-    for (var i = 0; i < polygons.features.length; i++) {
-      let polygon = polygons.features[i]
+    for (let i = 0; i < polygons.features.length; i++) {
+      let polygon = polygons.features[i];
 
       //Multipolygons get split into separate polygons. This shouldn't 
       // affect anything major - just means you have to delete them separately.
       let coordinateList = [];
       if (polygon.geometry.type == "MultiPolygon") {
-        coordinateList = polygon.geometry.coordinates
+        coordinateList = polygon.geometry.coordinates;
       } else if (polygon.geometry.type == "Polygon") {
-        coordinateList = [polygon.geometry.coordinates]
+        coordinateList = [polygon.geometry.coordinates];
       }
 
       for (let j = 0; j < coordinateList.length; j++) {
-        let coordinates = coordinateList[j]
+        let coordinates = coordinateList[j];
 
-        let points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
-        let area = PolygonEditor.getPolygonArea(this.props, points.map(
-          point => PolygonEditor.pointToLatLng(this.props, point)
-        ))
+        let points = PolygonEditor.inputToJSONCoords(coordinates);
+        let area = PolygonEditor.calculatePolygonArea(points);        
 
         let key = null;
         if (type == "tree") {
@@ -82,6 +70,8 @@ export class PolygonLayer {
         collectedPolygons.push(parsedPolygon);
       }
     }
+
+    return collectedPolygons;
   }
 
   makePolygonEditable = (polygon, map) => {
@@ -95,11 +85,11 @@ export class PolygonLayer {
       return;
     }
 
-    let newPoints = PolygonEditor.getPolygonEdits(this.editablePolygon);
-    let newArea = PolygonEditor.getPolygonArea(this.props, newPoints);
+    let newPoints = [PolygonEditor.googleToJSONCoords(PolygonEditor.getPolygonEdits(this.editablePolygon))];
+    let newArea = PolygonEditor.calculatePolygonArea(newPoints);
     PolygonEditor.removeEditablePolygon(this.editablePolygon);
 
-    this.polygon.points = PolygonEditor.googleToJSONCoords(newPoints);
+    this.polygon.points = newPoints;
     this.polygon.area = newArea;
     this.polygons.push(this.polygon);
     this.editablePolygon = null;
@@ -121,7 +111,7 @@ export class PolygonLayer {
       points = PolygonEditor.getPointsFromRectangle(this.props, polygon);
     }
 
-    let area = PolygonEditor.getPolygonArea(this.props, points);
+    let area = PolygonEditor.calculatePolygonArea(PolygonEditor.googleToJSONCoords(points));
 
     this.polygons.push(
       {

@@ -565,19 +565,8 @@ export class MapContainer extends Component {
   renderInfoWindow() {
     var findPolygonCentroid = (polygon) => {
       if (polygon) {
-        var polygonGeoJSON = {
-          "type": "Feature",
-          "geometry": {
-            "type": "Polygon",
-            "coordinates": [[]]
-          },
-        };
-        for (var i = 0; i < polygon.points.length; i ++) {
-          polygonGeoJSON.geometry.coordinates[0].push([polygon.points[i].lng, polygon.points[i].lat]);
-        }
-        return turf.centroid(polygonGeoJSON);
+        return turf.centroid(turf.polygon(PolygonEditor.JSONToGeoJSONCoords(polygon.points)));
       }
-      return null;
     }
 
     if (this.state.clickedIntersection != null && this.state.intersectionLayer != null) {
