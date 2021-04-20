@@ -17,7 +17,7 @@
   height: 80%;
   background-color: #5B6057;
   overflow: scroll;
-  z-index: 2
+  z-index: 2;
 }
 
 .for-button {
@@ -38,7 +38,7 @@
 .display-save {
   position: relative;
   margin-left: 15px;
-  color: rgb(223, 196, 196);
+  color: white;
   font-size: 14px;
   cursor: pointer;
   padding: 5px 15px;
@@ -88,14 +88,13 @@
 
 h1 {
   padding-left: 10px;
-
 }
 
 p {
   padding-left: 10px;
 }
 
-input[type="button"].selected{
+input[type="button"].selected {
   position: relative;
   margin-left: 10px;
   color: white;
@@ -107,7 +106,7 @@ input[type="button"].selected{
   background-color: #313628;
 }
 
-input[type="button"].unselected{
+input[type="button"].unselected {
   position: relative;
   margin-left: 10px;
   color: gray;
@@ -119,50 +118,54 @@ input[type="button"].unselected{
   background-color: white;
 }
 
-input[type="text"]{
+input[type="text"] {
   margin-left: 15px;
-  margin-top: 0px
+  margin-top: 0px;
 }
 
-.checkboxes{
+.checkboxes {
   margin-left: 10px;
   color: white;
-  
 }
 
-.container1{
+.container1 {
   width: 20%;
   display: inline-block;
   vertical-align:top;
   margin-left: 40px;
+  height: auto;
 }
 
-.container2{
+.container2 {
   margin-left: 30px;
   vertical-align:top;
   display: inline-block;
+  width: auto;
+  height: auto;
 }
 
-.container3{
+.container3 {
   margin-left: 70px;
   vertical-align:top;
   display: inline-block;
+  width: auto;
+  height: auto;
 }
 
-#carbon-info-text{
+#carbon-info-text {
   display: inline-block;
   margin-left: 10px;
 }
 
-#runoff-info-text{
+#runoff-info-text {
   margin-left: 10px;
   display: inline-block;
 }
 
-.settings-text{
+.settings-text {
   color: white;
 }
 
-#settings-header{
-  margin-left: 30px
+#settings-header {
+  margin-left: 30px;
 }

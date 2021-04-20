@@ -15,7 +15,7 @@ export class Database {
     constructor() {
         this.carbonRate = 0;
         this.runoffRate = 0;
-        this.neighborhood_polygons = {};
+        this.areas_int_polygons = {};
         this.polygonLayers = [];
         this.buildings = {};
         this.ubc_boundary = {};
@@ -25,15 +25,13 @@ export class Database {
 
     parseDatabase = async (database, props) => {
         await this.parseConstants(database)
-
-        //TODO rename
-        this.neighborhood_polygons = await this.parseFiles(database[AREAS_OF_INTEREST].files)
+        this.areas_int_polygons = await this.parseFiles(database[AREAS_OF_INTEREST].files)
         let all_polygon_sets = await this.parsePolygonSets(database)
         try {
             for (let set in all_polygon_sets) {
                 this.polygonLayers.push(new PolygonLayer(
                     all_polygon_sets[set],
-                    props, 
+                    props,
                     "tree"
                 ))
             }
@@ -93,18 +91,14 @@ export class Database {
 
     runValidation(all_polygon_sets) {
         var lidar_polygons = all_polygon_sets["LiDAR 2018"];
-        lidar_polygons.name = "LiDAR 2018";    
+        lidar_polygons.name = "LiDAR 2018";
         var ortho_polygons = all_polygon_sets["Orthophoto 2018"];
-        ortho_polygons.name = "Orthophoto 2018";    
-        //ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);    
+        ortho_polygons.name = "Orthophoto 2018";
+        //ortho_polygons = findIntersections(ortho_polygons, ubc_boundary);
         // lidar_polygons = findIntersections(lidar_polygons, this.ubc_boundary);
-        this.polygons = ortho_polygons;    
+        this.polygons = ortho_polygons;
         var lidar_ortho = findIntersections(lidar_polygons, ortho_polygons);
         this.polygons = lidar_ortho;
-
-        // remove after TIC-96
-        //this.polygons = ortho_polygons;
-        //this.polygons = lidar_polygons;  
     }
 
     getPolygonSetIndex(key) {

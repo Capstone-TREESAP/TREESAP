@@ -1,4 +1,4 @@
-.landing-screen{
+.landing-screen {
   position: absolute;
   z-index: 10;
   background-color: #5B6057;
@@ -22,7 +22,7 @@
   z-index: 2;
 }
 
-#title{
+#title {
   padding: 10px;
   align-self: center;
   color: #E2E5DC;

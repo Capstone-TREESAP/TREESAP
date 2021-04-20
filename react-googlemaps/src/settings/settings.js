@@ -3,7 +3,8 @@ import './settings.css';
 import LandingScreenView from '../landing_screen/landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { SettingsList } from './settings-list';
-let constants = new Map()
+
+let constants = new Map();
 
 export default class SettingsView extends React.Component {
   render() {
@@ -53,72 +54,72 @@ function SaveCarbonValue(props) {
     constants.set('carbon', setting.value);
     props.onUpdateCarbon(setting.value);
     setting.value = "";
-    document.getElementById('carbon-info-text').innerHTML = "Current value: " + constants.get('carbon') + " tonnes/hectare";
+    document.getElementById('carbon-info-text').innerHTML = "Current value: <b>" + constants.get('carbon') + "</b> tonnes/hectare";
   }
 }
 
 function SaveStormwaterValue(props) {
-  var setting = document.getElementById('setting2')
+  var setting = document.getElementById('setting2');
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
     constants.set('runoff', setting.value);
     props.onUpdateRunoff(setting.value);
     setting.value = "";
-    document.getElementById('runoff-info-text').innerHTML = "Current value: " + constants.get('runoff') + " Litres/m<sup>2</sup>";
+    document.getElementById('runoff-info-text').innerHTML = "Current value: <b>" + constants.get('runoff') + "</b> Litres/m<sup>2</sup>";
   }
 }
 
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
-    <h1 className="settings-text" id="settings-header">UBC Tree Cover Analysis Platform Settings</h1>
-    <div className="container1">
-      <div className="display">
-        <h3 className="settings-text">Select a Data Source:</h3>
-        <div className="checkboxes">{props.polygonLayers.getCheckboxes()}</div>
-        <br/>
-        <button
-          className="display-save"
-          type="button"
-          onClick={() => {
-            props.polygonLayers.updateCheckedCumulativeAction(props.setPolygonLayer);
-            props.onClick();
-          }}
-        >
-          Save and Update Map
-        </button>
-      </div>
-      <div className="display-no-columns">
-        <h3 className="settings-text">Select Mode:</h3>
-        {props.displayList.length > 1 && <p className="settings-text">(Edit mode not supported when viewing multiple years of data)</p>}
-        {props.displayList.length <= 1 &&
-          <input
-            className={props.editMode ? "intersection unselected" : "intersection selected"}
+      <h1 className="settings-text" id="settings-header">UBC Tree Cover Analysis Platform Settings</h1>
+      <div className="container1">
+        <div className="display">
+          <h3 className="settings-text">Select a Data Source:</h3>
+          <div className="checkboxes">{props.polygonLayers.getCheckboxes()}</div>
+          <br/>
+          <button
+            className="display-save"
             type="button"
             onClick={() => {
-              props.onToggleMode(false);
+              props.polygonLayers.updateCheckedCumulativeAction(props.setPolygonLayer);
               props.onClick();
             }}
-            value="Intersection"
-          />
-        }
-        {props.displayList.length <= 1 &&
-          <input
-            className={props.editMode ? "edit selected" : "edit unselected"}
-            type="button"
-            onClick={() => {
-              props.onToggleMode(true);
-              props.onClick();
-            }}
-            value="Edit"
-          />
-        }
+          >
+            Save and Update Map
+          </button>
+        </div>
+        <div className="display-no-columns">
+          <h3 className="settings-text">Select Mode:</h3>
+          {props.displayList.length > 1 && <p className="settings-text">(Edit mode not supported when viewing multiple years of data)</p>}
+          {props.displayList.length <= 1 &&
+            <input
+              className={props.editMode ? "intersection unselected" : "intersection selected"}
+              type="button"
+              onClick={() => {
+                props.onToggleMode(false);
+                props.onClick();
+              }}
+              value="Intersection"
+            />
+          }
+          {props.displayList.length <= 1 &&
+            <input
+              className={props.editMode ? "edit selected" : "edit unselected"}
+              type="button"
+              onClick={() => {
+                props.onToggleMode(true);
+                props.onClick();
+              }}
+              value="Edit"
+            />
+          }
+        </div>
       </div>
-    </div>
-    <div className="container2">
-      <div>
-        <h3 className="settings-text">Select Key Areas of Interest:</h3>
-        <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
-        <br/>
+      <div className="container2">
+        <div>
+          <h3 className="settings-text">Select Key Areas of Interest:</h3>
+          <div className="checkboxes">{props.areasOfInterest.getCheckboxes()}</div>
+          <br/>
           <button
             className="display-save"
             type="button"
@@ -130,59 +131,57 @@ function SettingsDisplay(props) {
             Save and Update Areas of Interest
           </button>
         </div>
-    </div>
-    <div className="container3">
-
-      <div className="dropdown">
-        <label
-          className="input"
-          for="setting1">
-        </label>
-        <h3 className="settings-text">Change tonnes of carbon per hectare per year here:</h3>
-        <input
-          type="text"
-          id="setting1"
-          name="setting1"
-        />
-        <h3 id="carbon-info-text" className="settings-text">Current value: {constants.get('carbon')} tonnes/hectare</h3>
-        <br/>
-        <button
-          className="display-save"
-          type="button"
-          onClick={() => {
-            SaveCarbonValue(props);
-            props.onRefresh();
-          }}
-        >
-          Save
-        </button>
-        <br/>
-        <label
-          className="input"
-          for="setting2"
-        >
-        </label>
-        <h3 className="settings-text">Change litres of avoided run-off per meter squared per year here:</h3>
-        <input
-          type="text"
-          id="setting2"
-          name="setting2"
-        />
-        <h3 id="runoff-info-text" className="settings-text">Current value: {constants.get('runoff')} Litres/m<sup>2</sup></h3>
-        <br/>
-        <button
-          className="display-save"
-          type="button"
-          onClick={() => {
-            SaveStormwaterValue(props);
-            props.onRefresh();
-          }}
-        >
-          Save
-        </button>
       </div>
-      <div className="display-bottom">
-        <h3 className="settings-text">Access Shading and Cooling Tool:</h3>
+      <div className="container3">
+        <div className="dropdown">
+          <label
+            className="input"
+            for="setting1">
+          </label>
+          <h3 className="settings-text">Change tonnes of carbon per hectare per year here:</h3>
+          <input
+            type="text"
+            id="setting1"
+            name="setting1"
+          />
+          <p id="carbon-info-text" className="settings-text">Current value: <b>{constants.get('carbon')}</b> tonnes/hectare</p>
+          <br/>
+          <button
+            className="display-save"
+            type="button"
+            onClick={() => {
+              SaveCarbonValue(props);
+              props.onRefresh();
+            }}
+          >
+            Save
+          </button>
+          <br/>
+          <label
+            className="input"
+            for="setting2">
+          </label>
+          <h3 className="settings-text">Change litres of avoided runoff per meter squared per year here:</h3>
+          <input
+            type="text"
+            id="setting2"
+            name="setting2"
+          />
+          <p id="runoff-info-text" className="settings-text">Current value: <b>{constants.get('runoff')}</b> Litres/m<sup>2</sup></p>
+          <br/>
+          <button
+            className="display-save"
+            type="button"
+            onClick={() => {
+              SaveStormwaterValue(props);
+              props.onRefresh();
+            }}
+          >
+            Save
+          </button>
+        </div>
+        <div className="display-bottom">
+          <h3 className="settings-text">Access Shading and Cooling Tool:</h3>
           <button
             className="display-save"
             type="button"
@@ -194,20 +193,18 @@ function SettingsDisplay(props) {
             {props.shadingMode ? "Exit Shading Mode" : "Enter Shading Mode"}
           </button>
         </div>
-
       </div>
       <div className="for-button">
-          <button
-            className="menu-button"
-            type="button"
-            onClick={props.onClick}
-          >
-            Close
-          </button>
-        </div>
+        <button
+          className="menu-button"
+          type="button"
+          onClick={props.onClick}
+        >
+          Close
+        </button>
+      </div>
     </div>
-
-  )
+  );
 }
 
 class Settings extends React.Component {
@@ -222,18 +219,19 @@ class Settings extends React.Component {
     constants.set('carbon', this.props.carbonRate);
     constants.set('runoff', this.props.runoffRate);
 
-    this.areasOfInterest = new SettingsList(this.props.neighborhoodPolygonsList,
+    this.areasOfInterest = new SettingsList(
+      this.props.neighborhoodPolygonsList,
       SettingsList.parseAreasOfInterest,
       this.props.onAddAreaOfInterest,
-      this.props.onRemoveAreaOfInterest);
-    this.polygonLayers = new SettingsList(this.props.polyList,
-      () => SettingsList.parsePolygonList(this.props.polyList, this.props.displayList))
+      this.props.onRemoveAreaOfInterest
+    );
+    this.polygonLayers = new SettingsList(
+      this.props.polyList,
+      () => SettingsList.parsePolygonList(this.props.polyList, this.props.displayList)
+    );
   }
 
-  openMenu(){
-    constants.set('carbon', this.props.carbonRate);
-    constants.set('runoff', this.props.runoffRate);
-
+  openMenu() {
     let menu = SettingsDisplay({
       onClick: () => this.closeMenu(),
       onToggleMode: (editMode) => this.onToggleMode(editMode),
@@ -251,36 +249,37 @@ class Settings extends React.Component {
 
     this.setState({
       visible: false,
-      menu: menu
+      menu: menu,
     });
   }
 
-  closeMenu(){
+  closeMenu() {
     this.setState({
       visible: true,
-      menu: null
+      menu: null,
     });
   }
 
-  onToggleMode(editMode){
+  onToggleMode(editMode) {
     this.setState({
       editMode: editMode
-    })
-    this.props.onToggleMode(editMode)
+    });
+    this.props.onToggleMode(editMode);
   }
 
   onToggleShadingMode() {
     this.setState({
       shadingMode: !this.state.shadingMode
-    })
+    });
     this.props.onToggleShadingMode();
   }
-  onRefresh(){
+
+  onRefresh() {
     this.openMenu();
   }
 
-  renderButton(){
-    return(
+  renderButton() {
+    return (
       <MenuButton
         onClick={() => this.openMenu()}
       />
@@ -288,15 +287,16 @@ class Settings extends React.Component {
   }
 
   render() {
-    this.areasOfInterest.loadSettingsList(this.props.neighborhoodPolygonsList)
-    this.polygonLayers.loadSettingsList(this.props.polyList)
+    this.areasOfInterest.loadSettingsList(this.props.neighborhoodPolygonsList);
+    this.polygonLayers.loadSettingsList(this.props.polyList);
 
     return (
       <div>
         <CSSTransitionGroup
           transitionName="settings"
           transitionEnterTimeout={500}
-          transitionLeaveTimeout={300}>
+          transitionLeaveTimeout={300}
+        >
           {this.state.menu}
         </CSSTransitionGroup>
         <div className="for-button">
