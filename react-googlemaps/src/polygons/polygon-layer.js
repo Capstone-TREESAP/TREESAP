@@ -16,58 +16,72 @@ export class PolygonLayer {
     this.polygon = polygon;
   }
 
-  parsePolygons(polygons, type){
+
+  /*
+  Trees: continue to split multipolygons into polygons and don't allow inner rings,
+  because trying to test that everything works properly otherwise might be a nightmare.
+  (Once the code is rewritten we can see if that's actually true)
+
+  Buildings: allow inner rings and multipolygons? Or just inner rings? Start with just inner
+  rings
+  */
+
+  parsePolygons(polygons, type) {
     let collectedPolygons = [];
     for (var i = 0; i < polygons.features.length; i++) {
-      //TODO this is broken for polygons with inner rings
-      for (var j = 0; j < polygons.features[i].geometry.coordinates.length; j++) {
-        //TODO temp fix so it stops yelling: just ignore inner rings
-        if (j > 0 && polygons.features[i].geometry.type == "Polygon") {
-          continue;
-        }
+      let polygon = polygons.features[i]
 
-        if (polygons.features[i].geometry.type == "MultiPolygon") {
-          var coordinates = polygons.features[i].geometry.coordinates[j][0];
-        } else {
-          var coordinates = polygons.features[i].geometry.coordinates[j];
-        }
-        var points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates);
-        var area = PolygonEditor.getPolygonArea(this.props, points.map(
+      //Multipolygons get split into separate polygons. This shouldn't 
+      // affect anything major - just means you have to delete them separately.
+      let coordinateList = [];
+      if (polygon.geometry.type == "MultiPolygon") {
+        coordinateList = polygon.geometry.coordinates
+      } else if (polygon.geometry.type == "Polygon") {
+        coordinateList = [polygon.geometry.coordinates]
+      }
+
+      for (let j = 0; j < coordinateList.length; j++) {
+        let coordinates = coordinateList[j]
+
+        let points = PolygonEditor.backwardsGeoJSONToJSONCoords(coordinates)
+        let area = PolygonEditor.getPolygonArea(this.props, points.map(
           point => PolygonEditor.pointToLatLng(this.props, point)
-        ));
-        var key = null;
+        ))
+
+        let key = null;
         if (type == "tree") {
-          if (polygons.features[i].properties.id) {
-            key = polygons.features[i].properties.id;
+          if (polygon.properties.id) {
+            key = polygon.properties.id;
+
           } else {
             key = customKeyNum++;
           }
         } else {
-          key = polygons.features[i].properties["BLDG_UID"];
+          key = polygon.properties["BLDG_UID"];
         }
-        if (polygons.features[i].geometry.type == "MultiPolygon") {
+
+        if (polygon.geometry.type == "MultiPolygon") {
           key += "." + j;
         }
 
-        var polygon = {
-          // update this when lidar has ids added
+        let parsedPolygon = {
           "key": key,
           "points": points,
           "area": area,
           "editable": false,
-          "type": type,
+          "type": type
         };
         if (type == "building") {
-          polygon.address = polygons.features[i].properties["PRIMARY_ADDRESS"];
-          polygon.name = polygons.features[i].properties["NAME"];
-          polygon.neighbourhood = polygons.features[i].properties["NEIGHBOURHOOD"];
-          polygon.occupied_date = polygons.features[i].properties["OCCU_DATE"];
-          polygon.max_floors = polygons.features[i].properties["MAX_FLOORS"];
+          parsedPolygon.address = polygon.properties["PRIMARY_ADDRESS"];
+          parsedPolygon.name = polygon.properties["NAME"];
+          parsedPolygon.neighbourhood = polygon.properties["NEIGHBOURHOOD"];
+          parsedPolygon.occupied_date = polygon.properties["OCCU_DATE"];
+          parsedPolygon.max_floors = polygon.properties["MAX_FLOORS"];
         }
-        collectedPolygons.push(polygon);
+
+        collectedPolygons.push(parsedPolygon);
       }
     }
-    return collectedPolygons;
   }
 
   makePolygonEditable = (polygon, map) => {

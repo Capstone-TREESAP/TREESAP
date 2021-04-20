@@ -85,6 +85,15 @@ export class PolygonEditor {
     return jsonCoords;
   }
 
+  static inputToJSONCoords(geoCoords) {
+    let jsonCoords = [];
+    for (let i = 0; i < geoCoords.length; i++) {
+      let jsonSubCoords = PolygonEditor.backwardsGeoJSONToJSONCoords(geoCoords[i]);
+      jsonCoords.push(jsonSubCoords);
+    }
+    return jsonCoords;
+  }
+
   static geoJSONtoJSONCoords(geoCoords) {
     let jsonCoords = [];
     for (var i = 0; i < geoCoords.length; i++) {
