@@ -52,6 +52,8 @@ export class MapContainer extends Component {
       database: new Database(),
       carbonRate: 0,
       runoffRate: 0,
+      drawingView: null,
+      intersections: [],
       // shading/cooling state variables:
       buildingLayer: null,
       clickedBuilding: null,
@@ -61,8 +63,6 @@ export class MapContainer extends Component {
       shadingMode: false,
       //databaseJSON: null //##TEST-TAG##: uncomment this line to run database fetch test
     };
-    this.drawingView = null;
-    this.intersections = [];
   }
 
   componentDidMount() {
@@ -259,7 +259,7 @@ export class MapContainer extends Component {
   }
 
   onToggleMode = (editMode) => {
-    this.drawingView.resetDrawingMode();
+    this.state.drawingView.resetDrawingMode();
     this.setState({
       editMode: editMode
     });
@@ -267,7 +267,7 @@ export class MapContainer extends Component {
 
   onAddAreaOfInterest = (name, coordinates) => {
     let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, name);
-    this.intersections.push(intersection);
+    this.state.intersections.push(intersection);
     this.setState({
       clickedLocation: null,
       clickedPolygon: null,
@@ -280,8 +280,8 @@ export class MapContainer extends Component {
     if (this.state.clickedIntersection != null) {
       this.state.clickedIntersection.makeUneditable();
     }
-    let index = this.intersections.findIndex(element => element.name === name);
-    this.intersections.splice(index, 1);
+    let index = this.state.intersections.findIndex(element => element.name === name);
+    this.state.intersections.splice(index, 1);
 
     this.setState({
       clickedLocation: null,
@@ -315,7 +315,7 @@ export class MapContainer extends Component {
         this.loadDrawingManager();
       }
     } else {
-      this.drawingView.closeDrawingManager();
+      this.state.drawingView.closeDrawingManager();
     }
   }
 
@@ -366,17 +366,17 @@ export class MapContainer extends Component {
   }
 
   loadDrawingManager = () => {
-    this.drawingView = new DrawingView(this.props, this._map.map);
+    this.state.drawingView = new DrawingView(this.props, this._map.map);
     const scope = this;
-    this.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
+    this.state.drawingView.drawingManager.addListener('overlaycomplete', function(polygon){
       scope.addPolygon(polygon);
     });
   }
 
   displayIntersections = () => {
     let features = [];
-    for (var i = 0; i < this.intersections.length; i++) {
-      features.push(this.displayIntersection(this.intersections[i], "#CC2828", this.state.displayList.length + 1));
+    for (var i = 0; i < this.state.intersections.length; i++) {
+      features.push(this.displayIntersection(this.state.intersections[i], "#CC2828", this.state.displayList.length + 1));
     }
 
     if (this.state.intersectionLayer != null) {
@@ -471,7 +471,7 @@ export class MapContainer extends Component {
 
   addPolygon(polygon) {
     if (this.state.displayList.length != 1) {
-      this.drawingView.resetDrawingMode();
+      this.state.drawingView.resetDrawingMode();
       return;
     }
     var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
@@ -485,21 +485,21 @@ export class MapContainer extends Component {
       });
     } else {
       let intersection = new PolygonIntersection(this.props, polygon, this._map.map);
-      this.intersections.push(intersection);
+      this.state.intersections.push(intersection);
       this.setState({
-        clickedLocation: intersection.getBoundingLine().coordinates[0], //TODO this should probably not be so hardcoded
+        clickedLocation: intersection.getBoundingLine().coordinates[0],
         clickedPolygon: null,
         clickedIntersection: intersection,
         intersectionLayer: intersection.findIntersectingPolygons(this.state.database.polygonLayers[index].polygons)
       });
     }
-    this.drawingView.resetDrawingMode();
+    this.state.drawingView.resetDrawingMode();
   }
 
   deleteIntersection(intersection) {
     intersection.makeUneditable();
-    let index = this.intersections.findIndex(element => element === intersection);
-    this.intersections.splice(index, 1);
+    let index = this.state.intersections.findIndex(element => element === intersection);
+    this.state.intersections.splice(index, 1);
 
     this.setState({
       clickedLocation: null,
@@ -509,8 +509,8 @@ export class MapContainer extends Component {
   }
 
   makeIntersectionEditable(intersection) {
-    let index = this.intersections.findIndex(element => element === intersection);
-    this.intersections.splice(index, 1);
+    let index = this.state.intersections.findIndex(element => element === intersection);
+    this.state.intersections.splice(index, 1);
     intersection.makeEditable();
 
     this.setState({
@@ -523,7 +523,7 @@ export class MapContainer extends Component {
   makeIntersectionUneditable(intersection) {
     if (intersection != null) {
       intersection.makeUneditable();
-      this.intersections.push(intersection);
+      this.state.intersections.push(intersection);
     }
 
     this.setState({
