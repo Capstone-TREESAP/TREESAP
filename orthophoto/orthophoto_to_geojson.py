@@ -79,6 +79,7 @@ def convert_to_lon_lat(polygon_raw, x_res, y_res, utm_10_top_left_coord):
     return projected
 
 def extract_tree_cover_from_tif_tfw(filename, n, g, stddev_threshold, darker_colour_threshold, lighter_colour_threshold):
+    print("Analysing "+ filename + ".tif...")
     x_res = 0.0
     y_res = 0.0
     x_coord = 0.0
@@ -124,19 +125,49 @@ def extract_tree_cover_from_tif_tfw(filename, n, g, stddev_threshold, darker_col
 # 1. The directory containing all the tif and tfw
 # 2. The bounding polygon to check for intersections with
 # 3. The file to output the intersecting polygons to
-# 4. The standard deviation threshold
-# 5. The ID prefix
+# 4. The ID prefix
+# 5. The standard deviation threshold
+# 6-8.  [optional] The hsv of the min segmentation colour
+# 9-11. [optional] The hsv of the max segmentation colour
 args = sys.argv
-if len(args) != 6:
-    print("Invalid args")
+if len(args) != 6 and len(args) != 12:
+    print(
+    '''
+    Invalid args!
+    Command line arguments should be:
+    1. The directory containing all the tif and tfw
+    2. The bounding polygon to check for intersections with
+    3. The file to output the intersecting polygons to
+    4. The standard deviation threshold
+    5. The ID prefix
+    6-8.  [optional] The hsv of the min segmentation colour
+    9-11. [optional] The hsv of the max segmentation colour
+    '''
+    )
     sys.exit(1)
-else:
+
+if len(args) >= 6:
     tif_tfw_directory = args[1]
     with open(args[2], mode="r") as bounding_in_file:
         bounding_polygon = geometry.shape(geojson.load(bounding_in_file)["features"][0]["geometry"])
     output_file = args[3]
-    standard_deviation_threshold = int(args[4])
-    id_prefix = args[5]
+    id_prefix = args[4]
+    standard_deviation_threshold = int(args[5])
+
+if len(args) == 12:
+    h_min = float(args[6])
+    s_min = float(args[7])
+    v_min = float(args[8])
+    h_max = float(args[9])
+    s_max = float(args[10])
+    v_max = float(args[11])
+else:
+    h_min = 35.0
+    s_min = 30.0
+    v_min = 0.0
+    h_max = 270.0
+    s_max = 255.0
+    v_max = 150.0
 
 # size of image
 width = 10000
@@ -144,14 +175,14 @@ width = 10000
 g = 20
 # number of subimages
 n = int(width / g)
-dark_green = (35/360*255,30, 0)
-light_green = (270/360*255, 255, 150)
+min_colour = (h_min/360*255,s_min, v_min)
+max_colour = (h_max/360*255,s_max, v_max)
 
 #Start extraction
 os.chdir(tif_tfw_directory)
 for file in os.listdir(tif_tfw_directory):
      if file.endswith(".tif"):
-        extract_tree_cover_from_tif_tfw(file[:-4],n,g,standard_deviation_threshold,dark_green,light_green)
+        extract_tree_cover_from_tif_tfw(file[:-4],n,g,standard_deviation_threshold,min_colour,max_colour)
 
 feature_list = []
 
@@ -168,3 +199,5 @@ with open(all_polygons_file, mode = "w") as out_file:
     geojson.dump(feature_collection,out_file)
 
 find_intersecting_polygons(all_polygons_file, bounding_polygon, output_file, id_prefix)
+
+print("Done!")
