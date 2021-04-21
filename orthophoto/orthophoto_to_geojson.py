@@ -14,6 +14,14 @@ UTM_10_PROJ = Proj("+proj=utm +zone=10N, +north +ellps=WGS84 +datum=WGS84 +units
 # Include debug print messages
 DEBUG = False
 
+'''
+Finds all intersecting polygons and outputs them to geojson file with the given id prefix
+
+all_polygons_file: geojson file containing all the polygons
+bounding_polygon: The bounding polygon (geometry.shape)
+output_file: geojson file containing all the polygons or parts of the polygons that are within the bounding polygon
+id_prefix: all output polygons will have an id prefixed by this
+'''
 def find_intersecting_polygons(all_polygons_file, bounding_polygon, output_file, id_prefix):
     # Load all polygons into a feature set
     with open(all_polygons_file, mode="r") as in_file:
@@ -65,12 +73,41 @@ def find_intersecting_polygons(all_polygons_file, bounding_polygon, output_file,
     with open(output_file, mode="w") as out_file:
         geojson.dump(new_feature_collection, out_file, indent=4)
 
+'''
+Calculates the standard devation in the specified window and returns if it's over the threshold
+
+x: the minimum x value of the window
+y: the minimum y value of the window
+window_size: the width and height of the window
+im: the image
+'''
 def stddev_above_threshold(x,y,window_size, threshold,im):
     r = im[x*window_size:(x+1)*window_size, y*window_size:(y+1)*window_size, 0:2]
     return r.std() > threshold
+
+'''
+Calculates the mean value in the specified window and returns if it's over 128 (50%)
+Note: This was designed with a binary (255 or 0) mask in mind
+
+x: the minimum x value of the window
+y: the minimum y value of the window
+window_size: the width and height of the window
+green_mask: the mask
+'''
 def compressed_green(x,y,window_size,green_mask):
     r = green_mask[x*window_size:(x+1)*window_size, y*window_size:(y+1)*window_size]
     return r.mean() > 128
+
+'''
+Converts the given polygon to longitude and latitude with correct scaling
+
+polygon_raw: the raw polygon
+x_res: the resolution of x values
+y_res: the resolution of y values
+utm_10_top_left_coord: the utm10 coordinates of the top left corner of the image
+
+returns the projected polygon
+'''
 def convert_to_lon_lat(polygon_raw, x_res, y_res, utm_10_top_left_coord):
     polygon_processed = [[x[0][0]*x_res+utm_10_top_left_coord[0],x[0][1]*y_res+utm_10_top_left_coord[1]] for x in polygon_raw]
     projected = [UTM_10_PROJ(x[0], x[1], inverse=True) for x in polygon_processed]
@@ -78,7 +115,19 @@ def convert_to_lon_lat(polygon_raw, x_res, y_res, utm_10_top_left_coord):
     projected.append(head)
     return projected
 
-def extract_tree_cover_from_tif_tfw(filename, n, g, stddev_threshold, darker_colour_threshold, lighter_colour_threshold):
+'''
+Extract tree cover from the tif and tfw files of the same name
+
+filename: the name of the tif and tfw files
+image_size: the width and height of the image
+g: the granularity of the processing
+stddev_threshold: standard deviation threshold
+min_colour_threshold: the minimum colour that's considered green
+max_colour_threshold: the maximum colour that's considered green
+'''
+def extract_tree_cover_from_tif_tfw(filename, image_size, g, stddev_threshold, min_colour_threshold, max_colour_threshold):
+    # number of subimages
+    n = int(image_size / g)
     print("Analysing "+ filename + ".tif...")
     x_res = 0.0
     y_res = 0.0
@@ -98,7 +147,7 @@ def extract_tree_cover_from_tif_tfw(filename, n, g, stddev_threshold, darker_col
     kernel = np.ones((g,g),np.float32)/(g*g)
     blurred_image = cv2.filter2D(image,-1,kernel)
     hsv_blurred_image = cv2.cvtColor(blurred_image, cv2.COLOR_RGB2HSV)
-    mask = cv2.inRange(hsv_blurred_image, darker_colour_threshold, lighter_colour_threshold)
+    mask = cv2.inRange(hsv_blurred_image, min_colour_threshold, max_colour_threshold)
     blurred_image = ndimage.gaussian_filter(image, sigma=2)
     stddev_array = np.array([stddev_above_threshold(i//n,i%n,g,stddev_threshold,blurred_image) for i in range(0,n**2)]).reshape(n,n)
 
@@ -127,8 +176,7 @@ def extract_tree_cover_from_tif_tfw(filename, n, g, stddev_threshold, darker_col
 # 3. The file to output the intersecting polygons to
 # 4. The ID prefix
 # 5. The standard deviation threshold
-# 6-8.  [optional] The hsv of the min segmentation colour
-# 9-11. [optional] The hsv of the max segmentation colour
+# 6-11.  [optional] The hsv of the min and max segmentation colour
 args = sys.argv
 if len(args) != 6 and len(args) != 12:
     print(
@@ -138,10 +186,9 @@ if len(args) != 6 and len(args) != 12:
     1. The directory containing all the tif and tfw
     2. The bounding polygon to check for intersections with
     3. The file to output the intersecting polygons to
-    4. The standard deviation threshold
-    5. The ID prefix
-    6-8.  [optional] The hsv of the min segmentation colour
-    9-11. [optional] The hsv of the max segmentation colour
+    4. The ID prefix
+    5. The standard deviation threshold
+    6-11.  [optional] The hsv of the min and max segmentation colour
     '''
     )
     sys.exit(1)
@@ -170,11 +217,9 @@ else:
     v_max = 150.0
 
 # size of image
-width = 10000
+image_size = 10000
 # granularity of subimages
 g = 20
-# number of subimages
-n = int(width / g)
 min_colour = (h_min/360*255,s_min, v_min)
 max_colour = (h_max/360*255,s_max, v_max)
 
@@ -182,7 +227,7 @@ max_colour = (h_max/360*255,s_max, v_max)
 os.chdir(tif_tfw_directory)
 for file in os.listdir(tif_tfw_directory):
      if file.endswith(".tif"):
-        extract_tree_cover_from_tif_tfw(file[:-4],n,g,standard_deviation_threshold,min_colour,max_colour)
+        extract_tree_cover_from_tif_tfw(file[:-4],image_size,g,standard_deviation_threshold,min_colour,max_colour)
 
 feature_list = []
 
