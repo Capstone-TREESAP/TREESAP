@@ -30,7 +30,6 @@ export class SettingsList {
       // extended to also support Polylines, and potentially extended to support
       // Multipolygons.
       if (feature.geometry.type != "Polygon") {
-        console.log(feature)
         continue;
       }
 

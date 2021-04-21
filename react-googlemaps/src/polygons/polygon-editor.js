@@ -43,6 +43,12 @@ export class PolygonEditor {
     return new google.maps.LatLng(point);
   }
 
+  static findPolygonCentroid(polygon) {
+    if (polygon) {
+      return turf.centroid(turf.polygon(PolygonEditor.JSONToGeoJSONCoords(polygon.points)));
+    }
+  }
+
   static createEditablePolygon(props, polygon, map, color, zIndex) {
     const {google} = props;
 
