@@ -2,11 +2,24 @@ const OUTLINE_COLOR = "#575656";
 const INTERIOR_COLOR = "#D3D3D3";
 const FILL_COLOR = "#014421";
 
+/**
+ * Drawing geometric shapes (ex. polygons) using a painter,
+ * which draws on a canvas in a PDF.
+ */
 export class ReportGeometry {
   constructor() {
-
   }
 
+  /**
+   * Draws a single polygon using the painter, which is already connected to a canvas on which
+   * to draw.
+   * @param {*} painter The painting tool used to draw
+   * @param {*} coordinates The coordinates of the polygon, where the first and last
+   *  coordinate must be equal
+   * @param {*} startingPoint the offset from the edge of the canvas to start drawing from
+   * @param {*} height the max desired height of the polygon. Used to scale the polygon.
+   * @param {*} width the max desired width of the polygon. Used to scale the polygon.
+   */
   drawPolygon(painter, coordinates, startingPoint, height, width) {
     let points = this.transformPolygon(coordinates, startingPoint, height, width);
     if (points.length == 0) {
@@ -20,6 +33,22 @@ export class ReportGeometry {
     painter.stroke();
   }
 
+  /**
+   * Draws a set of polygons using the painter, which is already connected to a canvas on which
+   * to draw.
+   * @param {*} painter The painting tool used to draw
+   * @param {*} boundingCoordinates The coordinates of the line which bounds all other polygons.
+   * For the polygons to draw correctly, all polygons in polygonList must be contained within this
+   * set of bounding coordinates. First and last coordinate must be equal. 
+   * @param {*} polygonList A list of polygons within the bounding polygon. For each polygon, the first
+   * and last coordinates must be equal.
+   * @param {*} startingPoint The offset from the edge of the canvas to start drawing from.
+   * @param {*} height The max desired height of the bounding line. Used to scale the polygon.
+   * @param {*} width The max desired width of the bounding line. Used to scale the polygon.
+   * @param {*} polygonNumToFill [Optional] The index in polygonList of a polygon which should be filled in
+   * instead of drawn as an outline. Used to highlight a single polygon. If not included, all polygons will
+   * be filled.
+   */
   drawPolygons(painter, boundingCoordinates, polygonList, startingPoint, height, width, polygonNumToFill) {
     let transformedPolygons = this.transformPolygonAll(boundingCoordinates, polygonList, startingPoint, height, width);
 
@@ -43,6 +72,17 @@ export class ReportGeometry {
     }
   }
 
+  /**
+   * Transforms an input polygon from a set of lat/lng coordinates to
+   * a polygon which can be drawn on a page. This requires offsetting
+   * the polygon and scaling it up.
+   * @param {*} coordinates The input coordinates in lat/lng format
+   * @param {*} startingPoint The desired starting point on the canvas, used to offset the polygon
+   * @param {*} height The max desired height of the polygon, used to scale
+   * @param {*} width The max desired width of the polygon, used to scale
+   * @returns A polygon with the same proportions as the input polygon, but offset to start at
+   * startingPoint and scaled to exactly fit within a rectangle of the specified height and width.
+   */
   transformPolygon(coordinates, startingPoint, height, width) {
     let points = this.jsonToPagePoints(coordinates);
 
@@ -56,6 +96,21 @@ export class ReportGeometry {
     return points;
   }
 
+  /**
+   * Transforms a set of polygons, based on the bounding coordinates of all polygons
+   * @param {*} boundingCoordinates The coordinates of the line which bounds all other polygons.
+   * For the polygons to draw correctly, all polygons in polygonList must be contained within this
+   * set of bounding coordinates. First and last coordinate must be equal. In lat/lng format.
+   * @param {*} polygonList A list of polygons within the bounding polygon. For each polygon, the first
+   * and last coordinates must be equal, and all coordinates must be in lat/lng format.
+   * @param {*} startingPoint The desired starting point on the canvas, used to offset the bounding line.
+   * @param {*} height The max desired height of the bounding line, used to scale
+   * @param {*} width The max desired width of the bounding line, used to scale
+   * @returns The bounding line and the list of polygons, each scaled to have the same proportions as the
+   * corresponding input. The bounding polygon begins at startingPoint on the canvas and is bounded by 
+   * a rectangle with the specified height and width. Each polygon in the list is scaled and offset linearly
+   * with the bounding line to approximately recreate how the original polygons would look on a map.
+   */
   transformPolygonAll(boundingCoordinates, polygonList, startingPoint, height, width) {
     let transformedPolygons = [];
     let boundingPoints = this.jsonToPagePoints(boundingCoordinates);
@@ -96,6 +151,12 @@ export class ReportGeometry {
     return transformedPolygons;
   }
 
+  /**
+   * Converts JSON (lat/lng) points to canvas (x/y) points.
+   * @param {*} points The input points, in lat/lng format
+   * @returns The same points, where ecah lng is now labelled
+   * "x" and each lat is now labelled "y".
+   */
   jsonToPagePoints(points) {
     let newPoints = [];
 
@@ -109,6 +170,13 @@ export class ReportGeometry {
     return newPoints;
   }
 
+  /**
+   * Flip a set of points, mirrored along the topPoint
+   * @param {*} points A set of points in x/y format
+   * @param {*} topPoint The point used as reference for flipping
+   * @returns The line from topPoint's y coordinate to each point's
+   * y coordinate is the same magnitude and opposite direction.
+   */
   flipPointsUpsideDown(points, topPoint) {
     //Convert so vertical top < bottom
     for (var i in points) {
@@ -117,6 +185,14 @@ export class ReportGeometry {
     return points;
   }
 
+  /**
+   * Scale points acoording to a scale factor. Scaled in relation
+   * to the coordinate at index 0 of the list.
+   * @param {*} points The points to scale, in x/y format
+   * @param {*} scale The scale factor
+   * @returns A set of points scaled proportionally, so that the distance between
+   * each point and the point at index 0 is now scale times larger than before.
+   */
   scalePoints(points, scale) {
     let newPoints = [];
 
@@ -129,6 +205,13 @@ export class ReportGeometry {
     return newPoints;
   }
 
+  /**
+   * Offset a set of points by the offset.
+   * @param {*} points A set of points in x/y format
+   * @param {*} offset An offset amount in x/y format
+   * @returns A set of points where each point has had the
+   * offset added to it
+   */
   offsetPoints(points, offset) {
     let newPoints = [];
 
@@ -141,6 +224,12 @@ export class ReportGeometry {
     return newPoints;
   }
 
+  /**
+   * Find the highest point on the page that this set of
+   * points contains.
+   * @param {*} points A set of points in x/y format
+   * @returns The highest point in the set
+   */
   getTopPoint(points) {
     let top = points[0];
 
@@ -152,6 +241,12 @@ export class ReportGeometry {
     return top;
   }
 
+  /**
+   * Finds the lowest point on the page that this set of 
+   * points contains.
+   * @param {*} points A set of points in x/y format
+   * @returns The lowest point in the set
+   */
   getBottomPoint(points) {
     let bottom = points[0];
 
@@ -163,6 +258,12 @@ export class ReportGeometry {
     return bottom;
   }
 
+  /**
+   * Finds the leftmost point on the page that this set of
+   * points contains
+   * @param {*} points A set of points in x/y format
+   * @returns The leftmost point in the set
+   */
   getLeftmostPoint(points) {
     let leftmost = points[0];
 
@@ -174,6 +275,12 @@ export class ReportGeometry {
     return leftmost;
   }
 
+  /**
+   * Finds the rightmost point on the page that this set of
+   * points contains
+   * @param {*} points A set of points in x/y format
+   * @returns The rightmost point in the set
+   */
   getRightmostPoint(points) {
     let rightmost = points[0];
 
@@ -185,6 +292,16 @@ export class ReportGeometry {
     return rightmost;
   }
 
+  /**
+   * Given a desired starting location for the top left corner of a polygon,
+   * find the desired coordinates of the first point in the set.
+   * This is necessary because the first point may not be the top or leftmost
+   * point.
+   * @param {*} points A set of points in x/y format
+   * @param {*} absoluteStart The desired starting location
+   * @returns The amount by which points need to be offset so that the polygon
+   * is bounded by a rectangle with absoluteStart as its top left point.
+   */
   getActualStartingPoint(points, absoluteStart) {
     let leftmostPoint = this.getLeftmostPoint(points);
     let topPoint = this.getTopPoint(points);
@@ -196,6 +313,16 @@ export class ReportGeometry {
     return actualStart;
   }
 
+  /**
+   * Get the required scale factor to make a set of polygons bounded
+   * exactly by the height and width. The scale factor will be the minimum
+   * of the factors required to achieve the desired height and the desired width,
+   * to ensure that the polygon fits in both.
+   * @param {*} points A set of points in x/y format
+   * @param {*} height The max desired height of the polygon
+   * @param {*} width The max desired width of the polygon
+   * @returns A scale factor
+   */
   getScale(points, height, width) {
     let actualHeight = this.getBottomPoint(points).y - this.getTopPoint(points).y;
     let actualWidth = this.getRightmostPoint(points).x - this.getLeftmostPoint(points).x;

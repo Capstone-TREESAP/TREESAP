@@ -7,13 +7,20 @@ import ReactDOM from 'react-dom';
 import * as turf from '@turf/turf';
 import  {getCarbonSequesteredAnnually, getAvoidedRunoffAnnually } from '../constants';
 
+//The margins of each page in the report
 const TOP_MARGIN = 50;
 const BOTTOM_MARGIN = 50;
 const LEFT_MARGIN = 50;
 const RIGHT_MARGIN = 50;
 
+//The maximum number of polygons within the intersection that can be included in a report.
+//If the number of polygons is greater than this number, a breakdown section will not 
+// be included in the report.
 const POLYGON_LIMIT = 150;
 
+/**
+ * A PDF report containing information about a bounding line and the tree cover within it.
+ */
 export class IntersectionReport {
   constructor(props, boundingLine, intersectingPolygons, carbonRate, runoffRate, layerName) {
     this.props = props;
@@ -25,6 +32,10 @@ export class IntersectionReport {
     this.styles = this.createStyleSheet();
   }
 
+  /**
+   * Displays a button to generate a report in the info window.
+   * @returns A button that can be clicked to generate a report.
+   */
   displayReportButton() {
     return (
       <button
@@ -40,6 +51,10 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a report with information about a bounding line and the tree cover within it.
+   * @returns A button which can be clicked to view the generated report in a new tab.
+   */
   createReport() {
     const report = (
       <Document>
@@ -79,6 +94,9 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a title for the report
+   */
   createTitleSection() {
     let date = new Date();
     return (
@@ -89,12 +107,20 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a line containing the name of the bounding line, if it exists
+   */
   createNameLine() {
     if (this.boundingLine.name != undefined) {
       return this.createStatRow("Name", this.boundingLine.name);
     }
   }
 
+  /**
+   * Creates a row on the report containing a stat
+   * @param {*} statText A description of the stat
+   * @param {*} statValue The value of the stat
+   */
   createStatRow(statText, statValue) {
     return (
       <View style={this.styles.summaryRow}>
@@ -108,6 +134,11 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a stat row that does not take the entire width of the page
+   * @param {*} statText A description of the stat
+   * @param {*} statValue The value of the stat
+   */
   createStatSubRow(statText, statValue) {
     return (
       <View style={this.styles.subBreakdownRow}>
@@ -121,6 +152,9 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates the section summarizing the area.
+   */
   createSummarySection() {
     let boundingArea = PolygonEditor.calculatePolygonArea([this.boundingLine.coordinates]);
     let treeArea = PolygonEditor.getTotalArea(this.intersectingPolygons);
@@ -145,7 +179,7 @@ export class IntersectionReport {
           {this.createStatRow("Total carbon sequestered", totalCarbon + " tonnes/year")}
           {this.createStatRow("Total avoided stormwater runoff", totalRunoff + " litres/year")}
           {this.createStatRow("Number of tree clusters within bounds", numPolygons)}
-          {this.createStatRow("Center point of area", "(" + centroid.geometry.coordinates[0] + ", " + centroid.geometry.coordinates[1] + ")")}
+          {this.createStatRow("Center point of area", "(lng: " + centroid.geometry.coordinates[0] + ", lat: " + centroid.geometry.coordinates[1] + ")")}
         </View>
         <View style={this.styles.canvasContainer}>
           <Canvas
@@ -167,11 +201,14 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a section with details about the bounding line
+   */
   createLineDetailsSection() {
     let coordinateList = "";
     for (var i in this.boundingLine.coordinates) {
       let point = this.boundingLine.coordinates[i];
-      coordinateList += "(" + point.lat + ", " + point.lng + ")\n";
+      coordinateList += "(lng: " + point.lng + ", lat: " + point.lat + ")\n";
     }
 
     return (
@@ -182,6 +219,10 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a section with a breakdown of each tree cover polygon within the bounds
+   * if the total number is less than or equal to the POLYGON_LIMIT
+   */
   createBreakdownSection() {
     const withinPolygonLimit = (this.intersectingPolygons.length <= POLYGON_LIMIT);
     let subsections = [];
@@ -207,6 +248,12 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates one subsection of the breakdown section.
+   * @param {*} polygon The polygon to describe
+   * @param {*} num The index of the polygon within the list of all polygons,
+   * used by the polygon drawing tool to highlight that polygon
+   */
   createSinglePolygonSection(polygon, num) {
     let area = polygon.area;
     let carbon = getCarbonSequesteredAnnually(area, this.carbonRate);
@@ -241,6 +288,9 @@ export class IntersectionReport {
     );
   }
 
+  /**
+   * Creates a list of the styles used in the report
+   */
   createStyleSheet() {
     return (StyleSheet.create({
       title: {

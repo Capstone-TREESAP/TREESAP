@@ -5,6 +5,10 @@ export class DrawingView {
     this.drawingManager = this.createDrawingManager();
   }
 
+  /**
+   * Creates a new drawing manager connected to the map
+   * @returns A new google drawing manager.
+   */
   createDrawingManager() {
     const {google} = this.props;
     const drawingManager = new google.maps.drawing.DrawingManager ({
@@ -22,18 +26,27 @@ export class DrawingView {
     return drawingManager;
   }
 
+  /**
+   * Switch from the drawing tool to the select tool.
+   */
   resetDrawingMode() {
     this.drawingManager.setOptions({
       drawingMode: null
     });
   }
 
+  /**
+   * Allow users to draw.
+   */
   openDrawingManager(){
     this.drawingManager.setOptions({
       drawingControl: true
     });
   }
 
+  /**
+   * Stop users from drawing.
+   */
   closeDrawingManager() {
     this.resetDrawingMode();
     this.drawingManager.setMap(null);

@@ -33,7 +33,7 @@ export class SettingsList {
         continue;
       }
 
-      let coords = PolygonEditor.backwardsGeoJSONToJSONCoords(feature.geometry.coordinates[0]);
+      let coords = PolygonEditor.geoJSONToJSONLine(feature.geometry.coordinates[0]);
       items.set(feature.properties.NAME,
         {
           "polygon": coords,

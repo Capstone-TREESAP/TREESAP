@@ -3,6 +3,9 @@ import './landing-screen.css';
 import logo from './landing-screen-icon.png';
 import { CSSTransitionGroup } from 'react-transition-group';
 
+/**
+ * LandingScreenView - the view of the app when it is first opened.
+ */
 export default class LandingScreenView extends React.Component {
   constructor(props) {
     super(props);

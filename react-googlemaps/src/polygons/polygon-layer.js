@@ -2,6 +2,9 @@ import { PolygonEditor } from './polygon-editor';
 
 const CUSTOM_KEY = "C";
 
+/**
+ * Represents a layer of polygons on the basemap
+ */
 export class PolygonLayer {
   constructor(polygonList, props, type) {
     this.props = props;
@@ -11,10 +14,20 @@ export class PolygonLayer {
     this.polygons = this.parsePolygons(polygonList, type);
   }
 
+  /**
+   * Mark this polygon as selected
+   * @param {*} polygon A polygon contained in the polygon layer
+   */
   selectPolygon(polygon) {
     this.polygon = polygon;
   }
 
+  /**
+   * Parse a feature collection of GeoJSON polygons into JSON polygons
+   * @param {*} polygons A GeoJSON feature collection containing only Polygons and MultiPOlygons
+   * @param {*} type What these polygons represent. Can be "tree" or "building"
+   * @returns A set of JSON polygons, each with its area and a unique key
+   */
   parsePolygons(polygons, type) {
     let collectedPolygons = [];
     for (let i = 0; i < polygons.features.length; i++) {
@@ -32,7 +45,7 @@ export class PolygonLayer {
       for (let j = 0; j < coordinateList.length; j++) {
         let coordinates = coordinateList[j];
 
-        let points = PolygonEditor.inputToJSONCoords(coordinates);
+        let points = PolygonEditor.geoJSONToJSONCoords(coordinates);
         let area = PolygonEditor.calculatePolygonArea(points);        
 
         let key = null;
@@ -73,18 +86,28 @@ export class PolygonLayer {
     return collectedPolygons;
   }
 
+  /**
+   * Make a polygon from this layer editable
+   * @param {*} polygon The polygon to make editable. Must be a polygon in this layer.
+   * @param {*} map A reference to the basemap, on top of which the editable polygon will
+   * be displayed.
+   */
   makePolygonEditable = (polygon, map) => {
     let index = this.polygons.findIndex(element => element === polygon);
     this.polygons.splice(index, 1);
     this.editablePolygon = PolygonEditor.createEditablePolygon(this.props, polygon, map, "#014421", 0);
   }
 
+  /**
+   * Make whatever polygon is currently editable, uneditable. Does nothing if no polygons are
+   * currently editable.
+   * @returns 
+   */
   makeCurrentPolygonUneditable = () => {
     if (this.editablePolygon == null) {
-      return;
     }
 
-    let newPoints = [PolygonEditor.googleToJSONCoords(PolygonEditor.getPolygonEdits(this.editablePolygon))];
+    let newPoints = [PolygonEditor.googleToJSONLine(PolygonEditor.getPolygonEdits(this.editablePolygon))];
     let newArea = PolygonEditor.calculatePolygonArea(newPoints);
     PolygonEditor.removeEditablePolygon(this.editablePolygon);
 
@@ -94,12 +117,20 @@ export class PolygonLayer {
     this.editablePolygon = null;
   }
 
+  /**
+   * Delete a polygon from this layer.
+   * @param {*} polygon A JSON polygon. Must be a polygon in this layer.
+   */
   deletePolygon = (polygon) => {
     let index = this.polygons.findIndex(element => element === polygon);
     this.polygons.splice(index, 1);
     this.polygon = null;
   }
 
+  /**
+   * Add a polygon to this layer.
+   * @param {*} polygon The new polygon to add. Must be a google maps Polygon or Rectangle.
+   */
   addPolygon = (polygon) => {
     const {google} = this.props;
     var points;
@@ -110,7 +141,7 @@ export class PolygonLayer {
       points = PolygonEditor.getPointsFromRectangle(this.props, polygon);
     }
 
-    points = [PolygonEditor.googleToJSONCoords(points)]
+    points = [PolygonEditor.googleToJSONLine(points)]
     let area = PolygonEditor.calculatePolygonArea(points);
 
     this.polygons.push(
@@ -124,6 +155,13 @@ export class PolygonLayer {
     polygon.overlay.setMap(null);
   }
 
+  /**
+   * Check if this layer contains a polygon. Avoid running unless necessary,
+   * because some layers have many polygons to iterate through and this is
+   * not an optimized operation.
+   * @param {*} polygon The polygon to check for
+   * @returns A boolean indicating whether the polygon exists in this layer
+   */
   containsPolygon(polygon) {
     for (var i = 0; i < this.polygons.length; i++) {
       if (polygon === this.polygons[i]) {

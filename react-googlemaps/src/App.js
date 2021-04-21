@@ -196,7 +196,7 @@ export class MapContainer extends Component {
   }
 
   onAddAreaOfInterest = (name, coordinates) => {
-    let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, name);
+    let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, true, name);
     this.state.intersections.push(intersection);
     this.setState({
       clickedLocation: null,
@@ -398,7 +398,7 @@ export class MapContainer extends Component {
         intersectionLayer: null,
       });
     } else {
-      let intersection = new PolygonIntersection(this.props, polygon, this._map.map);
+      let intersection = new PolygonIntersection(this.props, polygon, this._map.map, false);
       this.state.intersections.push(intersection);
       this.setState({
         clickedLocation: intersection.getBoundingLine().coordinates[0],
@@ -466,12 +466,11 @@ export class MapContainer extends Component {
     let polygonLayerName = this.state.database.polyKeys[index];
     let report = new IntersectionReport(this.props, intersection.getBoundingLine(), this.state.intersectionLayer, this.state.carbonRate, this.state.runoffRate, polygonLayerName);
 
-    //TODO this is hacky but works for now
-    if (intersection.name == undefined) {
+    //Don't offer a delete button if it's predefined. It can be removed using the checklist
+    if (intersection.predefined) {
       buttons = (
         <div>
           <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
-          <button className="info-window-button" type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
           {report.displayReportButton()}
         </div>
       );
@@ -479,6 +478,7 @@ export class MapContainer extends Component {
       buttons = (
         <div>
           <button className="info-window-button" type="button" onClick={()=> {this.makeIntersectionEditable(intersection); this.onClose();}}>Edit</button>
+          <button className="info-window-button" type="button" onClick={()=> {this.deleteIntersection(intersection); this.onClose();}}>Delete</button>
           {report.displayReportButton()}
         </div>
       );

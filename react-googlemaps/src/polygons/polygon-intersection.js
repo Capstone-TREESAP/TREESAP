@@ -4,25 +4,28 @@ import { PolygonEditor } from './polygon-editor';
 const INTERSECTION_KEY = "I";
 const TEMP_KEY = "T";
 
+/**
+ * Stores information about intersections, aka areas of interest
+ */
 export class PolygonIntersection {
-  constructor(props, polygon, map, name) {
+  constructor(props, polygon, map, predefined, name) {
     this.props = props;
     const {google} = props;
     this.name = name;
+    this.predefined = predefined;
 
-    //TODO this is hacky but works for now
     let boundingPoints;
-    if (name == undefined) {
-      var bounds;
+    if (predefined) {
+      boundingPoints = PolygonEditor.JSONToGeoJSONCoords([polygon]);
+    } else {
+      let bounds;
       if (polygon.type == google.maps.drawing.OverlayType.POLYGON) {
         bounds = PolygonEditor.getPointsFromPolygon(polygon);
       } else if (polygon.type == google.maps.drawing.OverlayType.RECTANGLE) {
         bounds = PolygonEditor.getPointsFromRectangle(props, polygon);
       }
       polygon.overlay.setMap(null);
-      boundingPoints = PolygonEditor.googleToGeoJSONCoords(bounds);
-    } else {
-      boundingPoints = PolygonEditor.JSONToGeoJSONCoords([polygon]);
+      boundingPoints = PolygonEditor.googleToGeoJSONLine(bounds);
     }
 
     this.boundingPolygon = turf.polygon(boundingPoints);
@@ -30,6 +33,10 @@ export class PolygonIntersection {
     this.map = map;
   }
 
+  /**
+   * Get the bounding line of the intersection in JSON format
+   * @returns A line with a name, key, and coordinates
+   */
   getBoundingLine() {
     let boundingLine = turf.polygonToLine(this.boundingPolygon);
     let coordinates = boundingLine.geometry.coordinates;
@@ -40,6 +47,16 @@ export class PolygonIntersection {
     };
   }
 
+  /**
+   * Given a list of polygons, find all of the polygons that intersect with
+   * this bounding polygon.
+   * @param {*} polygonList A list of polygons in JSON format
+   * @returns A list of intersecting polygons. This contains:
+   * 1. Any polygons in the list that are fully bounded by the bounding polygon, aka are fully
+   * contained within it
+   * 2. The parts of any polygons that partially intersect with the bounding polygon, aka
+   * the pieces of those polygons that are within bounds
+   */
   findIntersectingPolygons(polygonList) {
     let intersectingPolygons = [];
 
@@ -64,6 +81,13 @@ export class PolygonIntersection {
     return intersectingPolygons;
   }
 
+  /**
+   * Convert a polygon output by the turf intersection function
+   * into a JSON polygon
+   * @param {*} turfCoordinates The points in the polygon created by turf
+   * @returns A JSON polygon containing the points, along with its area and
+   * a unique key
+   */
   turfToJSONPolygon(turfCoordinates) {
     let turfPolygon = turf.polygon(turfCoordinates)
     let area = turf.area(turfPolygon);
@@ -75,6 +99,9 @@ export class PolygonIntersection {
     };
   }
 
+  /**
+   * Make the intersection bounds editable
+   */
   makeEditable = () => {
     let polygon = {
       "points": PolygonEditor.geoJSONToJSONCoords(this.boundingPolygon.geometry.coordinates)
@@ -82,6 +109,9 @@ export class PolygonIntersection {
     this.editableBounds = PolygonEditor.createEditablePolygon(this.props, polygon, this.map, "#CC2828", 1);
   }
 
+  /**
+   * Make the intersection bounds uneditable and save any edits that were made.
+   */
   makeUneditable = () => {
     if (this.editableBounds == null) {
       return;
@@ -89,7 +119,7 @@ export class PolygonIntersection {
 
     let newPoints = PolygonEditor.getPolygonEdits(this.editableBounds);
     PolygonEditor.removeEditablePolygon(this.editableBounds);
-    let geojsonPoints = PolygonEditor.googleToGeoJSONCoords(newPoints);
+    let geojsonPoints = PolygonEditor.googleToGeoJSONLine(newPoints);
 
     this.boundingPolygon = turf.polygon(geojsonPoints);
     this.editableBounds = null;
