@@ -26,8 +26,11 @@ export class SettingsList {
     for (let i in featureCollection.features) {
       let feature = featureCollection.features[i];
 
-      //TODO something is wrong with this polygon so just ignore it lol
-      if (feature.properties.NAME === "Stadium Road") {
+      //Right now, we only support Polygons for areas of interest. This could be easily
+      // extended to also support Polylines, and potentially extended to support
+      // Multipolygons.
+      if (feature.geometry.type != "Polygon") {
+        console.log(feature)
         continue;
       }
 
