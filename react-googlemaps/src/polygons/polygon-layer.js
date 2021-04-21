@@ -111,12 +111,13 @@ export class PolygonLayer {
       points = PolygonEditor.getPointsFromRectangle(this.props, polygon);
     }
 
-    let area = PolygonEditor.calculatePolygonArea(PolygonEditor.googleToJSONCoords(points));
+    points = [PolygonEditor.googleToJSONCoords(points)]
+    let area = PolygonEditor.calculatePolygonArea(points);
 
     this.polygons.push(
       {
         "key": PolygonEditor.createKey(CUSTOM_KEY, customKeyNum++),
-        "points": PolygonEditor.googleToJSONCoords(points),
+        "points": points,
         "area": area,
         "editable": false,
       }
