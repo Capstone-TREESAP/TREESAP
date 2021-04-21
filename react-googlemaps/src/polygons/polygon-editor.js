@@ -1,4 +1,5 @@
 import * as turf from '@turf/turf';
+import { v4 as uuidv4 } from 'uuid';
 
 export class PolygonEditor {
 
@@ -33,8 +34,8 @@ export class PolygonEditor {
     return area.toFixed(2);
   }
 
-  static createKey(prefix, num) {
-    return prefix + "-" + num;
+  static createKey(prefix) {
+    return prefix + "-" + uuidv4();
   }
 
   static pointToLatLng(props, point) {

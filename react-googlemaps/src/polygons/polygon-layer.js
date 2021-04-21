@@ -1,7 +1,6 @@
 import { PolygonEditor } from './polygon-editor';
 
 const CUSTOM_KEY = "C";
-var customKeyNum = 0;
 
 export class PolygonLayer {
   constructor(polygonList, props, type) {
@@ -42,7 +41,7 @@ export class PolygonLayer {
             key = polygon.properties.id;
 
           } else {
-            key = customKeyNum++;
+            key = PolygonEditor.createKey(CUSTOM_KEY);
           }
         } else {
           key = polygon.properties["BLDG_UID"];
@@ -116,7 +115,7 @@ export class PolygonLayer {
 
     this.polygons.push(
       {
-        "key": PolygonEditor.createKey(CUSTOM_KEY, customKeyNum++),
+        "key": PolygonEditor.createKey(CUSTOM_KEY),
         "points": points,
         "area": area,
         "editable": false,

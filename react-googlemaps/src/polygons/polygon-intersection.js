@@ -3,8 +3,6 @@ import { PolygonEditor } from './polygon-editor';
 
 const INTERSECTION_KEY = "I";
 const TEMP_KEY = "T";
-var intersectionKeyNum = 0;
-var tempKeyNum = 0;
 
 export class PolygonIntersection {
   constructor(props, polygon, map, name) {
@@ -37,14 +35,13 @@ export class PolygonIntersection {
     let coordinates = boundingLine.geometry.coordinates;
     return {
       "name": this.name,
-      "key": PolygonEditor.createKey(INTERSECTION_KEY, intersectionKeyNum++),
+      "key": PolygonEditor.createKey(INTERSECTION_KEY),
       "coordinates": PolygonEditor.geoJSONToJSONLine(coordinates),
     };
   }
 
   findIntersectingPolygons(polygonList) {
     let intersectingPolygons = [];
-    tempKeyNum = 0;
 
     for (var i = 0; i < polygonList.length; i++) {
       let polygon = turf.polygon(PolygonEditor.JSONToGeoJSONCoords(polygonList[i].points));
@@ -73,7 +70,7 @@ export class PolygonIntersection {
     return {
       "type": "Polygon",
       "points": PolygonEditor.geoJSONToJSONCoords(turfCoordinates),
-      "key": PolygonEditor.createKey(TEMP_KEY, tempKeyNum++),
+      "key": PolygonEditor.createKey(TEMP_KEY),
       "area": area,
     };
   }
