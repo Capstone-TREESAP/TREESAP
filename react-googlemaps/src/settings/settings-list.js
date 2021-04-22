@@ -1,5 +1,8 @@
 import { PolygonEditor } from "../polygons/polygon-editor";
 
+/**
+ * Represents a list of items as a checklist in the settings menu.
+ */
 export class SettingsList {
   constructor(geojsonList, parseFunction, functionOnCheck, functionOnUncheck) {
     this.items = parseFunction(geojsonList);
@@ -9,10 +12,19 @@ export class SettingsList {
     this.parseFunction = parseFunction;
   }
 
+  /**
+   * Get the list as a set of checkboxes
+   * @returns A set of checkboxes to render
+   */
   getCheckboxes() {
     return this.renderListAsCheckboxes();
   }
 
+  /**
+   * Load the list for the first time by parsing the 
+   * input list and marking the list as loaded. Only runs once.
+   * @param {*} geojsonList A list of features to parse into a list.
+   */
   loadSettingsList(geojsonList) {
     if (!this.loaded) {
       this.items = this.parseFunction(geojsonList);
@@ -20,6 +32,11 @@ export class SettingsList {
     }
   }
 
+  /**
+   * Parsing function for predefined areas of interest
+   * @param {*} featureCollection A feature collection containing areas of interest
+   * @returns The list of items parsed from the feature collection
+   */
   static parseAreasOfInterest(featureCollection) {
     let items = new Map();
 
@@ -44,6 +61,13 @@ export class SettingsList {
     return items;
   }
 
+  /**
+   * Parsing function for the list of polygon layers
+   * @param {*} polygonList A list of polygon layers
+   * @param {*} displayList A list of which layers are currently displayed
+   * @returns The list of items parsed from the input list, with any items also
+   * on the displayList marked as checked.
+   */
   static parsePolygonList(polygonList, displayList) {
     let items = new Map();
 
@@ -57,6 +81,10 @@ export class SettingsList {
     return items;
   }
 
+  /**
+   * Convert the list of items into a checklist.
+   * @returns A list of checkboxes.
+   */
   renderListAsCheckboxes() {
     let checkboxes = [];
 
@@ -66,6 +94,10 @@ export class SettingsList {
     return checkboxes;
   }
 
+  /**
+   * For each item on the list that has been checked/unchecked,
+   * run functionOnCheck/functionOnUncheck
+   */
   updateCheckedWithAction() {
     for (let key of this.items.keys()) {
       let checkbox = document.getElementById(key);
@@ -79,6 +111,10 @@ export class SettingsList {
     }
   }
 
+  /**
+   * Run a function based on all boxes currently checked
+   * @param {*} functionOnChecked The function to run
+   */
   updateCheckedCumulativeAction(functionOnChecked) {
     let allChecked = [];
 
@@ -95,6 +131,12 @@ export class SettingsList {
     functionOnChecked(allChecked);
   }
 
+  /**
+   * Create a checkbox that can be rendered
+   * @param {*} key The description to go beside the checkbox
+   * @param {*} isChecked Whether the box is currently checked
+   * @returns A checkbox with description key that is checked/unchecked based on isChecked
+   */
   static createCheckbox(key, isChecked) {
     return (
       <div>

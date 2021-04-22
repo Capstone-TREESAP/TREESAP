@@ -4,6 +4,9 @@ import LandingScreenView from '../landing_screen/landing-screen.js';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { SettingsList } from './settings-list';
 
+/**
+ * The settings menu and landing screen.
+ */
 export default class SettingsView extends React.Component {
   render() {
     return (
@@ -46,6 +49,10 @@ function MenuButton(props) {
   );
 }
 
+/**
+ * When the carbon value is changed, sets it to the new value and resets the input box.
+ * @param {*} props A list of properties containing the function called to update the carbon value
+ */
 function SaveCarbonValue(props) {
   var setting = document.getElementById('setting1');
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
@@ -55,6 +62,10 @@ function SaveCarbonValue(props) {
   }
 }
 
+/**
+ * When the runoff value is changed, sets it to the new value and resets the input box.
+ * @param {*} props A list of properties containing the function called to update the runoff value
+ */
 function SaveStormwaterValue(props) {
   var setting = document.getElementById('setting2');
   if(!isNaN(setting.value) && setting.value !== "" && setting.value.match(/^ *$/) == null) {
@@ -64,10 +75,18 @@ function SaveStormwaterValue(props) {
   }
 }
 
+/**
+ * Displays the settings menu
+ * @param {*} props A list of properties containing all information needed for the settings menu
+ * that has been passed in from the main App.js code
+ * @returns A settings menu to render
+ */
 function SettingsDisplay(props) {
   return (
     <div key={'settings'} className="settings">
+      {/* HEADER */}
       <h1 className="settings-text" id="settings-header">UBC Tree Cover Analysis Platform Settings</h1>
+      {/* TREE COVER LAYER CHECKLIST */}
       <div className="container1">
         <div className="display">
           <h3 className="settings-text">Select a Data Source:</h3>
@@ -84,6 +103,7 @@ function SettingsDisplay(props) {
             Save and Update Map
           </button>
         </div>
+        {/* INTERSECTION/EDIT MODE TOGGLE */}
         <div className="display-no-columns">
           <h3 className="settings-text">Select Mode:</h3>
           {props.displayList.length > 1 && <p className="settings-text">(Edit mode not supported when viewing multiple years of data)</p>}
@@ -111,6 +131,7 @@ function SettingsDisplay(props) {
           }
         </div>
       </div>
+      {/* AREAS OF INTEREST CHECKLIST */}
       <div className="container2">
         <div>
           <h3 className="settings-text">Select Key Areas of Interest:</h3>
@@ -128,6 +149,7 @@ function SettingsDisplay(props) {
           </button>
         </div>
       </div>
+      {/* UPDATE CARBON VALUE AND RUNOFF VALUE */}
       <div className="container3">
         <div className="dropdown">
           <label
@@ -176,6 +198,7 @@ function SettingsDisplay(props) {
             Save
           </button>
         </div>
+        {/* TOGGLE SHADING MODE */}
         <div className="display-bottom">
           <h3 className="settings-text">Access Shading and Cooling Tool:</h3>
           <button
@@ -190,6 +213,7 @@ function SettingsDisplay(props) {
           </button>
         </div>
       </div>
+      {/* CLOSE MENU BUTTON */}
       <div className="for-button">
         <button
           className="menu-button"
@@ -203,6 +227,9 @@ function SettingsDisplay(props) {
   );
 }
 
+/**
+ * Represents the settings menu
+ */
 class Settings extends React.Component {
   constructor(props) {
     super(props);
@@ -225,6 +252,9 @@ class Settings extends React.Component {
     );
   }
 
+  /**
+   * Open the menu
+   */
   openMenu() {
     let menu = SettingsDisplay({
       onClick: () => this.closeMenu(),
@@ -249,6 +279,9 @@ class Settings extends React.Component {
     });
   }
 
+  /**
+   * Close the menu
+   */
   closeMenu() {
     this.setState({
       visible: true,
@@ -256,6 +289,11 @@ class Settings extends React.Component {
     });
   }
 
+  /**
+   * Funtion called when toggling between intersection and edit mode
+   * @param {*} editMode Whether we're entering edit mode (if false, we're entering
+   * intersection mode)
+   */
   onToggleMode(editMode) {
     this.setState({
       editMode: editMode
@@ -263,6 +301,9 @@ class Settings extends React.Component {
     this.props.onToggleMode(editMode);
   }
 
+  /**
+   * Function called when toggling between shading mode and normal operation
+   */
   onToggleShadingMode() {
     this.setState({
       shadingMode: !this.state.shadingMode
@@ -270,6 +311,10 @@ class Settings extends React.Component {
     this.props.onToggleShadingMode();
   }
 
+  /**
+   * Function called when the carbon or runoff value is changed.
+   * Refreshes the menu so the new value appears.
+   */
   onRefresh() {
     this.openMenu();
   }

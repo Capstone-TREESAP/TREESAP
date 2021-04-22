@@ -1,6 +1,7 @@
 import { PolygonLayer } from './polygons/polygon-layer.js'
 import { findIntersections } from './validation.js'
 
+//The labels in the database for different sections
 const AREAS_OF_INTEREST = "Areas of Interest"
 const BUILDINGS = "UBC Buildings"
 const CALC_CONSTANTS = "Calculation Constants"
@@ -9,8 +10,12 @@ const UBC_BOUNDARY = "UBC Boundary"
 const CARBON_RATE = "Carbon Sequestration Rate"
 const TREE_RUNOFF_RATE = "Tree Run-off Effects Rate"
 
+//The URL from which to fetch data
 const URL_PREFIX = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/database_redesign/"
 
+/**
+ * Stores data loaded from the external database
+ */
 export class Database {
     constructor() {
         this.carbonRate = 0;
@@ -23,6 +28,11 @@ export class Database {
         this.polygons = {};
     }
 
+    /**
+     * Parse a JSON database into the relevant sections
+     * @param {*} database The database to parse
+     * @param {*} props Properties to pass to each polygon layer
+     */
     parseDatabase = async (database, props) => {
         await this.parseConstants(database)
         this.areas_int_polygons = await this.parseFiles(database[AREAS_OF_INTEREST].files)
@@ -47,6 +57,11 @@ export class Database {
         // this.runValidation(all_polygon_sets)
     }
 
+    /**
+     * Parse the tree cover datasets in the database
+     * @param {*} database 
+     * @returns a set of all tree cover datasets
+     */
     parsePolygonSets = async (database) => {
         this.polyKeys = Object.keys(database[ALL_POLYGONS])
         let all_polygon_sets = {};
@@ -59,6 +74,12 @@ export class Database {
         return all_polygon_sets
     }
 
+    /**
+     * Parse and aggregate values from a set of files in the database
+     * @param {*} files The files to parse, added to the URL prefix to create the entire 
+     * path to each file
+     * @returns The features contained within these files in the database
+     */
     parseFiles = async (files) => {
         let values = []
         for (let file in files) {
@@ -71,24 +92,41 @@ export class Database {
         return {"features": values}
     }
 
+    /**
+     * Parse the JSON files containing ecosystem services parameters. The database is assumed to hold
+     * only a single file for all parameters, so only the first file is parsed.
+     * @param {*} database 
+     */
     parseConstants = async (database) => {
-        let fileURL = URL_PREFIX + database[CALC_CONSTANTS].files[0] //TODO
+        let fileURL = URL_PREFIX + database[CALC_CONSTANTS].files[0]
 
         let constants = await this.parseFile(fileURL)
         this.carbonRate = parseFloat(constants[CARBON_RATE]);
         this.runoffRate = parseFloat(constants[TREE_RUNOFF_RATE]);
     }
 
+    /**
+     * Fetch a single file
+     * @param {*} fileURL the file to fetch, added to the URL prefix to get the entire file path
+     * @returns the values contained in that file as JSON
+     */
     parseFile = async (fileURL) => {
         let values = await this.parseFileAsync(fileURL)
         return values
     }
 
+    /**
+     * Helper to fetch a single file
+     */
     parseFileAsync = async (fileURL) => {
         return fetch(fileURL)
         .then(res => res.json())
     }
 
+    /**
+     * Run the cross validation code. Part of the testing implementation
+     * @param {*} all_polygon_sets 
+     */
     runValidation(all_polygon_sets) {
         var lidar_polygons = all_polygon_sets["LiDAR 2018"];
         lidar_polygons.name = "LiDAR 2018";
@@ -101,6 +139,9 @@ export class Database {
         this.polygons = lidar_ortho;
     }
 
+    /**
+     * Given the name of a tree cover dataset, find its index in the database list
+     */
     getPolygonSetIndex(key) {
         return this.polyKeys.indexOf(key)
     }

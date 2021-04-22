@@ -101,10 +101,10 @@ export class PolygonLayer {
   /**
    * Make whatever polygon is currently editable, uneditable. Does nothing if no polygons are
    * currently editable.
-   * @returns 
    */
   makeCurrentPolygonUneditable = () => {
     if (this.editablePolygon == null) {
+      return
     }
 
     let newPoints = [PolygonEditor.googleToJSONLine(PolygonEditor.getPolygonEdits(this.editablePolygon))];

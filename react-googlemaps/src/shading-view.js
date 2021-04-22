@@ -5,24 +5,30 @@ import * as turf from '@turf/turf';
 
 const SHADING_LINE_COLOR = "#342C38";
 
+/**
+ * Implements the shading and cooling mode functionality.
+ */
 export class ShadingView {
   constructor() {
-    this.state = {
-      buildingLayer: null,
-      clickedBuilding: null,
-      clickedShadingPolygon: null,
-      clickedBuildingLocation: null,
-      clickedShadingPolygonLocation: null,
-    };  
+    this.buildingLayer = null;
+    this.clickedBuilding = null;
+    this.clickedShadingPolygon = null;
+    this.clickedBuildingLocation = null;
+    this.clickedShadingPolygonLocation = null;
   }
 
+  /**
+   * Get the distance and direction from the currently selected building to the currently selected
+   * tree cluster.
+   * @returns A JSON object containing the distance and direction
+   */
   getShadelineLengthAndOrientation = () => {
     var buildingPoint = {
       "type": "Feature",
       "properties": {},
       "geometry": {
         "type": "Point",
-        "coordinates": [this.state.clickedBuildingLocation.lng(), this.state.clickedBuildingLocation.lat()]
+        "coordinates": [this.clickedBuildingLocation.lng(), this.clickedBuildingLocation.lat()]
       }
     }
 
@@ -31,7 +37,7 @@ export class ShadingView {
       "properties": {},
       "geometry": {
         "type": "Point",
-        "coordinates": [this.state.clickedShadingPolygonLocation.lng(), this.state.clickedShadingPolygonLocation.lat()]
+        "coordinates": [this.clickedShadingPolygonLocation.lng(), this.clickedShadingPolygonLocation.lat()]
       }
     };
     // get distance between points, in meters
@@ -71,88 +77,134 @@ export class ShadingView {
     }
   }
 
+  /**
+   * Called when a building is clicked on
+   * @param {*} building The building that was clicked
+   * @param {*} coords The specific coordinates that were clicked
+   */
   handleBuildingClick(building, coords) {
-    this.state.clickedBuilding = building;
-    this.state.clickedBuildingLocation = coords;
-    this.state.clickedShadingPolygon = null;
-    this.state.clickedShadingPolygonLocation = null;
+    this.clickedBuilding = building;
+    this.clickedBuildingLocation = coords;
+    this.clickedShadingPolygon = null;
+    this.clickedShadingPolygonLocation = null;
   }
 
+  /**
+   * Called when a tree cover polygon is clicked on AFTER a building
+   * @param {*} polygon The polygon that was clicked
+   * @param {*} coords The specific coordinates that were clicked
+   */
   handleShadingPolygonClick(polygon, coords) {
-    // this handler should only be called if a building was previously clicked
-    // by setting the selected polygon/clicked location, this enables us to draw a polyline and offer relative positioning info
-    this.state.clickedShadingPolygon = polygon;
-    this.state.clickedShadingPolygonLocation = coords;
+    this.clickedShadingPolygon = polygon;
+    this.clickedShadingPolygonLocation = coords;
   }
 
+  /**
+   * Create a polygon layer for the buildings to display on the map.
+   * Called when shading mode is entered
+   * @param {*} props A list of properties to pass to the polygon layer
+   * @param {*} buildings The list of buildings to parse
+   */
   loadBuildingLayer = (props, buildings) => {
-    this.state.buildingLayer = new PolygonLayer(buildings, props, "building");
-    this.state.clickedBuilding = null;
-    this.state.clickedBuildingLocation = null;
-    this.state.clickedShadingPolygon = null;
-    this.state.clickedShadingPolygonLocation = null;
+    this.buildingLayer = new PolygonLayer(buildings, props, "building");
+    this.clickedBuilding = null;
+    this.clickedBuildingLocation = null;
+    this.clickedShadingPolygon = null;
+    this.clickedShadingPolygonLocation = null;
   }
 
+  /**
+   * Remove the building layer from the map. Called when shading mode
+   * is exited.
+   */
   removeBuildingLayer = () => {
-    this.state.buildingLayer = null;
-    this.state.clickedBuilding = null;
-    this.state.clickedBuildingLocation = null;
-    this.state.clickedShadingPolygon = null;
-    this.state.clickedShadingPolygonLocation = null;
+    this.buildingLayer = null;
+    this.clickedBuilding = null;
+    this.clickedBuildingLocation = null;
+    this.clickedShadingPolygon = null;
+    this.clickedShadingPolygonLocation = null;
   }
 
+  /**
+   * Gets the list of building polygons, if the layer currently exists
+   * @returns A list of polygons in JSON format representing buildings
+   */
   getBuildings() {
-    if (this.state.buildingLayer != null) {
-      return this.state.buildingLayer.polygons
+    if (this.buildingLayer != null) {
+      return this.buildingLayer.polygons
     }
   }
 
+  /**
+   * Resets all clicked objects to null
+   */
   clickOffBuilding() {
-    this.state.clickedBuilding = null;
-    this.state.clickedBuildingLocation = null;
-    this.state.clickedShadingPolygon = null;
-    this.state.clickedShadingPolygonLocation = null;
+    this.clickedBuilding = null;
+    this.clickedBuildingLocation = null;
+    this.clickedShadingPolygon = null;
+    this.clickedShadingPolygonLocation = null;
   }
 
+  /**
+   * Checks whether there is currently a building selected
+   */
   buildingHasBeenClicked() {
-    return (this.state.clickedBuilding != null && this.state.clickedBuildingLocation != null)
+    return (this.clickedBuilding != null && this.clickedBuildingLocation != null)
   }
 
+  /**
+   * Checks whether there is currently a tree cover polygon selected
+   */
   shadingPolygonHasBeenClicked() {
-    return (this.state.clickedShadingPolygon != null && this.state.clickedShadingPolygonLocation != null)
+    return (this.clickedShadingPolygon != null && this.clickedShadingPolygonLocation != null)
   }
 
+  /**
+   * Create the info window text for a tree cover polygon clicked after a building.
+   * This contains information about the building clicked, and the distance
+   * and direction of tree cover from the building
+   * @returns Text to render in an info window
+   */
   createShadingPolygonInfoWindow() {
     let relative_position = this.getShadelineLengthAndOrientation();
     let distance = relative_position.distance.toFixed(2);
     let direction = relative_position.direction;
-    let centroid = PolygonEditor.findPolygonCentroid(this.state.clickedShadingPolygon);
+    let centroid = PolygonEditor.findPolygonCentroid(this.clickedShadingPolygon);
     let lat = centroid ? centroid.geometry.coordinates[1].toFixed(8) : null;
     let lng = centroid ? centroid.geometry.coordinates[0].toFixed(8) : null;
 
     return (
       <div className="info-window">
-        <h3>{this.state.clickedBuilding.name}</h3>
-        <p>{this.state.clickedBuilding.address}</p>
+        <h3>{this.clickedBuilding.name}</h3>
+        <p>{this.clickedBuilding.address}</p>
         <h3>Tree Cluster Centre Coordinates: </h3><p>Latitude: {lat}</p><p>Longitude: {lng}</p>
-        <h3>This tree cluster is {distance} metres {direction} of {this.state.clickedBuilding.name}</h3>
+        <h3>This tree cluster is {distance} metres {direction} of {this.clickedBuilding.name}</h3>
       </div>
     );
   }
 
+  /**
+   * Creates the info window text for a building.
+   * @returns Text to render in an info window
+   */
   createBuildingInfoWindow() {
-    let occupied_date = this.state.clickedBuilding.occupied_date;
+    let occupied_date = this.clickedBuilding.occupied_date;
     return (
       <div className="info-window">
-        <h3>{this.state.clickedBuilding.name}</h3>
-        <p>{this.state.clickedBuilding.address}</p>
-        <h3>Neighbourhood: </h3><p>{this.state.clickedBuilding.neighbourhood ? this.state.clickedBuilding.neighbourhood : "Unknown"}</p>
+        <h3>{this.clickedBuilding.name}</h3>
+        <p>{this.clickedBuilding.address}</p>
+        <h3>Neighbourhood: </h3><p>{this.clickedBuilding.neighbourhood ? this.clickedBuilding.neighbourhood : "Unknown"}</p>
         <h3>Date Occupied (yyyy/mm/dd): </h3><p>{occupied_date ? occupied_date.substring(0, 4) + "/" + occupied_date.substring(4, 6) + "/" + occupied_date.substring(6, 8) : "Unknown"}</p>
-        <h3>Maximum Floors: </h3><p>{this.state.clickedBuilding.max_floors ? this.state.clickedBuilding.max_floors : "Unknown"}</p>
+        <h3>Maximum Floors: </h3><p>{this.clickedBuilding.max_floors ? this.clickedBuilding.max_floors : "Unknown"}</p>
       </div>
     );
   }
 
+  /**
+   * Displays the line between the clicked building and clicked tree cover polygon,
+   * if they both exist
+   * @returns A polyline to render
+   */
   displayBuildingToPolygonLine() {
     return (
       <Polyline
@@ -166,9 +218,13 @@ export class ShadingView {
     );
   }
 
+  /**
+   * Creates a line based on the coordinates of the clicked building and tree cover polygon
+   * @returns The points of a line between the two clicked objects
+   */
   getPathBetweenBuildingAndPolygon() {
     if (this.buildingHasBeenClicked() && this.shadingPolygonHasBeenClicked()) {
-      return [this.state.clickedBuildingLocation, this.state.clickedShadingPolygonLocation];
+      return [this.clickedBuildingLocation, this.clickedShadingPolygonLocation];
     } else {
       return [];
     }

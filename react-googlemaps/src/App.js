@@ -12,11 +12,21 @@ import { getCarbonSequesteredAnnually, getAvoidedRunoffAnnually } from './consta
 import { ShadingView } from './shading-view';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB8xmip8bwBsT_iqZ2-jBei-gwKNm5kR3A';
+
+//Where to fetch data from for the database
 const data_url = "https://raw.githubusercontent.com/Capstone-TREESAP/TREESAP-Database/main/db.json";
+
+//Default map information
 const default_centre_coords = {
   lat: 49.26307,
   lng: -123.246655
 };
+const mapStyles = {
+  width: '100%',
+  height: '100%',
+};
+
+//Colors used to display polygon layers
 const colours = [
   "#1C55FF", //dark blue
   "#5CBF9B", //lime green
@@ -28,16 +38,15 @@ const colours = [
   "#6530E3", //purple
   "#014421", //dark green
 ];
-const mapStyles = {
-  width: '100%',
-  height: '100%',
-};
 
+/**
+ * Container for the base map and everything displayed on it.
+ */
 export class MapContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLoaded: false,
+      isLoaded: false, //Whether the database has been fetched and loaded
       showInfoWindow: false, //Whether a polygon info window is shown
       clickedLocation: null,
       clickedPolygon: null,
@@ -89,6 +98,12 @@ export class MapContainer extends Component {
     );
   }
 
+  /**
+   * Called when a marker is clicked on. Used to open the info window for that marker
+   * @param {*} props unused
+   * @param {*} m the marker that was clicked on
+   * @param {*} e unused
+   */
   onMarkerClick = (props, m, e) => {
     var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
     this.state.database.polygonLayers[index].makeCurrentPolygonUneditable();
@@ -99,6 +114,11 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when an info window is closed. Closes the info window
+   * and removes the marker
+   * @param {*} props unused
+   */
   onClose = props => {
     if (this.state.showInfoWindow) {
       this.setState({
@@ -108,6 +128,12 @@ export class MapContainer extends Component {
     }
   }
 
+  /**
+   * Called when a tree cover polygon is clicked on
+   * @param {*} polygon The tree cover polygon that has been clicked
+   * @param {*} map Unused
+   * @param {*} coords The specific coordinates that have been clicked
+   */
   handleClick = (polygon, map, coords) => {
     if(this.state.displayList.length != 1) {
       alert("Individual tree cluster information is not available while displaying multiple layers.")
@@ -134,6 +160,12 @@ export class MapContainer extends Component {
     this.state.database.polygonLayers[index].selectPolygon(this.state.clickedPolygon);
   }
 
+  /**
+   * Called when a building is clicked on
+   * @param {*} building The building that has been clicked on
+   * @param {*} map unused
+   * @param {*} coords The specific coordinates that have been clicked on
+   */
   handleBuildingClick = (building, map, coords) => {
     this.state.shadingView.handleBuildingClick(building, coords)
     this.setState({
@@ -141,9 +173,14 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when a tree cover polygon has been clicked AFTER a building has been clicked
+   * in shading mode
+   * @param {*} polygon The polygon that has been clicked on
+   * @param {*} map unused
+   * @param {*} coords The specific coordinates that have been clicked on
+   */
   handleShadingPolygonClick = (polygon, map, coords) => {
-    // this handler should only be called if a building was previously clicked
-    // by setting the selected polygon/clicked location, this enables us to draw a polyline and offer relative positioning info
     this.state.shadingView.handleShadingPolygonClick(polygon, coords)
     this.setState({
       clickedLocation: coords,
@@ -153,6 +190,12 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when an intersection (area of interest) has been clicked on
+   * @param {*} intersection The intersection that has been clicked
+   * @param {*} map unused
+   * @param {*} coords The specific coordinates that have been clicked
+   */
   handleIntersectionClick = (intersection, map, coords) => {
     if (this.state.displayList.length != 1) {
       alert("Information about intersections and areas of interest is not available while displaying multiple layers.");
@@ -170,6 +213,9 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when a generic point with nothing on it has been clicked.
+   */
   onGenericClick = () => {
     if (this.state.displayList.length != 1) {
       return;
@@ -188,6 +234,11 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when the mode is toggled from edit mode to intersection mode, or vice versa
+   * @param {*} editMode whether edit mode is being entered (if false, intersection mode
+   * is being entered)
+   */
   onToggleMode = (editMode) => {
     this.state.drawingView.resetDrawingMode();
     this.setState({
@@ -195,6 +246,11 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when a predefined area of interest is selected in the settings menu
+   * @param {*} name The name of the area of interest
+   * @param {*} coordinates The coordinates describing the area of interest
+   */
   onAddAreaOfInterest = (name, coordinates) => {
     let intersection = new PolygonIntersection(this.props, coordinates, this._map.map, true, name);
     this.state.intersections.push(intersection);
@@ -206,6 +262,10 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when a predefined area of interest is unselected in the settings menu
+   * @param {*} name The name of the area of interest
+   */
   onRemoveAreaOfInterest = (name) => {
     if (this.state.clickedIntersection != null) {
       this.state.clickedIntersection.makeUneditable();
@@ -220,6 +280,10 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Called when the polygon layers to be displayed are changed in the settings menu
+   * @param {*} displayList The list of layers that are currently being displayed
+   */
   setPolygonLayer = (displayList) => {
     let wasOneLayer = (this.state.displayList.length == 1);
     //making sure any info windows that are currently displayed are removed before changing which layers are displayed
@@ -249,20 +313,29 @@ export class MapContainer extends Component {
     }
   }
 
+  /**
+   * Called when the carbon value is updated in the settings menu
+   * @param {*} carbonValue the new value for carbon sequestration
+   */
   onUpdateCarbon = (carbonValue) => {
-    // this.state.database.carbonRate = carbonValue;
     this.setState({
       carbonRate: carbonValue,
     })
   }
 
+  /**
+   * Called when the runoff value is updated in the settings menu
+   * @param {*} runoffValue The new value for avoided runoff
+   */
   onUpdateRunoff = (runoffValue) => {
-    // this.state.database.runoffRate = runoffValue;
     this.setState({
       runoffRate: runoffValue,
     })
   }
 
+  /**
+   * Called when the user choses to enter or exit shading mode in the settings menu
+   */
   onToggleShadingMode = () => {
     // if not in shading mode, then toggle was clicked to enter shading mode, so render buildings
     if (!this.state.shadingMode) {
@@ -279,6 +352,9 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Opens the drawing manager and creates a listener for polygons being drawn.
+   */
   loadDrawingManager = () => {
     this.state.drawingView = new DrawingView(this.props, this._map.map);
     const scope = this;
@@ -287,6 +363,10 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Display any intersections that are in the current list of intersections
+   * @returns The intersections to render
+   */
   displayIntersections = () => {
     let features = [];
     for (var i = 0; i < this.state.intersections.length; i++) {
@@ -300,6 +380,10 @@ export class MapContainer extends Component {
     return features;
   }
 
+  /**
+   * Displays any polygon layers that are in the current display list
+   * @returns The polygons to render
+   */
   displayPolygonLayer = () => {
     var layerList = [];
     if (this.state.isLoaded) {
@@ -311,6 +395,10 @@ export class MapContainer extends Component {
     }
   }
 
+  /**
+   * Displays the building layer if it currently exists
+   * @returns The building polygons to render
+   */
   displayBuildingLayer = () => {
     let buildings = this.state.shadingView.getBuildings();
     if (buildings) {
@@ -318,7 +406,13 @@ export class MapContainer extends Component {
     }
   }
 
-  //Display a set of polygons
+  /**
+   * Displays a set of polygons 
+   * @param {*} polygons A list of polygons in JSON format
+   * @param {*} color The color the polygons should be
+   * @param {*} zIndex The zIndex the polygons should have
+   * @returns A set of polygons to render
+   */
   displayPolygons = (polygons, color, zIndex) => {
     return polygons.map(polygon =>
       <Polygon
@@ -353,7 +447,13 @@ export class MapContainer extends Component {
     );
   }
 
-  //Display a line
+  /**
+   * Displays a polyline
+   * @param {*} intersection The polyline to display in JSON format
+   * @param {*} color The color the polyline should be
+   * @param {*} zIndex The zIndex the polyline should have
+   * @returns A polyline to render
+   */
   displayIntersection = (intersection, color, zIndex) => {
     let polyline = intersection.getBoundingLine();
     return (
@@ -371,6 +471,10 @@ export class MapContainer extends Component {
     );
   }
 
+  /**
+   * Delete a polygon from the current layer
+   * @param {*} polygon The polygon to delete. Must be contained in the layer
+   */
   deletePolygon(polygon) {
     if (this.state.displayList.length != 1) {
       return;
@@ -383,12 +487,20 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Adds a polygon either to the current tree cover layer or to the list of intersections,
+   * depending on the current mode. Called automatically when a polygon is drawn using
+   * the drawing manager.
+   * @param {*} polygon The new polygon
+   */
   addPolygon(polygon) {
     if (this.state.displayList.length != 1) {
       this.state.drawingView.resetDrawingMode();
       return;
     }
+
     var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
+
     if (this.state.editMode) {
       this.state.database.polygonLayers[index].addPolygon(polygon);
       this.setState({
@@ -397,6 +509,7 @@ export class MapContainer extends Component {
         clickedIntersection: null,
         intersectionLayer: null,
       });
+
     } else {
       let intersection = new PolygonIntersection(this.props, polygon, this._map.map, false);
       this.state.intersections.push(intersection);
@@ -410,6 +523,11 @@ export class MapContainer extends Component {
     this.state.drawingView.resetDrawingMode();
   }
 
+  /**
+   * Delete an intersection from the list of intersections. Only called for custom
+   * drawn intersections, not predefined ones.
+   * @param {*} intersection The intersection to delete. Must be in the list of intersections
+   */
   deleteIntersection(intersection) {
     intersection.makeUneditable();
     let index = this.state.intersections.findIndex(element => element === intersection);
@@ -422,6 +540,11 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Make an intersection editable
+   * @param {*} intersection The intersection to make editable. Must be in the list
+   * of intersections
+   */
   makeIntersectionEditable(intersection) {
     let index = this.state.intersections.findIndex(element => element === intersection);
     this.state.intersections.splice(index, 1);
@@ -434,6 +557,11 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Make an intersection uneditable and save any changes to it
+   * @param {*} intersection The intersection to make uneditable. If a null
+   * intersection is provided, takes no action
+   */
   makeIntersectionUneditable(intersection) {
     if (intersection != null) {
       intersection.makeUneditable();
@@ -445,6 +573,10 @@ export class MapContainer extends Component {
     });
   }
 
+  /**
+   * Open the info window for a tree cover polygon or building polygon and render the buttons for it
+   * @param {*} polygon The polygon that has been clicked on
+   */
   onInfoWindowOpen(polygon) {
     var buttons;
     var index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
@@ -460,6 +592,10 @@ export class MapContainer extends Component {
     }
   }
 
+  /**
+   * Open the info window for an intersection (area of interest) and render the buttons for it
+   * @param {*} intersection The intersection that has been clicked on
+   */
   onIntersectionInfoWindowOpen(intersection) {
     var buttons;
     let index = this.state.database.getPolygonSetIndex(this.state.displayList[0]);
@@ -486,6 +622,10 @@ export class MapContainer extends Component {
     ReactDOM.render(React.Children.only(buttons), document.getElementById("iwc"));
   }
 
+  /**
+   * Render the information contained within the info window
+   * @returns the information to render
+   */
   renderInfoWindow() {
     if (this.state.clickedIntersection != null && this.state.intersectionLayer != null) {
       let totalArea = PolygonEditor.getTotalArea(this.state.intersectionLayer);
@@ -520,6 +660,10 @@ export class MapContainer extends Component {
     }
   }
 
+  /**
+   * Render the legend of tree cover polygon layers that are currently displayed
+   * @returns the legend to render
+   */
   renderLegend = () => {
     var legend = [];
     for (var polyLayer in this.state.displayList) {
@@ -528,6 +672,9 @@ export class MapContainer extends Component {
     return legend;
   }
 
+  /**
+   * Render one item on the legend
+   */
   renderListItem = (item) => {
     return (
       <div className="row">
@@ -539,6 +686,9 @@ export class MapContainer extends Component {
     );
   }
 
+  /**
+   * Render the entire map and everything on it
+   */
   render() {
     return (
       <Map
