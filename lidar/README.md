@@ -81,3 +81,7 @@ See documentation at `CEDAR/lidar/docs/html/index.html`
 
 [Unlabelled LiDAR segmentation](./resource/SEGMENTATION.md)
 
+[Sample whole campus output](../lidar/tests/sample_map.geojson)
+
+
+
