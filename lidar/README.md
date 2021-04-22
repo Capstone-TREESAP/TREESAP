@@ -78,5 +78,6 @@ See documentation at `CEDAR/lidar/docs/html/index.html`
 # Additional documents
 
 [Detailed instructions on GUI](./resource/GUI.md)
+
 [Unlabelled LiDAR segmentation](./resource/SEGMENTATION.md)
 

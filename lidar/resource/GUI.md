@@ -33,4 +33,6 @@ Explaining details about the parameters by hovering the mouse over the content o
 
 ![](./gif/tooltips.gif)
 
+**I am very sorry I couldn't make dark theme work in docker, that's why it's the default theme :anguished:**
+
 
