@@ -1,7 +1,0 @@
-# Pipeline GUI 
-
-## Requirements
-
-## Features
-
-

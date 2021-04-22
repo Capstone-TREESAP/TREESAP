@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1031</width>
-    <height>694</height>
+    <width>984</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -58,8 +58,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
-                <width>466</width>
+                <y>-95</y>
+                <width>422</width>
                 <height>348</height>
                </rect>
               </property>
@@ -139,18 +139,18 @@
                <item row="9" column="0">
                 <widget class="QLineEdit" name="lineEdit_alpha"/>
                </item>
-               <item row="10" column="0">
-                <widget class="QLineEdit" name="lineEdit_min_area"/>
-               </item>
-               <item row="11" column="0">
-                <widget class="QLineEdit" name="lineEdit_max_area"/>
-               </item>
                <item row="9" column="1">
                 <widget class="QPushButton" name="pushButton_shape_update">
                  <property name="text">
                   <string>Update</string>
                  </property>
                 </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLineEdit" name="lineEdit_min_area"/>
+               </item>
+               <item row="11" column="0">
+                <widget class="QLineEdit" name="lineEdit_max_area"/>
                </item>
               </layout>
              </widget>
@@ -189,13 +189,13 @@
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_5">
+             <widget class="QWidget" name="scrollAreaWidget_lidar_unlabelled">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>466</width>
-                <height>236</height>
+                <width>422</width>
+                <height>348</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -212,67 +212,90 @@
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                </property>
                <item row="0" column="0">
-                <widget class="QLineEdit" name="lineEdit_3"/>
+                <widget class="QLineEdit" name="lineEdit_data_dir_path_unlabel"/>
                </item>
                <item row="1" column="0">
-                <widget class="QLineEdit" name="lineEdit_4"/>
+                <widget class="QLineEdit" name="lineEdit_test_dir_path_unlabel"/>
                </item>
                <item row="1" column="1">
-                <widget class="QPushButton" name="pushButton_4">
+                <widget class="QPushButton" name="pushButton_data_dir_path_update_unlabel">
                  <property name="text">
                   <string>Path Update</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLineEdit" name="lineEdit_8"/>
+                <widget class="QLineEdit" name="lineEdit_output_dir_path_unlabel"/>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_5">
+                <widget class="QLabel" name="label_2">
                  <property name="text">
-                  <string>DBSCAN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string/>
+                  <string>Pre processing</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLineEdit" name="lineEdit_5"/>
+                <widget class="QLineEdit" name="lineEdit_uniform_k_points"/>
                </item>
                <item row="4" column="1">
-                <widget class="QPushButton" name="pushButton_5">
+                <widget class="QPushButton" name="pushButton_pre_process_update_unlabel">
                  <property name="text">
                   <string>Update</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLineEdit" name="lineEdit_6"/>
+                <widget class="QLineEdit" name="lineEdit_ground_diff"/>
                </item>
                <item row="6" column="0">
+                <widget class="QLineEdit" name="lineEdit_distance_threshold"/>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>DBSCAN</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLineEdit" name="lineEdit_eps_unlabel"/>
+               </item>
+               <item row="8" column="1">
+                <widget class="QPushButton" name="pushButton_dbscan_update_unlabel">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0">
+                <widget class="QLineEdit" name="lineEdit_min_sample_unlabel"/>
+               </item>
+               <item row="10" column="0">
                 <widget class="QLabel" name="label_6">
                  <property name="text">
                   <string>RGBVI</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="10" column="1">
                 <widget class="QLabel" name="label_9">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
-                <widget class="QLineEdit" name="lineEdit_7"/>
+               <item row="11" column="0">
+                <widget class="QLineEdit" name="lineEdit_rgbvi"/>
                </item>
-               <item row="7" column="1">
-                <widget class="QPushButton" name="pushButton_7">
+               <item row="11" column="1">
+                <widget class="QPushButton" name="pushButton_rgbvi_update">
                  <property name="text">
                   <string>Update</string>
                  </property>
@@ -320,7 +343,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>466</width>
+                <width>422</width>
                 <height>242</height>
                </rect>
               </property>
@@ -462,6 +485,9 @@
           <item row="3" column="0" colspan="2">
            <widget class="QTextBrowser" name="label_test_output"/>
           </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QTextBrowser" name="label_process_output"/>
+          </item>
           <item row="5" column="0" colspan="2">
            <widget class="QProgressBar" name="progressBar">
             <property name="sizePolicy">
@@ -484,9 +510,6 @@
              <bool>true</bool>
             </property>
            </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QTextBrowser" name="label_process_output"/>
           </item>
          </layout>
         </widget>
