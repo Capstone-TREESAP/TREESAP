@@ -54,11 +54,11 @@
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents">
+             <widget class="QWidget" name="scrollAreaWidget_lidar_labelled">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-30</y>
+                <y>0</y>
                 <width>466</width>
                 <height>348</height>
                </rect>
@@ -194,8 +194,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>480</width>
-                <height>318</height>
+                <width>466</width>
+                <height>236</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -320,8 +320,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>480</width>
-                <height>318</height>
+                <width>466</width>
+                <height>242</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout">
@@ -426,7 +426,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="label_time">
             <property name="text">
              <string/>
             </property>
@@ -440,7 +440,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="label_count">
             <property name="text">
              <string/>
             </property>
@@ -460,7 +460,7 @@
            </spacer>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QTextBrowser" name="textBrowser"/>
+           <widget class="QTextBrowser" name="label_test_output"/>
           </item>
           <item row="5" column="0" colspan="2">
            <widget class="QProgressBar" name="progressBar">
@@ -476,7 +476,7 @@
            </widget>
           </item>
           <item row="6" column="0" colspan="2">
-           <widget class="QDialogButtonBox" name="buttonBox">
+           <widget class="QDialogButtonBox" name="process_control">
             <property name="standardButtons">
              <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Reset|QDialogButtonBox::SaveAll</set>
             </property>
@@ -484,6 +484,9 @@
              <bool>true</bool>
             </property>
            </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QTextBrowser" name="label_process_output"/>
           </item>
          </layout>
         </widget>

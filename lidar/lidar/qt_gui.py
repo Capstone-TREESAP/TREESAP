@@ -25,16 +25,14 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi("../pipeline.ui", self)
         self.pipeline = None
-        self.browser = QWebEngineView()
+        # self.browser = QWebEngineView()
         self.timer = QElapsedTimer()
 
         self.shortcut_close = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.shortcut_close.activated.connect(self.__close_app)
 
-        print(self.tabWidget.currentIndex())
-        
         self.__on_click_reset()
-        
+
         self.pushButton_down_size_update.clicked.connect(
             self.__on_click_dbscan_update
         )
@@ -168,22 +166,22 @@ class MainWindow(QMainWindow):
     def __tooltip_setup(self):
         """[summary]
         """
-        self.pushButton_eps_update.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_eps").setToolTip(
             configure.get("ToolTips", "eps")
         )
-        self.pushButton_down_size_update.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_down_size").setToolTip(
             configure.get("ToolTips", "down_size")
         )
-        self.pushButton_min_sample_update.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_min_sample").setToolTip(
             configure.get("ToolTips", "min_sample")
         )
-        self.pushButton_shape_update.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_alpha").setToolTip(
             configure.get("ToolTips", "alphashape_reduction")
         )
-        self.pushButton_min_area_update.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_min_area").setToolTip(
             configure.get("ToolTips", "min_polygon_area")
         )
-        self.pushButton_max_area.setToolTip(
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_max_area").setToolTip(
             configure.get("ToolTips", "max_polygon_area")
         )
         self.label_test_output.setToolTip(
@@ -196,30 +194,36 @@ class MainWindow(QMainWindow):
     def __configure_dbscan_update(self):
         """[summary]
         """
-        down_size_value = int(self.LineEdit_downsize.text())
+        down_size_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_down_size").text())
         if down_size_value is not configure.getint("Parameters", "down_size"):
             configure.set("Parameters", "down_size", "%s" % down_size_value)
 
-        eps_value = int(self.lineEdit_eps.text())
+        eps_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_eps").text())
         if eps_value is not configure.getint("Parameters", "eps"):
             configure.set("Parameters", "eps", "%s" % eps_value)
 
-        min_sample_value = int(self.lineEdit_min_sample.text())
+        min_sample_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_min_sample").text())
         if min_sample_value is not configure.getint("Parameters", "min_sample"):
             configure.set("Parameters", "min_sample", "%s" % min_sample_value)
 
     def __configure_alphashape_update(self):
-        min_area_value = int(self.lineEdit_min_area.text())
+        min_area_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_min_area").text())
         if min_area_value is not configure.getint("Parameters", "min_polygon_area"):
             configure.set("Parameters", "min_polygon_area",
                           "%s" % min_area_value)
 
-        reduction_value = int(self.lineEdit_alpha.text())
+        reduction_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_alpha").text())
         if reduction_value is not configure.getint("Parameters", "alphashape_reduction"):
             configure.set("Parameters", "alphashape_reduction",
                           "%s" % reduction_value)
 
-        max_area_value = int(self.lineEdit_max_area.text())
+        max_area_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
+            QLineEdit, "lineEdit_max_area").text())
         if max_area_value is not configure.getint("Parameters", "max_polygon_area"):
             configure.set("Parameters", "max_polygon_area",
                           "%s" % max_area_value)
@@ -245,29 +249,29 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def __on_click_reset(self):
-        if self.tabWidget.currentIndex() == 0:
-            tab = self.tabWidget.currentWidget().scrollArea_tab0
-            configure.read(CONFIG_PATH)
+        configure.read(CONFIG_PATH)
 
-            tab.LineEdit_down_size.setText(
-                configure.get("Parameters", "down_size"))
-            tab.lineEdit_eps.setText(configure.get("Parameters", "eps"))
-            tab.lineEdit_min_sample.setText(
-                configure.get("Parameters", "min_sample"))
+        # lidar labelled tab
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_down_size").setText(
+            configure.get("Parameters", "down_size"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_eps").setText(
+            configure.get("Parameters", "eps"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_min_sample").setText(
+            configure.get("Parameters", "min_sample"))
 
-            tab.lineEdit_test_dir_path.setText(
-                configure.get("Test", "dest_dir_path"))
-            tab.lineEdit_data_dir_path.setText(
-                configure.get("Download", "dest_dir_path"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_test_dir_path").setText(
+            configure.get("Test", "dest_dir_path"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_data_dir_path").setText(
+            configure.get("Download", "dest_dir_path"))
 
-            tab.lineEdit_min_area.setText(
-                configure.get("Parameters", "min_polygon_area"))
-            tab.lineEdit_alpha.setText(configure.get(
-                "Parameters", "alphashape_reduction"))
-            tab.lineEdit_max_area.setText(configure.get(
-                "Parameters", "max_polygon_area"))
-            
-            tab.statusBar().showMessage("Reset all parameters")
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_min_area").setText(
+            configure.get("Parameters", "min_polygon_area"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_alpha").setText(configure.get(
+            "Parameters", "alphashape_reduction"))
+        self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_max_area").setText(configure.get(
+            "Parameters", "max_polygon_area"))
+
+        self.statusBar().showMessage("Reset all parameters")
 
     @pyqtSlot()
     def __on_click_apply(self):
