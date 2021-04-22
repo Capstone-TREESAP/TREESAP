@@ -12,7 +12,6 @@ on the host machine run this command before initiate docker
 xhost +local:docker
 ```
 
-
 ```bash
 cd lidar # Go to where Dockerfile is 
 docker build --tag lidar . # build the image
@@ -23,8 +22,7 @@ docker build --tag lidar . # build the image
 ```bash
 sudo docker run --rm -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" --device /dev/dri/ --security-opt seccomp=./docker/chrome.json --privileged lidar
 ```
-
-Docker will start the pipeline GUI. 
+Docker will start the pipeline GUI.
 > the plot is a little laggy, due to the number of points loaded into the plot and some optimization problem with PyQt5.
 
 ### Start image interactively
@@ -75,6 +73,10 @@ a [map.geojson](lidar/../tests/map.geojson) will be generated at the end of proc
 cd CEDAR/lidar 
 doxygen doxygen.conf
 ```
-
 See documentation at `CEDAR/lidar/docs/html/index.html`
+
+# Additional documents
+
+[Detailed instructions on GUI](./resource/GUI.md)
+[Unlabelled LiDAR segmentation](./resource/SEGMENTATION.md)
 

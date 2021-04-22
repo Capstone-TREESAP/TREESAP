@@ -137,6 +137,7 @@ data/
 
 # discontinued project
 orthophoto/
+segmentation/
 
 *_test.ipynb
 *.pkl

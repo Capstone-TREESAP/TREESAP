@@ -150,7 +150,8 @@ class MainWindow(QMainWindow):
         ).fit(points)
         end_time = time.perf_counter()
 
-        self.plotter.plot_path = configure.get("Constants", "plot_html_file_path")
+        self.plotter.plot_path = configure.get(
+            "Constants", "plot_html_file_path")
         self.plotter.x = points_x
         self.plotter.y = points_y
         self.plotter.label = clustering.labels_
@@ -181,15 +182,37 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Done")
 
     def __process_test_unlabelled_data(self):
+        
         self.statusBar().showMessage("Processing")
+        self.timer.restart()
+        
         self.unlabelled_pipeline = SegmentationProcessor()
+
+        self.unlabelled_pipeline.uniform_down_k_point = unlabelled_configure.getint(
+            "Parameters", "uniform_down_k_point")
+        self.unlabelled_pipeline.distance_threshold = unlabelled_configure.getfloat(
+            "Parameters", "distance_threshold")
+        self.unlabelled_pipeline.ransac_n = unlabelled_configure.getint(
+            "Parameters", "ransac_n")
+        self.unlabelled_pipeline.num_iterations = unlabelled_configure.getint(
+            "Parameters", "num_iterations")
+        self.unlabelled_pipeline.ground_threshold = unlabelled_configure.getfloat(
+            "Parameters", "ground_threshold")
+        self.unlabelled_pipeline.eps = unlabelled_configure.getfloat(
+            "Parameters", "eps")
+        self.unlabelled_pipeline.min_points = unlabelled_configure.getint(
+            "Parameters", "min_points")
+        self.unlabelled_pipeline.rgbvi_threshold = unlabelled_configure.getfloat(
+            "Parameters", "rgbvi_threshold")
+        
         if self.unlabelled_parameter_update:
             self.unlabelled_parameter_update = False
             self.unlabelled_pipeline.pre_process_pc()
 
         self.unlabelled_pipeline.process_pc()
 
-        self.plotter.plot_path = unlabelled_configure.get("Constants", "plot_html_file_path")
+        self.plotter.plot_path = unlabelled_configure.get(
+            "Constants", "plot_html_file_path")
         self.plotter.x = self.unlabelled_pipeline.high_vegetation[:, 0]
         self.plotter.y = self.unlabelled_pipeline.high_vegetation[:, 1]
         self.plotter.display_2d_pcd(
@@ -203,6 +226,12 @@ class MainWindow(QMainWindow):
                         "Constants", "plot_html_file_path")
                 )
             )
+        )
+        
+        self.__test_output_update(
+            cluster_time=0,
+            number_of_clusters=np.amax(self.unlabelled_pipeline.labels.max()),
+            total_time=self.timer.elapsed(),
         )
         self.statusBar().showMessage("Done")
 
@@ -223,8 +252,7 @@ class MainWindow(QMainWindow):
         )
 
     def __tooltip_setup(self):
-        """[summary]
-        """
+        # labelled tooltips
         self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_eps").setToolTip(
             configure.get("ToolTips", "eps")
         )
@@ -243,6 +271,26 @@ class MainWindow(QMainWindow):
         self.scrollAreaWidget_lidar_labelled.findChild(QLineEdit, "lineEdit_max_area").setToolTip(
             configure.get("ToolTips", "max_polygon_area")
         )
+
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_uniform_k_points").setToolTip(
+            unlabelled_configure.get("ToolTips", "uniform_down_k_point")
+        )
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_distance_threshold").setToolTip(
+            unlabelled_configure.get("ToolTips", "distance_threshold")
+        )
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_ground_diff").setToolTip(
+            unlabelled_configure.get("ToolTips", "ground_threshold")
+        )
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_eps_unlabel").setToolTip(
+            unlabelled_configure.get("ToolTips", "eps")
+        )
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_min_sample_unlabel").setToolTip(
+            unlabelled_configure.get("ToolTips", "min_points")
+        )
+        self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_rgbvi").setToolTip(
+            unlabelled_configure.get("ToolTips", "rgbvi_threshold")
+        )
+
         self.label_test_output.setToolTip(
             configure.get("ToolTips", "test_output")
         )

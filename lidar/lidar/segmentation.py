@@ -133,7 +133,7 @@ class SegmentationProcessor:
             rgbvi_avg = rgbvi_sum / x_cluster.shape[0]
             # gli_avg = gli_sum / x_cluster.shape[0]
             # filter
-            if rgbvi_avg > 0.03:
+            if rgbvi_avg > self.rgbvi_threshold:
                 if high_vegetation is None:
                     high_vegetation = np.vstack(
                         (x_cluster, y_cluster, z_cluster)).T
