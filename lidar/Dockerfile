@@ -69,8 +69,9 @@ RUN chown -R $UID:$GID tests
 
 # copy over some sample data
 COPY --chown=$UID:$GID lidar/configs/default_config.ini src/configs/default_config.ini 
-COPY --chown=$UID:$GID tests/test_data/481E_5456N_tiny.png data/481E_5456N_tiny.png
-COPY --chown=$UID:$GID tests/test_data/sample_plot.html data/sample_plot.html
+COPY --chown=$UID:$GID tests/ubc_boundary.geojson tests/ubc_boundary.geojson
+COPY --chown=$UID:$GID tests/test_data/481E_5456N_tiny.png tests/test_data/481E_5456N_tiny.png
+COPY --chown=$UID:$GID tests/test_data/sample_plot.html tests/test_data/sample_plot.html
 
 WORKDIR $PROJECT_DIR/src
 CMD ["python", "qt_gui.py"]

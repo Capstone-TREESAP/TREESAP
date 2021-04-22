@@ -4,10 +4,15 @@ import os
 import ntpath
 import fnmatch
 import re
+import utm
 import numpy as np
 from laspy.file import File
 from config import configure
-
+import geopandas
+from shapely.strtree import STRtree
+from shapely.geometry import Polygon, Point
+from geopandas import GeoSeries
+from pathlib import Path
 
 class LiDARIndexType(IntEnum):
     UNCLASSIFIED = 1
@@ -89,12 +94,19 @@ class PreProcessor:
     def __init__(self, data_dir):
         self.data_dir = data_dir
         self.lasfile_list = None
-        self.collect_las_file_from_folder()
         self.min_east = None  # the most west tile
         self.min_north = None  # the most south tile
         self.min_filepath = None
+        
+        # check the folder structures
+        Path(configure.get("Constants", "data_folder_path")).mkdir(parents=True, exist_ok=True)
+        Path(configure.get("Constants", "tests_folder_path")).mkdir(parents=True, exist_ok=True)
+        
+        self.collect_las_file_from_folder()
+
         self.__find_the_corner_tile()
 
+    
     def collect_las_file_from_folder(self, new_path=None):
         """Collect all the las file from the input folder. It will only look
         for .las extension.
@@ -109,7 +121,7 @@ class PreProcessor:
                     file_path = os.path.join(root, file)
                     self.lasfile_list.append(LasFile(file_path))
         if configure.getboolean("Configure", "debug"):
-            print("Found total of %d las files." % (len(self.lasfile_list)))
+            print("Found total of %d LAS files." % (len(self.lasfile_list)))
         return len(self.lasfile_list)
 
     def __find_the_corner_tile(self):
@@ -128,6 +140,57 @@ class PreProcessor:
                 "The corner tile is file %s at %d %d"
                 % (self.min_filepath, self.min_east, self.min_north)
             )
+
+    def filter_out_of_campus_points(self, whole_campus_x, whole_campus_y):
+        """pre processing function to remove all the points that are not within campus. 
+
+        Args:
+            whole_campus_x (np.array): x "utm" coordinate in integer (east axis)
+            whole_campus_y (np.array): y "utm" coordinate in integer (north axis)
+
+        Returns:
+            filtered_x, filtered_y: x, y array with out of campus points removed. 
+        """
+        if configure.getboolean("Configure", "debug"):
+            print("filtering points that are not within campus...")
+
+        # open the campus boundary geojson file and read it as a polygon
+        file = open(configure.get("Constants", "boundary_geojson_file_path"))
+        df = geopandas.read_file(file)
+
+        # translate utm to geographic
+        lat = (whole_campus_x / 100.0) + self.min_east * 100
+        lon = (whole_campus_y / 100.0) + self.min_north * 100
+        raw_geo = utm.to_latlon(lat, lon, 10, "U")
+
+        # map 2d array to shapely points
+        stacked = np.vstack((raw_geo[1], raw_geo[0])).T
+        s = GeoSeries(map(Point, stacked))
+
+        # query the points for faster processing.
+        # according to https://stackoverflow.com/questions/62280398/checking-if-a-point-is-contained-in-a-polygon-multipolygon-for-many-points
+        tree = STRtree(s)
+        # we have to do a if check after query, according to the post
+        res = [o for o in tree.query(
+            df.geometry[0]) if df.geometry[0].contains(o)]
+
+        # translate from geographic to utm
+        filtered_stacked = np.zeros((len(res), 2))
+        count = 0
+        for point in res:
+            filtered_stacked[count, :] = np.asarray(point.xy).reshape(1, 2)
+            count += 1
+        raw_utm = utm.from_latlon(
+            filtered_stacked[:, 1], filtered_stacked[:, 0])
+        filtered_x = (raw_utm[0] - self.min_east * 100) * 100
+        filtered_y = (raw_utm[1] - self.min_north * 100) * 100
+        filtered_x = filtered_x.astype(int)
+        filtered_y = filtered_y.astype(int)
+
+        if configure.getboolean("Configure", "debug"):
+            print("filtering completed.")
+
+        return filtered_x, filtered_y
 
     def extract_relative_las_data(
         self, las_file, index_type=LiDARIndexType.HIGH_VEGETATION

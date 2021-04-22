@@ -18,7 +18,7 @@ class GraphGUI:
         self._label = np.array([])
         self._plot_path = configure.get("Constants", "plot_html_file_path")
         self.add_image = True
-        self.small_img = Image.open("../data/481E_5456N_tiny.png")
+        self.small_img = Image.open("../tests/test_data/481E_5456N_tiny.png")
 
     @property
     def x(self):

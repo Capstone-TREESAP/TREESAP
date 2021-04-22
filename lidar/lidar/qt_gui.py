@@ -16,9 +16,8 @@ from sklearn.cluster import DBSCAN
 from math import ceil
 
 import signal
-
+# https://stackoverflow.com/questions/5160577/ctrl-c-doesnt-work-with-pyqt
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -28,8 +27,11 @@ class MainWindow(QMainWindow):
         self.plotter = GraphGUI()
         self.timer = QElapsedTimer()
 
+        # set keyboard shortcut to stop the program. 
         self.shortcut_close = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.shortcut_close.activated.connect(self.__close_app)
+
+        self.parameter_update = False
 
         self.__on_click_reset()
 
@@ -213,34 +215,42 @@ class MainWindow(QMainWindow):
         down_size_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_down_size").text())
         if down_size_value is not configure.getint("Parameters", "down_size"):
+            self.parameter_update = True
             configure.set("Parameters", "down_size", "%s" % down_size_value)
 
         eps_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_eps").text())
         if eps_value is not configure.getint("Parameters", "eps"):
+            self.parameter_update = True
             configure.set("Parameters", "eps", "%s" % eps_value)
 
         min_sample_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_min_sample").text())
         if min_sample_value is not configure.getint("Parameters", "min_sample"):
+            self.parameter_update = True
             configure.set("Parameters", "min_sample", "%s" % min_sample_value)
 
     def __configure_alphashape_update(self):
+        """[summary]
+        """
         min_area_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_min_area").text())
         if min_area_value is not configure.getint("Parameters", "min_polygon_area"):
+            self.parameter_update = True
             configure.set("Parameters", "min_polygon_area",
                           "%s" % min_area_value)
 
         reduction_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_alpha").text())
         if reduction_value is not configure.getint("Parameters", "alphashape_reduction"):
+            self.parameter_update = True
             configure.set("Parameters", "alphashape_reduction",
                           "%s" % reduction_value)
 
         max_area_value = int(self.scrollAreaWidget_lidar_labelled.findChild(
             QLineEdit, "lineEdit_max_area").text())
         if max_area_value is not configure.getint("Parameters", "max_polygon_area"):
+            self.parameter_update = True
             configure.set("Parameters", "max_polygon_area",
                           "%s" % max_area_value)
 
@@ -291,17 +301,21 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def __on_click_apply(self):
+        """[summary]
+        """
         self.statusBar().showMessage("Started data processing ...")
 
         self.timer.restart()
 
         data_path = configure["Download"]["dest_dir_path"]
         pipeline = ProcessingPipeline(notebook=True)
+        if self.parameter_update:
+            pipeline.reload = True
+            self.parameter_update = False
         pipeline.pre_process_las_files(data_path)
-        points_x, points_y = pipeline.collect_points_from_map()
+        pipeline.collect_points_from_map()
         whole_campus_polygon_features = pipeline.extract_polygon_features(
-            points_x, points_y, callback=self.__set_progressbar_value
-        )
+            callback=self.__set_progressbar_value)
         pipeline.export_polygon_features_to_file(
             configure.get("Constants", "OUTPUT_MAP_FILE_PATH"),
             whole_campus_polygon_features,
