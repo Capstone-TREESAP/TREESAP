@@ -24,6 +24,8 @@ class ProcessingPipeline:
         self.pre_processor = None
         self.whole_campus_polygon_features = []
         self.reload = True
+        self.whole_campus_x = np.array([])
+        self.whole_campus_y = np.array([])
         if not notebook:
             parser = argparse.ArgumentParser(
                 prog="CEDAR labelled LiDAR processing pipeline",
@@ -59,6 +61,8 @@ class ProcessingPipeline:
                 if configure.getboolean("Configure", "DEBUG"):
                     print("No trees are classified on the tile")
                 las_file.valid = False
+        if configure.getboolean("Configure", "debug"):
+            print("Complete loading LAS files")
 
     def collect_points_from_map(self):
         """[summary]
@@ -66,24 +70,41 @@ class ProcessingPipeline:
         Returns:
             [type]: [description]
         """
-        all_point_x = np.array([])
-        all_point_y = np.array([])
 
         if not self.reload and os.path.exists(
             configure.get("Constants", "pkl_file_path")
         ):
+            # load the data from pkl if we choose not to reload, and the data file exists
             points = self.load_points_from_pkl()
-            all_point_x = points[:, 0].T
-            all_point_y = points[:, 1].T
+            self.whole_campus_x = points[:, 0].T
+            self.whole_campus_y = points[:, 1].T
+            if configure.getboolean("Configure", "debug"):
+                print("Loaded points from data file")
         else:
+            if configure.getboolean("Configure", "debug"):
+                print("Reloading points from LAS files")
+            all_point_x = np.array([])
+            all_point_y = np.array([])
+
+            # extract all the points from pre processed files
             for las_file in self.pre_processor.lasfile_list:
                 if las_file.valid:
                     all_point_x = np.append(all_point_x, las_file.point_x)
                     all_point_y = np.append(all_point_y, las_file.point_y)
-            self.save_points_as_pkl(np.vstack((all_point_x, all_point_y)).T)
-        return all_point_x, all_point_y
 
-    def extract_polygon_features(self, point_x, point_y, callback=None):
+            # remove points that are out of boundary
+            self.whole_campus_x, self.whole_campus_y = self.pre_processor.filter_out_of_campus_points(
+                all_point_x, all_point_y)
+            if configure.getboolean("Configure", "debug"):
+                print("Saving points into data file")
+            self.save_points_as_pkl(
+                np.vstack((self.whole_campus_x, self.whole_campus_y)).T)
+
+            if configure.getboolean("Configure", "debug"):
+                print("Reloaded points from LAS file")
+        return self.whole_campus_x, self.whole_campus_y
+
+    def extract_polygon_features(self, point_x=None, point_y=None, callback=None):
         """Extract polygons from given p oints
 
         Args:
@@ -93,7 +114,11 @@ class ProcessingPipeline:
         Returns:
             polygons (list): list of geojson polygon features
         """
-        points = np.vstack((point_x, point_y)).T
+        points = None
+        if point_x is not None and point_y is not None:
+            points = np.vstack((point_x, point_y)).T
+        else:
+            points = np.vstack((self.whole_campus_x, self.whole_campus_y)).T
 
         start_time = time.perf_counter()
 
@@ -126,7 +151,7 @@ class ProcessingPipeline:
             alpha_opt = configure.getfloat("Constants", "default_alpha_shape")
             alpha_shape = alphashape.alphashape(sample, alpha_opt)
 
-            # ignore the polygons that are too big
+            # # ignore the polygons that are too big
             if alpha_shape.area > configure.getint("Parameters", "max_polygon_area"):
                 continue
 

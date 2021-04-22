@@ -1,4 +1,7 @@
-*.html
 *.las
 *.geojson 
-!map.geojson
+*.html
+*.laz
+!sample_map.geojson
+!ubc_boundary.geojson
+!sample_plot.html

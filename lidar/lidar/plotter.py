@@ -16,9 +16,9 @@ class GraphGUI:
         self._y = np.array([])
         self._z = np.array([])
         self._label = np.array([])
-        self._plot_path = configure.get("Constants", "plot_html_file_path")
+        self.plot_path = configure.get("Constants", "plot_html_file_path")
         self.add_image = True
-        self.small_img = Image.open("../data/481E_5456N_tiny.png")
+        self.small_img = Image.open("../tests/test_data/481E_5456N_tiny.png")
 
     @property
     def x(self):
@@ -52,7 +52,7 @@ class GraphGUI:
     def label(self, label):
         self._label = label
 
-    def display_2d_pcd(self, offset, render="browser"):
+    def display_2d_pcd(self, offset, save_file=False, render="browser"):
         """[summary]
 
         Args:
@@ -94,7 +94,13 @@ class GraphGUI:
         fig.update_layout(template="plotly_white")
 
         fig.update_yaxes(scaleanchor="x", scaleratio=1)
-        fig.show()
+        if save_file:
+            from plotly.offline import plot
+
+            url = plot(fig, filename=self.plot_path, auto_open=False)
+        else:
+            pio.renderers.default = render
+            fig.show()
 
     def display_2d_labelled_pcd(self, offset, save_file=False, render="browser"):
         """[summary]
@@ -145,7 +151,7 @@ class GraphGUI:
         if save_file:
             from plotly.offline import plot
 
-            url = plot(fig, filename=self._plot_path, auto_open=False)
+            url = plot(fig, filename=self.plot_path, auto_open=False)
         else:
             pio.renderers.default = render
             fig.show()

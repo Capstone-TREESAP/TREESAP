@@ -135,6 +135,10 @@ data/
 *.code-workspace
 *.json
 
+# discontinued project
+orthophoto/
+segmentation/
+
 *_test.ipynb
 *.pkl
 *.pdf
