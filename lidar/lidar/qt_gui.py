@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi("../pipeline.ui", self)
         self.pipeline = None
-        # self.browser = QWebEngineView()
+        self.plotter = GraphGUI()
         self.timer = QElapsedTimer()
 
         self.shortcut_close = QShortcut(QKeySequence("Ctrl+Q"), self)
@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
 
         self.__on_click_reset()
 
+        # default dbscan related parameters
         self.pushButton_down_size_update.clicked.connect(
             self.__on_click_dbscan_update
         )
@@ -40,11 +41,12 @@ class MainWindow(QMainWindow):
             self.__on_click_dbscan_update
         )
 
-        # alphashape related parameters
+        # default alphashape related parameters
         self.pushButton_shape_update.clicked.connect(
             self.__on_click_alphashape_update
         )
 
+        # process controll buttons connect callbacks
         self.process_control.button(QDialogButtonBox.Reset).clicked.connect(
             self.__on_click_reset
         )
@@ -58,12 +60,22 @@ class MainWindow(QMainWindow):
             self.__close_app
         )
 
+        # set up default display information
         self.__process_output_update()
         self.__test_output_update()
         self.__tooltip_setup()
 
-        self.plotter = GraphGUI()
-        self.__check_test_data()
+        # load the default plot
+        self.webEngineView.reload()
+        self.webEngineView.setUrl(
+            QUrl(
+                "file://"
+                + os.path.abspath(
+                    configure.get("Constants", "sample_plot_html_file_path")
+                )
+            )
+        )
+
         self.statusBar().showMessage("Ready")
         self.show()
 
@@ -77,6 +89,7 @@ class MainWindow(QMainWindow):
             + configure["Constants"]["las_ext"]
         )
         if not os.path.exists(filepath):
+            self.statusBar().showMessage("Downloading testing data...")
             download.download_lidar_dataset(
                 configure["Test"]["dest_dir_path"],
                 json.loads(configure["Test"]["test_tiles"]),
@@ -95,6 +108,9 @@ class MainWindow(QMainWindow):
     def __process_test_data(self):
         """[summary]"""
         self.statusBar().showMessage("Processing...")
+        # check if the testing data is downloaded
+        self.__check_test_data()
+
         self.timer.restart()
 
         pipeline = ProcessingPipeline(notebook=True)

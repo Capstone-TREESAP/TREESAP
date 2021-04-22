@@ -1,3 +1,5 @@
 *.las
 *.geojson 
+*.html
 !map.geojson
+!sample_plot.html
