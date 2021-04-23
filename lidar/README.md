@@ -1,6 +1,6 @@
 TREESAP-lidar
 ---
-There are two options to setting up the dependencies: [Docker](build-package-in-docker) and [Conda](build-package-in-ubuntu). 
+There are two options to setting up the dependencies: [Docker](#build-package-in-docker) and [Conda](#build-package-in-ubuntu). 
 
 
 # Build package in docker
