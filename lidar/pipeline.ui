@@ -27,7 +27,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -58,7 +58,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-95</y>
+                <y>0</y>
                 <width>422</width>
                 <height>348</height>
                </rect>
@@ -158,7 +158,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_4">
+         <widget class="QWidget" name="tab_1">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -193,9 +193,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-38</y>
+                <y>-167</y>
                 <width>422</width>
-                <height>348</height>
+                <height>375</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -291,13 +291,20 @@
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0">
+               <item row="12" column="0">
                 <widget class="QLineEdit" name="lineEdit_rgbvi"/>
                </item>
-               <item row="11" column="1">
+               <item row="12" column="1">
                 <widget class="QPushButton" name="pushButton_rgbvi_update">
                  <property name="text">
                   <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0" colspan="2">
+                <widget class="QSlider" name="horizontalSlider">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -307,7 +314,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_3">
+         <widget class="QWidget" name="tab_2">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -315,7 +322,7 @@
            </sizepolicy>
           </property>
           <attribute name="title">
-           <string>orthophoto (with alpha)</string>
+           <string>orthophoto</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
@@ -338,13 +345,13 @@
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_4">
+             <widget class="QWidget" name="scrollAreaWidget_orthophoto">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-106</y>
                 <width>422</width>
-                <height>242</height>
+                <height>334</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout">
@@ -367,7 +374,7 @@
                <item row="3" column="0">
                 <widget class="QLabel" name="label_10">
                  <property name="text">
-                  <string>Std dev</string>
+                  <string>Parameters</string>
                  </property>
                 </widget>
                </item>
@@ -379,39 +386,51 @@
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLineEdit" name="lineEdit_10"/>
+                <widget class="QLineEdit" name="lineEdit_stddev"/>
                </item>
                <item row="4" column="1">
-                <widget class="QPushButton" name="pushButton">
+                <widget class="QPushButton" name="pushButton_stddev">
                  <property name="text">
-                  <string>PushButton</string>
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string/>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLineEdit" name="lineEdit_11"/>
-               </item>
-               <item row="5" column="1">
-                <widget class="QPushButton" name="pushButton_3">
-                 <property name="text">
-                  <string>PushButton</string>
-                 </property>
-                </widget>
+                <widget class="QLineEdit" name="lineEdit_h_min"/>
                </item>
                <item row="6" column="0">
-                <widget class="QLineEdit" name="lineEdit_12"/>
+                <widget class="QLineEdit" name="lineEdit_s_min"/>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLineEdit" name="lineEdit_v_min"/>
+               </item>
+               <item row="9" column="0">
+                <widget class="QLineEdit" name="lineEdit_s_max"/>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLineEdit" name="lineEdit_v_max"/>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLineEdit" name="lineEdit_h_max"/>
                </item>
                <item row="6" column="1">
-                <widget class="QPushButton" name="pushButton_6">
+                <widget class="QPushButton" name="pushButton_hsv_min_update">
                  <property name="text">
-                  <string>PushButton</string>
+                  <string>Update</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
-                <widget class="QLabel" name="label_11">
+               <item row="9" column="1">
+                <widget class="QPushButton" name="pushButton_hsv_max_update">
                  <property name="text">
-                  <string/>
+                  <string>Update</string>
                  </property>
                 </widget>
                </item>
