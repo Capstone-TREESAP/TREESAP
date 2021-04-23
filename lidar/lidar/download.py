@@ -53,6 +53,3 @@ def unzip_files(src_dir):
                     zip_ref.extractall(src_dir)
                 os.remove(os.path.join(root, file))
 
-import json
-download_lidar_dataset(configure.get("Download", "dest_dir_path"), json.loads(configure.get("Download", "tiles")))
-unzip_files(configure.get("Download", "dest_dir_path"))

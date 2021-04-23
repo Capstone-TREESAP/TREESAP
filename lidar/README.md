@@ -50,7 +50,7 @@ All the following commands assume that the environment has been activated.
 To download the City of Vancouver dataset:
 ```bash
 cd CEDAR/lidar/lidar 
-python download.py  
+python download_dataset.py  
 ```
 > Note that the dataset will take a long time, and a lot of storage to download. For example, the 2018 dataset is about 12.8G, took more than 5 minutes to download.
 

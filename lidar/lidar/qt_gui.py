@@ -13,7 +13,7 @@ from sklearn.cluster import DBSCAN
 import cv2
 import scipy.ndimage as ndimage
 from math import ceil
-import download
+from download import download_lidar_dataset, unzip_files
 from config import configure, LABELLED_CONFIG_PATH, unlabelled_configure, UNLABELLED_CONFIG_PATH, orthophoto_configure, ORTHOPHOTO_CONFIG_PATH
 from processing import ProcessingPipeline
 from plotter import GraphGUI
@@ -125,11 +125,11 @@ class MainWindow(QMainWindow):
         )
         if not os.path.exists(filepath):
             self.statusBar().showMessage("Downloading testing data...")
-            download.download_lidar_dataset(
+            download_lidar_dataset(
                 configure["Test"]["dest_dir_path"],
                 json.loads(configure["Test"]["test_tiles"]),
             )
-            download.unzip_files(configure["Test"]["dest_dir_path"])
+            unzip_files(configure["Test"]["dest_dir_path"])
 
     def __set_progressbar_value(self, value, total_cluster):
         self.progressBar.setValue(ceil(value * 100.0 / total_cluster))
