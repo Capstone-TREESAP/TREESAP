@@ -263,8 +263,10 @@ class MainWindow(QMainWindow):
     def __process_test_orthophoto_data(self):
 
         self.statusBar().showMessage("Processing")
+
+        print("Processing image...")
         self.timer.restart()
-        
+
         image = cv2.imread(orthophoto_configure.get(
             "Constants", "sample_image_path"))
         g = 20
@@ -279,7 +281,7 @@ class MainWindow(QMainWindow):
 
         min_colour_threshold = (h_min/360*255, s_min, v_min)
         max_colour_threshold = (h_max/360*255, s_max, v_max)
-        image_size = 1000
+        image_size, width, channels = image.shape
         n = int(image_size / g)
 
         kernel = np.ones((g, g), np.float32)/(g*g)
@@ -303,9 +305,14 @@ class MainWindow(QMainWindow):
         contours, hierarchy = cv2.findContours(
             thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-        cv2.drawContours(image, contours, -1, (0, 0, 255), 3)
+        for contour in contours:
+            contour[:, :, 0] = contour[:, :, 0] * g
+            contour[:, :, 1] = contour[:, :,  1] * g
+        image = cv2.drawContours(image, contours, -1, (0, 0, 255), 5)
+
+        resized = cv2.resize(image, (1000, 1000), interpolation=cv2.INTER_AREA)
         cv2.imwrite(orthophoto_configure.get(
-            "Test", "output_image_path"), image)
+            "Test", "output_image_path"), resized)
 
         self.plotter.plot_path = orthophoto_configure.get(
             "Constants", "plot_html_file_path")
@@ -322,12 +329,13 @@ class MainWindow(QMainWindow):
                 )
             )
         )
-        
+
         self.__test_output_update(
             cluster_time=0,
             number_of_clusters=len(contours),
             total_time=self.timer.elapsed(),
         )
+        print("Complete processing image...")
 
     def __test_output_update(self, cluster_time=0, number_of_clusters=0, total_time=0):
         total_seconds = total_time / 1000.0
