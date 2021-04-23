@@ -28,7 +28,7 @@ class ProcessingPipeline:
         self.whole_campus_y = np.array([])
         if not notebook:
             parser = argparse.ArgumentParser(
-                prog="CEDAR labelled LiDAR processing pipeline",
+                prog="TREESAP labelled LiDAR processing pipeline",
                 description="Process indexed UBC LiDAR data",
             )
             parser.add_argument(
