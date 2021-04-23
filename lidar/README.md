@@ -1,5 +1,8 @@
-CEDAR-lidar
+TREESAP-lidar
 ---
+There are two options to setting up the dependencies: [Docker](build-package-in-docker) and [Conda](build-package-in-ubuntu). 
+
+
 # Build package in docker
 
 1. Install Docker: https://docs.docker.com/get-docker/
@@ -38,7 +41,7 @@ The docker image's purpose is a testing framework for parameter tuning. If you w
 ## Installation
 
 1. Install Conda 4.9.2 (python 3.8.8): https://conda.io/projects/conda/en/latest/user-guide/install/index.html
-2. Create conda environment with `conda env create -n lidar-raw -f environment. yml`
+2. Create conda environment with `conda env create -n lidar-raw -f environment.yml`
 3. Activate the environment: `conda activate lidar-raw`
 
 All the following commands assume that the environment has been activated. 
@@ -56,9 +59,9 @@ python download_dataset.py
 
 ## Run pipeline
 
-> If you are using docker, first run the interactive shell. The root directory in docker is `/src` instead of `CEDER/lidar`
+> If you are using docker, first run the interactive shell. The root directory in docker is `/src` instead of `TREESAP/lidar`
 ```bash
-cd CEDAR/lidar/lidar # cd src in docker
+cd TREESAP/lidar/lidar # cd src in docker
 python pipeline.py
 ``` 
 
@@ -69,10 +72,10 @@ a [map.geojson](lidar/../tests/map.geojson) will be generated at the end of proc
 # Document 
 
 ```bash
-cd CEDAR/lidar 
+cd TREESAP/lidar 
 doxygen doxygen.conf
 ```
-See documentation at `CEDAR/lidar/docs/html/index.html`
+See documentation at `TREESAP/lidar/docs/html/index.html`
 
 # Additional documents
 
@@ -81,6 +84,3 @@ See documentation at `CEDAR/lidar/docs/html/index.html`
 [Unlabelled LiDAR segmentation](./resource/SEGMENTATION.md)
 
 [Sample whole campus output](../lidar/tests/sample_map.geojson)
-
-
-
