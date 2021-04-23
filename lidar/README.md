@@ -77,6 +77,11 @@ doxygen doxygen.conf
 ```
 See documentation at `TREESAP/lidar/docs/html/index.html`
 
+## Update dependencies
+```bash
+conda env export > environment.yml  
+conda list -e > requirements.txt 
+```
 # Additional documents
 
 [Detailed instructions on GUI](./resource/GUI.md)
