@@ -18,7 +18,7 @@ class GraphGUI:
         self._label = np.array([])
         self.plot_path = configure.get("Constants", "plot_html_file_path")
         self.add_image = True
-        self.small_img = Image.open("../tests/test_data/481E_5456N_tiny.png")
+        self.small_img = Image.open(configure.get("Constants", "sample_image_path"))
 
     @property
     def x(self):
@@ -52,6 +52,18 @@ class GraphGUI:
     def label(self, label):
         self._label = label
 
+    def display_image(self, img_path, save_file=False, render="browser"):
+        import plotly.express as px
+        from skimage import io
+        img = io.imread(img_path)
+        fig = px.imshow(img)
+        if save_file:
+            from plotly.offline import plot
+
+            url = plot(fig, filename=self.plot_path, auto_open=False)
+        else:
+            pio.renderers.default = render
+            fig.show()
     def display_2d_pcd(self, offset, save_file=False, render="browser"):
         """[summary]
 

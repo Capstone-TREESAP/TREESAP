@@ -1,3 +1,4 @@
+import signal
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -9,13 +10,14 @@ import json
 import time
 import numpy as np
 from sklearn.cluster import DBSCAN
+import cv2
+import scipy.ndimage as ndimage
 from math import ceil
 import download
-from config import configure, LABELLED_CONFIG_PATH, unlabelled_configure, UNLABELLED_CONFIG_PATH
+from config import configure, LABELLED_CONFIG_PATH, unlabelled_configure, UNLABELLED_CONFIG_PATH, orthophoto_configure, ORTHOPHOTO_CONFIG_PATH
 from processing import ProcessingPipeline
 from plotter import GraphGUI
 from segmentation import SegmentationProcessor
-import signal
 # https://stackoverflow.com/questions/5160577/ctrl-c-doesnt-work-with-pyqt
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -65,6 +67,17 @@ class MainWindow(QMainWindow):
         )
         self.pushButton_rgbvi_update.clicked.connect(
             self.__on_click_unlabelled_rgbvi_update
+        )
+
+        # orthophoto pipeline tab
+        self.pushButton_stddev.clicked.connect(
+            self.__on_click_orthophoto_stddev
+        )
+        self.pushButton_hsv_min_update.clicked.connect(
+            self.__on_click_orthophoto_hsv_update
+        )
+        self.pushButton_hsv_max_update.clicked.connect(
+            self.__on_click_orthophoto_hsv_update
         )
 
         # process controll buttons connect callbacks
@@ -182,10 +195,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Done")
 
     def __process_test_unlabelled_data(self):
-        
+
         self.statusBar().showMessage("Processing")
         self.timer.restart()
-        
+
         self.unlabelled_pipeline = SegmentationProcessor()
 
         self.unlabelled_pipeline.uniform_down_k_point = unlabelled_configure.getint(
@@ -204,7 +217,7 @@ class MainWindow(QMainWindow):
             "Parameters", "min_points")
         self.unlabelled_pipeline.rgbvi_threshold = unlabelled_configure.getfloat(
             "Parameters", "rgbvi_threshold")
-        
+
         if self.unlabelled_parameter_update:
             self.unlabelled_parameter_update = False
             self.unlabelled_pipeline.pre_process_pc()
@@ -227,13 +240,94 @@ class MainWindow(QMainWindow):
                 )
             )
         )
-        
+
         self.__test_output_update(
             cluster_time=0,
             number_of_clusters=np.amax(self.unlabelled_pipeline.labels.max()),
             total_time=self.timer.elapsed(),
         )
         self.statusBar().showMessage("Done")
+
+    @staticmethod
+    def __stddev_above_threshold(x, y, window_size, threshold, im):
+        r = im[x*window_size:(x+1)*window_size, y *
+               window_size:(y+1)*window_size, 0:2]
+        return r.std() > threshold
+
+    @staticmethod
+    def __compressed_green(x, y, window_size, green_mask):
+        r = green_mask[x*window_size:(x+1)*window_size,
+                       y*window_size:(y+1)*window_size]
+        return r.mean() > 128
+
+    def __process_test_orthophoto_data(self):
+
+        self.statusBar().showMessage("Processing")
+        self.timer.restart()
+        
+        image = cv2.imread(orthophoto_configure.get(
+            "Constants", "sample_image_path"))
+        g = 20
+        stddev_threshold = orthophoto_configure.getfloat(
+            "Parameters", "standard_deviation_threshold")
+        h_min = orthophoto_configure.getfloat("Parameters", "h_min")
+        s_min = orthophoto_configure.getfloat("Parameters", "s_min")
+        v_min = orthophoto_configure.getfloat("Parameters", "v_min")
+        h_max = orthophoto_configure.getfloat("Parameters", "h_max")
+        s_max = orthophoto_configure.getfloat("Parameters", "s_max")
+        v_max = orthophoto_configure.getfloat("Parameters", "v_max")
+
+        min_colour_threshold = (h_min/360*255, s_min, v_min)
+        max_colour_threshold = (h_max/360*255, s_max, v_max)
+        image_size = 1000
+        n = int(image_size / g)
+
+        kernel = np.ones((g, g), np.float32)/(g*g)
+        blurred_image = cv2.filter2D(image, -1, kernel)
+        hsv_blurred_image = cv2.cvtColor(blurred_image, cv2.COLOR_RGB2HSV)
+        mask = cv2.inRange(hsv_blurred_image,
+                           min_colour_threshold, max_colour_threshold)
+        blurred_image = ndimage.gaussian_filter(image, sigma=2)
+        stddev_array = np.array([MainWindow.__stddev_above_threshold(
+            i//n, i % n, g, stddev_threshold, blurred_image) for i in range(0, n**2)]).reshape(n, n)
+
+        compressed_green_array = np.array([MainWindow.__compressed_green(
+            i//n, i % n, g, mask) for i in range(0, n**2)]).reshape(n, n)
+
+        green_stddev_array = np.array(
+            [compressed_green_array[i//n, i % n] and stddev_array[i//n, i % n] for i in range(0, n**2)]).reshape(n, n)
+        close_img = ndimage.binary_closing(green_stddev_array)
+        open_img = ndimage.binary_opening(close_img)
+        thresh = np.array(open_img*255, dtype=np.uint8)
+
+        contours, hierarchy = cv2.findContours(
+            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        cv2.drawContours(image, contours, -1, (0, 0, 255), 3)
+        cv2.imwrite(orthophoto_configure.get(
+            "Test", "output_image_path"), image)
+
+        self.plotter.plot_path = orthophoto_configure.get(
+            "Constants", "plot_html_file_path")
+        self.plotter.display_image(img_path=orthophoto_configure.get(
+            "Test", "output_image_path"), save_file=True)
+
+        self.webEngineView.reload()
+        self.webEngineView.setUrl(
+            QUrl(
+                "file://"
+                + os.path.abspath(
+                    orthophoto_configure.get(
+                        "Constants", "plot_html_file_path")
+                )
+            )
+        )
+        
+        self.__test_output_update(
+            cluster_time=0,
+            number_of_clusters=len(contours),
+            total_time=self.timer.elapsed(),
+        )
 
     def __test_output_update(self, cluster_time=0, number_of_clusters=0, total_time=0):
         total_seconds = total_time / 1000.0
@@ -272,6 +366,7 @@ class MainWindow(QMainWindow):
             configure.get("ToolTips", "max_polygon_area")
         )
 
+        # unlabelled tooltips
         self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_uniform_k_points").setToolTip(
             unlabelled_configure.get("ToolTips", "uniform_down_k_point")
         )
@@ -291,6 +386,23 @@ class MainWindow(QMainWindow):
             unlabelled_configure.get("ToolTips", "rgbvi_threshold")
         )
 
+        # orthophoto tooltips
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_stddev").setToolTip(
+            orthophoto_configure.get("ToolTips", "standard_deviation_threshold"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_h_min").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_min"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_s_min").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_min"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_v_min").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_min"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_h_max").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_max"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_s_max").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_max"))
+        self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_v_max").setToolTip(
+            orthophoto_configure.get("ToolTips", "hsv_max"))
+
+        # general tooltips
         self.label_test_output.setToolTip(
             configure.get("ToolTips", "test_output")
         )
@@ -382,7 +494,48 @@ class MainWindow(QMainWindow):
             unlabelled_configure.set(
                 "Parameters", "rgbvi_threshold", "%s" % rgbvi_threshold_value)
 
+    def __configure_orthophoto_stddev(self):
+        stddev_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_stddev").text())
+        if stddev_value is not orthophoto_configure.getfloat("Parameters", "standard_deviation_threshold"):
+            orthophoto_configure.set(
+                "Parameters", "standard_deviation_threshold", "%s" % stddev_value)
+
+    def __configure_orthophoto_hsv_update(self):
+        h_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_h_min").text())
+        if h_min_value is not orthophoto_configure.getfloat("Parameters", "h_min"):
+            orthophoto_configure.set(
+                "Parameters", "h_min", "%s" % h_min_value)
+        s_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_s_min").text())
+        if s_min_value is not orthophoto_configure.getfloat("Parameters", "s_min"):
+            orthophoto_configure.set(
+                "Parameters", "s_min", "%s" % s_min_value)
+        v_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_v_min").text())
+        if v_min_value is not orthophoto_configure.getfloat("Parameters", "v_min"):
+            orthophoto_configure.set(
+                "Parameters", "v_min", "%s" % v_min_value)
+
+        h_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_h_min").text())
+        if h_max_value is not orthophoto_configure.getfloat("Parameters", "h_min"):
+            orthophoto_configure.set(
+                "Parameters", "h_min", "%s" % h_max_value)
+        s_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_s_min").text())
+        if s_max_value is not orthophoto_configure.getfloat("Parameters", "s_min"):
+            orthophoto_configure.set(
+                "Parameters", "s_min", "%s" % s_max_value)
+        v_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_v_min").text())
+        if v_max_value is not orthophoto_configure.getfloat("Parameters", "v_min"):
+            orthophoto_configure.set(
+                "Parameters", "v_min", "%s" % v_max_value)
+
     # labelled pipeline buttons slots
+
     @pyqtSlot()
     def __on_click_dbscan_update(self):
         self.__configure_dbscan_update()
@@ -394,7 +547,6 @@ class MainWindow(QMainWindow):
         self.__process_test_labelled_data()
 
     # unlabelled pipeline buttons slots
-
     @pyqtSlot()
     def __on_click_unlabelled_pre_process_update(self):
         self.__configure_unlabelled_pre_processing_update()
@@ -410,6 +562,17 @@ class MainWindow(QMainWindow):
         self.__configure_unlabelled_rgbvi_update()
         self.__process_test_unlabelled_data()
 
+    # orthophoto pipeline buttons slot
+    @pyqtSlot()
+    def __on_click_orthophoto_stddev(self):
+        self.__configure_orthophoto_stddev()
+        self.__process_test_orthophoto_data()
+
+    @pyqtSlot()
+    def __on_click_orthophoto_hsv_update(self):
+        self.__configure_orthophoto_hsv_update()
+        self.__process_test_orthophoto_data()
+
     # processing button slots
     @pyqtSlot()
     def __on_click_save_all(self):
@@ -424,7 +587,11 @@ class MainWindow(QMainWindow):
             self.__on_click_unlabelled_rgbvi_update()
             with open(UNLABELLED_CONFIG_PATH, "w") as configfile:
                 unlabelled_configure.write(configfile)
-
+        elif self.tabWidget.currentIndex() == 2:
+            self.__on_click_orthophoto_stddev()
+            self.__on_click_orthophoto_hsv_update()
+            with open(ORTHOPHOTO_CONFIG_PATH, "w") as configfile:
+                orthophoto_configure.write(configfile)
         self.statusBar().showMessage("Saved all parameters")
 
     @pyqtSlot()
@@ -451,6 +618,7 @@ class MainWindow(QMainWindow):
                 "Parameters", "max_polygon_area"))
 
         elif self.tabWidget.currentIndex() == 1:
+            unlabelled_configure.read(UNLABELLED_CONFIG_PATH)
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_uniform_k_points").setText(
                 unlabelled_configure.get("Parameters", "uniform_down_k_point"))
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_ground_diff").setText(
@@ -471,6 +639,24 @@ class MainWindow(QMainWindow):
                 "Test", "pcd_output_path"))
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_output_dir_path_unlabel").setText(unlabelled_configure.get(
                 "Test", "las_file_output_path"))
+
+        elif self.tabWidget.currentIndex() == 2:
+            orthophoto_configure.read(ORTHOPHOTO_CONFIG_PATH)
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_stddev").setText(
+                orthophoto_configure.get("Parameters", "standard_deviation_threshold"))
+
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_h_min").setText(
+                orthophoto_configure.get("Parameters", "h_min"))
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_s_min").setText(
+                orthophoto_configure.get("Parameters", "s_min"))
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_v_min").setText(
+                orthophoto_configure.get("Parameters", "v_min"))
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_h_max").setText(
+                orthophoto_configure.get("Parameters", "h_max"))
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_s_max").setText(
+                orthophoto_configure.get("Parameters", "s_max"))
+            self.scrollAreaWidget_orthophoto.findChild(QLineEdit, "lineEdit_v_max").setText(
+                orthophoto_configure.get("Parameters", "v_max"))
         self.statusBar().showMessage("Reset all parameters")
 
     @pyqtSlot()
