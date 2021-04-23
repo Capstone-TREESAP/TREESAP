@@ -79,7 +79,7 @@ See documentation at `TREESAP/lidar/docs/html/index.html`
 
 ## Update dependencies
 ```bash
-conda env export --no-builds --from-history > environment.yml 
+conda env export > environment.yml  
 conda list -e > requirements.txt 
 ```
 # Additional documents
