@@ -1,9 +1,9 @@
 # TREESAP
-Tree Ecosystem Services Analysis Platform <img align="right" width="100" height="100" src="./react-googlemaps/public/logo192.png">
+Tree Ecosystem Services Analysis Platform <img align="right" width="100" height="100" src="./desktop_application/public/logo192.png">
 
 ## Frontend
-[See documents here](./react-googlemaps/README.md)
-code base: `react-googlemaps`
+[See documents here](./desktop_application/README.md)
+code base: `desktop_application`
 ## Processing pipeline
 
 ### Orthophoto

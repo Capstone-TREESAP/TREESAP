@@ -1,5 +1,4 @@
 from shapely import geometry
-from area import area
 import os, cv2, geojson, uuid, sys, time
 import numpy as np
 import scipy.ndimage as ndimage

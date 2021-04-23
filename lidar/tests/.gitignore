@@ -2,6 +2,7 @@
 *.geojson 
 *.html
 *.laz
+*.png
 !sample_map.geojson
 !ubc_boundary.geojson
 !sample_plot.html
