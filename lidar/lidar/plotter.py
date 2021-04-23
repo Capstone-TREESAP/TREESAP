@@ -11,6 +11,8 @@ from config import configure
 
 
 class GraphGUI:
+    """ Plotting class
+    """
     def __init__(self):
         self._x = np.array([])
         self._y = np.array([])
@@ -22,10 +24,20 @@ class GraphGUI:
 
     @property
     def x(self):
+        """ 
+
+        Returns:
+            np.array: 1D array of 
+        """
         return self._x
 
     @property
     def y(self):
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
         return self._y
 
     @property

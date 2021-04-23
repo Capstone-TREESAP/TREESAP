@@ -4,7 +4,7 @@ from config import configure
 
 def main():
     pipeline = ProcessingPipeline(notebook=False)
-    pipeline.pre_process_las_files(configure["Download"]["dest_dir_path"])
+    pipeline.pre_process_las_files(configure.get("Download", "dest_dir_path"))
     points_x, points_y = pipeline.collect_points_from_map()
     whole_campus_polygon_features = pipeline.extract_polygon_features(
         points_x, points_y
