@@ -551,6 +551,46 @@ class MainWindow(QMainWindow):
             orthophoto_configure.set(
                 "Parameters", "v_min", "%s" % v_max_value)
 
+    def __configure_orthophoto_stddev(self):
+        stddev_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_stddev").text())
+        if stddev_value is not orthophoto_configure.getfloat("Parameters", "standard_deviation_threshold"):
+            orthophoto_configure.set(
+                "Parameters", "standard_deviation_threshold", "%s" % stddev_value)
+
+    def __configure_orthophoto_hsv_update(self):
+        h_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_h_min").text())
+        if h_min_value is not orthophoto_configure.getfloat("Parameters", "h_min"):
+            orthophoto_configure.set(
+                "Parameters", "h_min", "%s" % h_min_value)
+        s_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_s_min").text())
+        if s_min_value is not orthophoto_configure.getfloat("Parameters", "s_min"):
+            orthophoto_configure.set(
+                "Parameters", "s_min", "%s" % s_min_value)
+        v_min_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_v_min").text())
+        if v_min_value is not orthophoto_configure.getfloat("Parameters", "v_min"):
+            orthophoto_configure.set(
+                "Parameters", "v_min", "%s" % v_min_value)
+
+        h_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_h_min").text())
+        if h_max_value is not orthophoto_configure.getfloat("Parameters", "h_min"):
+            orthophoto_configure.set(
+                "Parameters", "h_min", "%s" % h_max_value)
+        s_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_s_min").text())
+        if s_max_value is not orthophoto_configure.getfloat("Parameters", "s_min"):
+            orthophoto_configure.set(
+                "Parameters", "s_min", "%s" % s_max_value)
+        v_max_value = float(self.scrollAreaWidget_orthophoto.findChild(
+            QLineEdit, "lineEdit_v_min").text())
+        if v_max_value is not orthophoto_configure.getfloat("Parameters", "v_min"):
+            orthophoto_configure.set(
+                "Parameters", "v_min", "%s" % v_max_value)
+
     # labelled pipeline buttons slots
 
     @pyqtSlot()

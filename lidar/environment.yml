@@ -201,7 +201,9 @@ dependencies:
   - pyopenssl=20.0.1=pyhd3eb1b0_1
   - pyparsing=2.4.7=pyhd3eb1b0_0
   - pyproj=3.0.1=py38hdf83a33_1
+  - pyqt=5.12.3=py38h578d9bd_7
   - pyqt-impl=5.12.3=py38h7400c14_7
+  - pyqtchart=5.12=py38h7400c14_7
   - pyqtwebengine=5.12.1=py38h7400c14_7
   - pyrsistent=0.17.3=py38h7b6447c_0
   - pysocks=1.7.1=py38h06a4308_0
