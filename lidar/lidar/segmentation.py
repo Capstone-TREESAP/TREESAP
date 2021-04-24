@@ -1,7 +1,7 @@
 import open3d as o3d
 import numpy as np
-import pclpy
 from pclpy import pcl
+import pclpy
 from pyproj import Proj
 import pickle
 from PIL import Image
@@ -12,7 +12,6 @@ import os
 import laspy
 from config import unlabelled_configure
 from pre_processing import LiDARIndexType
-
 
 
 class SegmentationProcessor:
@@ -27,15 +26,15 @@ class SegmentationProcessor:
         self.ground_threshold = unlabelled_configure.getfloat(
             "Parameters", "ground_threshold")
         self.eps = unlabelled_configure.getfloat("Parameters", "eps")
-        self.min_points = unlabelled_configure.getint("Parameters", "min_points")
+        self.min_points = unlabelled_configure.getint(
+            "Parameters", "min_points")
         self.rgbvi_threshold = unlabelled_configure.getfloat(
             "Parameters", "rgbvi_threshold")
+
         self.high_vegetation = None
         self.labels = None
 
     def pre_process_pc(self):
-        if os.path.exists(unlabelled_configure.get("Constants", "pkl_file_path")):
-            return
         # read a las file
         point_cloud = pclpy.read(
             unlabelled_configure.get("Test", "las_file_path"), "PointXYZ")
@@ -110,28 +109,27 @@ class SegmentationProcessor:
 
         data = np.asarray(pkl_downpcd.points)
         img = np.array(small_img)
-        fig = go.Figure()
 
         high_vegetation = None
 
         for i in np.arange(labels.max()):
-            #     i = labels.max() - i
             x_cluster = data[:, 0][np.where(labels == i)]
             y_cluster = data[:, 1][np.where(labels == i)]
             z_cluster = data[:, 2][np.where(labels == i)]
             rgbvi_sum = 0
-            gli_sum = 0
             for j in np.arange(x_cluster.shape[0]):
                 rgb = img[math.floor(999 - y_cluster[j]),
                           math.ceil(x_cluster[j]) - 1, :]
                 # the default type is uint
                 rgb = rgb.astype('float64')
-                gli_sum += (2 * rgb[1] - rgb[0] - rgb[2]) / \
-                    (2 * rgb[1] + rgb[0] + rgb[2])
-                rgbvi_sum += ((rgb[1] * rgb[1] - rgb[0]*rgb[2])
-                              * 1.0) / (rgb[1] * rgb[1] + rgb[0]*rgb[2])
+                base = (rgb[1] * rgb[1] + rgb[0]*rgb[2])
+
+                # color can be 0, which leads to divide by zero.
+                if np.isclose(base, 0):
+                    continue
+                rgbvi_sum += (rgb[1] * rgb[1] - rgb[0]*rgb[2]) / base
+
             rgbvi_avg = rgbvi_sum / x_cluster.shape[0]
-            # gli_avg = gli_sum / x_cluster.shape[0]
             # filter
             if rgbvi_avg > self.rgbvi_threshold:
                 if high_vegetation is None:

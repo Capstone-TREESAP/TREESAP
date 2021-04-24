@@ -3,6 +3,8 @@
 *.html
 *.laz
 *.png
+*.tif
+*.pcd
 !sample_map.geojson
 !ubc_boundary.geojson
 !sample_plot.html

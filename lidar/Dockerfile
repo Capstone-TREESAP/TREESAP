@@ -6,7 +6,7 @@ RUN apt-get update \
     && apt-get -y upgrade \
     && apt-get install -y ffmpeg libsm6 libxext6 \
     && apt-get install -y libxcomposite-dev libxtst6 libpci-dev \
-    && apt-get install -y wget
+    && apt-get install -y wget libqhull-dev
 
 SHELL [ "/bin/bash", "--login", "-c" ]
 # Create a non-root user
@@ -24,8 +24,8 @@ RUN adduser --disabled-password \
     --home $HOME \
     $USER
 
-COPY environment.yml requirements.txt /tmp/
-RUN chown $UID:$GID /tmp/environment.yml /tmp/requirements.txt
+COPY environment_build.yml /tmp/
+RUN chown $UID:$GID /tmp/environment_build.yml
 
 COPY docker/entrypoint.sh /usr/local/bin/
 RUN chown $UID:$GID /usr/local/bin/entrypoint.sh && \
@@ -50,9 +50,9 @@ RUN conda init bash
 ENV PROJECT_DIR $HOME
 WORKDIR $PROJECT_DIR
 
-# build the conda environment
+# build the conda environment_build
 ENV ENV_PREFIX lidar-raw
-RUN conda env create -f /tmp/environment.yml && \
+RUN conda env create -f /tmp/environment_build.yml && \
     conda clean --all --yes
 # run the postBuild script to install any JupyterLab extensions
 # RUN conda activate $ENV_PREFIX && \
@@ -71,7 +71,6 @@ RUN chown -R $UID:$GID tests
 COPY --chown=$UID:$GID lidar/configs/labelled_config.ini src/configs/labelled_config.ini 
 COPY --chown=$UID:$GID tests/ubc_boundary.geojson tests/ubc_boundary.geojson
 COPY --chown=$UID:$GID tests/test_data/481E_5456N_tiny.png tests/test_data/481E_5456N_tiny.png
-COPY --chown=$UID:$GID tests/test_data/sample_plot.html tests/test_data/sample_plot.html
 
 WORKDIR $PROJECT_DIR/src
 CMD ["python", "qt_gui.py"]

@@ -27,7 +27,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -193,9 +193,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-167</y>
+                <y>0</y>
                 <width>422</width>
-                <height>375</height>
+                <height>441</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -212,99 +212,154 @@
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                </property>
                <item row="0" column="0">
-                <widget class="QLineEdit" name="lineEdit_data_dir_path_unlabel"/>
+                <widget class="QLineEdit" name="lineEdit_input_image_path_unlabel"/>
                </item>
                <item row="1" column="0">
-                <widget class="QLineEdit" name="lineEdit_test_dir_path_unlabel"/>
-               </item>
-               <item row="1" column="1">
-                <widget class="QPushButton" name="pushButton_data_dir_path_update_unlabel">
-                 <property name="text">
-                  <string>Path Update</string>
-                 </property>
-                </widget>
+                <widget class="QLineEdit" name="lineEdit_input_dem_path_unlabel"/>
                </item>
                <item row="2" column="0">
-                <widget class="QLineEdit" name="lineEdit_output_dir_path_unlabel"/>
+                <widget class="QLineEdit" name="lineEdit_input_las_path_unlabel"/>
                </item>
-               <item row="3" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="label_2">
                  <property name="text">
                   <string>Pre processing</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="8" column="0">
                 <widget class="QLineEdit" name="lineEdit_uniform_k_points"/>
                </item>
-               <item row="4" column="1">
+               <item row="8" column="1">
                 <widget class="QPushButton" name="pushButton_pre_process_update_unlabel">
                  <property name="text">
                   <string>Update</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="9" column="0">
                 <widget class="QLineEdit" name="lineEdit_ground_diff"/>
                </item>
-               <item row="6" column="0">
+               <item row="10" column="0">
                 <widget class="QLineEdit" name="lineEdit_distance_threshold"/>
                </item>
-               <item row="7" column="0">
+               <item row="11" column="0">
                 <widget class="QLabel" name="label_5">
                  <property name="text">
                   <string>DBSCAN</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="11" column="1">
                 <widget class="QLabel" name="label_8">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="12" column="0">
                 <widget class="QLineEdit" name="lineEdit_eps_unlabel"/>
                </item>
-               <item row="8" column="1">
+               <item row="12" column="1">
                 <widget class="QPushButton" name="pushButton_dbscan_update_unlabel">
                  <property name="text">
                   <string>Update</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="13" column="0">
                 <widget class="QLineEdit" name="lineEdit_min_sample_unlabel"/>
                </item>
-               <item row="10" column="0">
+               <item row="14" column="0">
                 <widget class="QLabel" name="label_6">
                  <property name="text">
                   <string>RGBVI</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="14" column="1">
                 <widget class="QLabel" name="label_9">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="0">
+               <item row="16" column="0">
                 <widget class="QLineEdit" name="lineEdit_rgbvi"/>
                </item>
-               <item row="12" column="1">
+               <item row="16" column="1">
                 <widget class="QPushButton" name="pushButton_rgbvi_update">
                  <property name="text">
                   <string>Update</string>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0" colspan="2">
-                <widget class="QSlider" name="horizontalSlider">
+               <item row="15" column="0" colspan="2">
+                <widget class="QSlider" name="slider_rgbvi">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimum">
+                  <number>-50</number>
+                 </property>
+                 <property name="maximum">
+                  <number>50</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>1</number>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="invertedAppearance">
+                  <bool>false</bool>
+                 </property>
+                 <property name="tickPosition">
+                  <enum>QSlider::NoTicks</enum>
+                 </property>
+                 <property name="tickInterval">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Input image path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_data_dir_path_update_unlabel">
+                 <property name="text">
+                  <string>Path Update</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Input DEM path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Input LiDAR path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLineEdit" name="lineEdit_data_output_path_unlabel"/>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Output LAS path</string>
                  </property>
                 </widget>
                </item>
@@ -349,7 +404,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-106</y>
+                <y>0</y>
                 <width>422</width>
                 <height>334</height>
                </rect>

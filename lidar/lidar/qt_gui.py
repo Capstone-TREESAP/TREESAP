@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5 import uic
+import qdarkstyle
 import sys
 import os
 import json
@@ -26,8 +27,8 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi("../pipeline.ui", self)
-        self.labelled_pipeline = None
-        self.unlabelled_pipeline = None
+        self.labelled_pipeline = ProcessingPipeline(notebook=True)
+        self.unlabelled_pipeline = SegmentationProcessor()
         self.plotter = GraphGUI()
         self.timer = QElapsedTimer()
 
@@ -35,8 +36,10 @@ class MainWindow(QMainWindow):
         self.shortcut_close = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.shortcut_close.activated.connect(self.__close_app)
 
+        # flags for different stages
         self.labelled_parameter_update = False
         self.unlabelled_parameter_update = False
+        self.unlabelled_filter_update = False
 
         self.tabWidget.setCurrentIndex(0)
         self.__on_click_reset()
@@ -67,6 +70,10 @@ class MainWindow(QMainWindow):
         )
         self.pushButton_rgbvi_update.clicked.connect(
             self.__on_click_unlabelled_rgbvi_update
+        )
+
+        self.slider_rgbvi.valueChanged[int].connect(
+            self.__on_value_change_unlabelled_rgbvi
         )
 
         # orthophoto pipeline tab
@@ -141,7 +148,6 @@ class MainWindow(QMainWindow):
 
         self.timer.restart()
 
-        self.labelled_pipeline = ProcessingPipeline(notebook=True)
         self.labelled_pipeline.pre_process_las_files(
             configure["Test"]["dest_dir_path"])
         points_x, points_y = self.labelled_pipeline.collect_points_from_map()
@@ -187,7 +193,7 @@ class MainWindow(QMainWindow):
         )
         data_path = configure.get("Download", "dest_dir_path")
         self.__process_output_update(
-            self.timer.elapsed()
+            0.5 * self.timer.elapsed()
             * self.labelled_pipeline.pre_processor.collect_las_file_from_folder(new_path=data_path),
             estimated=True
         )
@@ -198,8 +204,6 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Processing")
         self.timer.restart()
-
-        self.unlabelled_pipeline = SegmentationProcessor()
 
         self.unlabelled_pipeline.uniform_down_k_point = unlabelled_configure.getint(
             "Parameters", "uniform_down_k_point")
@@ -218,11 +222,13 @@ class MainWindow(QMainWindow):
         self.unlabelled_pipeline.rgbvi_threshold = unlabelled_configure.getfloat(
             "Parameters", "rgbvi_threshold")
 
-        if self.unlabelled_parameter_update:
+        if self.unlabelled_parameter_update or os.path.exists(unlabelled_configure.get("Constants", "pkl_file_path")):
+            print("Reload dataset")
             self.unlabelled_parameter_update = False
             self.unlabelled_pipeline.pre_process_pc()
 
         self.unlabelled_pipeline.process_pc()
+        self.unlabelled_filter_update = False
 
         self.plotter.plot_path = unlabelled_configure.get(
             "Constants", "plot_html_file_path")
@@ -499,8 +505,11 @@ class MainWindow(QMainWindow):
         rgbvi_threshold_value = float(self.scrollAreaWidget_lidar_unlabelled.findChild(
             QLineEdit, "lineEdit_rgbvi").text())
         if rgbvi_threshold_value is not unlabelled_configure.getfloat("Parameters", "rgbvi_threshold"):
+            self.unlabelled_filter_update = True
             unlabelled_configure.set(
                 "Parameters", "rgbvi_threshold", "%s" % rgbvi_threshold_value)
+            self.slider_rgbvi.setValue(
+                int(100 * unlabelled_configure.getfloat("Parameters", "rgbvi_threshold")))
 
     def __configure_orthophoto_stddev(self):
         stddev_value = float(self.scrollAreaWidget_orthophoto.findChild(
@@ -570,7 +579,16 @@ class MainWindow(QMainWindow):
         self.__configure_unlabelled_rgbvi_update()
         self.__process_test_unlabelled_data()
 
+    def __on_value_change_unlabelled_rgbvi(self, value):
+        rgbvi_threshold_value = value / 100.0
+        if rgbvi_threshold_value is not unlabelled_configure.getfloat("Parameters", "rgbvi_threshold"):
+            unlabelled_configure.set(
+                "Parameters", "rgbvi_threshold", "%s" % rgbvi_threshold_value)
+            self.scrollAreaWidget_lidar_unlabelled.findChild(
+                QLineEdit, "lineEdit_rgbvi").setText("%s" % rgbvi_threshold_value)
+
     # orthophoto pipeline buttons slot
+
     @pyqtSlot()
     def __on_click_orthophoto_stddev(self):
         self.__configure_orthophoto_stddev()
@@ -590,14 +608,14 @@ class MainWindow(QMainWindow):
             with open(LABELLED_CONFIG_PATH, "w") as configfile:
                 configure.write(configfile)
         elif self.tabWidget.currentIndex() == 1:
-            self.__on_click_unlabelled_pre_process_update()
-            self.__on_click_unlabelled_dbscan_update()
-            self.__on_click_unlabelled_rgbvi_update()
+            self.__configure_unlabelled_pre_processing_update()
+            self.__configure_unlabelled_dbscan_update()
+            self.__configure_unlabelled_rgbvi_update()
             with open(UNLABELLED_CONFIG_PATH, "w") as configfile:
                 unlabelled_configure.write(configfile)
         elif self.tabWidget.currentIndex() == 2:
-            self.__on_click_orthophoto_stddev()
-            self.__on_click_orthophoto_hsv_update()
+            self.__configure_orthophoto_stddev()
+            self.__configure_orthophoto_hsv_update()
             with open(ORTHOPHOTO_CONFIG_PATH, "w") as configfile:
                 orthophoto_configure.write(configfile)
         self.statusBar().showMessage("Saved all parameters")
@@ -641,6 +659,9 @@ class MainWindow(QMainWindow):
 
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_rgbvi").setText(
                 unlabelled_configure.get("Parameters", "rgbvi_threshold"))
+            self.slider_rgbvi.setValue(
+                int(100 * unlabelled_configure.getfloat("Parameters", "rgbvi_threshold")))
+
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_data_dir_path_unlabel").setText(unlabelled_configure.get(
                 "Test", "las_file_path"))
             self.scrollAreaWidget_lidar_unlabelled.findChild(QLineEdit, "lineEdit_test_dir_path_unlabel").setText(unlabelled_configure.get(
@@ -702,7 +723,10 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # app.setStyle("Oxygen")
+    # setup stylesheet
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    # or in new API
+    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
     window = MainWindow()
 
     app.exec_()

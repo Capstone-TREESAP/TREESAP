@@ -1,0 +1,32 @@
+name: lidar-raw
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pclpy
+  - pyproj
+  - plotly
+  - ipywidgets[version='>=7.5']
+  - laszip
+  - pillow
+  - open3d
+  - scikit-learn
+  - yaml
+  - pyyaml
+  - addict
+  - plyfile
+  - tqdm
+  - pyqtwebengine
+  - requests
+  - geojson
+  - alphashape
+  - utm
+  - progress
+  - qdarkstyle
+  - autopep8
+  - opencv
+  - scipy
+  - scikit-image
+  - laspy
+  - pyhull
+prefix: /home/yiyi/miniconda3/envs/lidar-raw
