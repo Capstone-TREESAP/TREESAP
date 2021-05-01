@@ -1,6 +1,7 @@
 from sklearn.cluster import DBSCAN
 import numpy as np
 import time
+import uuid
 import geojson
 import alphashape
 import utm
@@ -316,5 +317,7 @@ class ProcessingPipeline:
         raw_geo = utm.to_latlon(raw_contour[:, 0], raw_contour[:, 1], 10, "U")
         geo_points = np.vstack((raw_geo[1], raw_geo[0])).T
         polygon = geojson.Polygon([geo_points.tolist()])
+        polygon_feature = geojson.Feature(geometry=polygon)
+        polygon_feature["properties"]["id"] = "L-YEAR" + str(uuid.uuid4())
 
-        return geojson.Feature(geometry=polygon)
+        return polygon_feature
